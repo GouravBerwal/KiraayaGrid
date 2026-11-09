@@ -41,9 +41,9 @@ def get_curated_properties():
     for idx, p in enumerate(props):
         cov = p.gallery_photos.filter(is_cover=True).first() or p.gallery_photos.first()
         p.display_photo = cov.photo_url if (cov and cov.photo_url) else sample_photos[idx % len(sample_photos)]
-        p.display_price = int(p.min_rent_val) if p.min_rent_val else (14500 if idx == 0 else (23000 if idx == 1 else 18500))
-        p.locality_name = p.locality.name if p.locality else (p.city.name if p.city else 'Bengaluru')
-        p.city_name = p.city.name if p.city else 'Bengaluru'
+        p.display_price = int(p.min_rent_val) if p.min_rent_val else (int(p.rooms.first().monthly_rent) if p.rooms.exists() else 0)
+        p.locality_name = p.locality.name if p.locality else (p.city.name if p.city else 'Indore')
+        p.city_name = p.city.name if p.city else 'Indore'
         
         # Room Type display
         if p.property_type == 'PG':
@@ -60,8 +60,13 @@ def get_curated_properties():
             p.display_amenities = 'Wi-Fi · Furnished · AC'
 
         # Ratings
-        avg_rating = 4.88 + ((p.id * 7) % 11) / 100
-        p.display_rating = f"{avg_rating:.2f}"
+        approved_revs = [r for r in p.reviews.all() if getattr(r, 'status', '') == 'APPROVED']
+        if approved_revs:
+            p.display_rating = f"{sum(r.rating for r in approved_revs) / len(approved_revs):.1f}"
+            p.reviews_count = len(approved_revs)
+        else:
+            p.display_rating = "New"
+            p.reviews_count = 0
     
     return props
 
@@ -93,29 +98,30 @@ def home_landing(request):
 
     for item in default_city_data:
         c_obj = cities_qs.filter(name__icontains=item['name']).first()
+        cnt = c_obj.stay_count if c_obj else 0
         city_cards.append({
             'name': item['name'],
             'photo': item['photo'],
-            'count': f"{c_obj.stay_count} stays" if (c_obj and c_obj.stay_count > 0) else item['count'],
+            'count': f"{cnt} verified stay{'s' if cnt != 1 else ''}" if cnt > 0 else "Verified listings coming soon",
             'tagline': item['tagline'],
             'id': c_obj.id if c_obj else ''
         })
 
-    # Category Counts
+    # Category Counts (Real-time DB counts)
     category_counts = {
-        'PG': Property.objects.filter(property_type='PG', status='APPROVED').count() or 18,
-        'HOSTEL': Property.objects.filter(property_type='HOSTEL', status='APPROVED').count() or 12,
-        'PRIVATE_ROOM': Property.objects.filter(rooms__room_type='SINGLE', status='APPROVED').distinct().count() or 24,
-        'SHARED_ROOM': Property.objects.filter(rooms__room_type__in=['DOUBLE', 'TRIPLE'], status='APPROVED').distinct().count() or 19,
-        'FLAT': Property.objects.filter(property_type='FLAT', status='APPROVED').count() or 15,
-        'CO_LIVING': Property.objects.filter(property_type='CO_LIVING', status='APPROVED').count() or 14,
+        'PG': Property.objects.filter(property_type='PG', status='APPROVED').count(),
+        'HOSTEL': Property.objects.filter(property_type='HOSTEL', status='APPROVED').count(),
+        'PRIVATE_ROOM': Property.objects.filter(rooms__room_type='SINGLE', status='APPROVED').distinct().count(),
+        'SHARED_ROOM': Property.objects.filter(rooms__room_type__in=['DOUBLE', 'TRIPLE'], status='APPROVED').distinct().count(),
+        'FLAT': Property.objects.filter(property_type='FLAT', status='APPROVED').count(),
+        'CO_LIVING': Property.objects.filter(property_type='CO_LIVING', status='APPROVED').count(),
     }
 
     context = {
         'featured_stays': featured_stays,
         'city_cards': city_cards,
         'category_counts': category_counts,
-        'all_stays_count': all_stays_count or 33,
+        'all_stays_count': all_stays_count,
         'cities': cities_qs,
     }
     return render(request, 'public_portal/01_landing.html', context)
@@ -219,9 +225,9 @@ def explore_stays(request):
     for idx, prop in enumerate(properties_list):
         cov = prop.gallery_photos.filter(is_cover=True).first() or prop.gallery_photos.first()
         prop.display_photo = cov.photo_url if (cov and cov.photo_url) else sample_photos[idx % len(sample_photos)]
-        prop.display_price = int(prop.min_rent_val) if prop.min_rent_val else (14500 + (idx * 1500) % 12000)
-        prop.locality_str = prop.locality.name if prop.locality else (prop.city.name if prop.city else 'Bengaluru')
-        prop.city_str = prop.city.name if prop.city else 'Bengaluru'
+        prop.display_price = int(prop.min_rent_val) if prop.min_rent_val else (int(prop.rooms.first().monthly_rent) if prop.rooms.exists() else 0)
+        prop.locality_str = prop.locality.name if prop.locality else (prop.city.name if prop.city else 'Indore')
+        prop.city_str = prop.city.name if prop.city else 'Indore'
 
         if prop.property_type == 'PG':
             prop.display_category_label = 'Private Room · PG'
@@ -240,8 +246,13 @@ def explore_stays(request):
             prop.display_badge = 'Studio Suite'
             prop.display_amenities = ['High-Speed Wi-Fi', 'Air Conditioning', 'Fully Furnished', '24/7 Support']
 
-        prop.rating_score = f"{4.82 + ((prop.id * 7) % 17) / 100:.2f}"
-        prop.reviews_count = 14 + (prop.id * 9) % 38
+        approved_revs = [r for r in prop.reviews.all() if getattr(r, 'status', '') == 'APPROVED']
+        if approved_revs:
+            prop.rating_score = f"{sum(r.rating for r in approved_revs) / len(approved_revs):.1f}"
+            prop.reviews_count = len(approved_revs)
+        else:
+            prop.rating_score = "New"
+            prop.reviews_count = 0
         prop.brokerage_saved = f"₹{prop.display_price:,}"
 
     # Universal Max 5 Pagination
@@ -293,7 +304,7 @@ def stay_details(request, property_id):
     prop = get_object_or_404(Property.objects.select_related('city', 'locality', 'owner').prefetch_related('gallery_photos', 'rooms', 'reviews'), id=property_id)
     
     rooms = list(prop.rooms.filter(is_active=True))
-    min_rent = int(min([r.monthly_rent for r in rooms])) if rooms else 16500
+    min_rent = int(min([r.monthly_rent for r in rooms])) if rooms else 0
 
     # Ensure rich display rooms if property has no rooms added yet
     display_rooms = []
@@ -341,7 +352,8 @@ def stay_details(request, property_id):
     for s in similar_stays:
         cov = s.gallery_photos.filter(is_cover=True).first() or s.gallery_photos.first()
         s.display_photo = cov.photo_url if (cov and cov.photo_url) else default_photo
-        s.display_price = 15000 + (s.id * 1200) % 10000
+        active_rms = list(s.rooms.filter(is_active=True))
+        s.display_price = int(min([r.monthly_rent for r in active_rms])) if active_rms else 0
 
     context = {
         'prop': prop,
@@ -512,8 +524,8 @@ def locations_overview(request):
 
     for item in city_data:
         c_obj = cities_qs.filter(name__icontains=item['name'].split()[0]).first()
-        if c_obj and c_obj.approved_count > 0:
-            item['stay_count'] = f"{c_obj.approved_count} verified stays"
+        cnt = c_obj.approved_count if c_obj else 0
+        item['stay_count'] = f"{cnt} verified stay{'s' if cnt != 1 else ''}" if cnt > 0 else "Verified stays coming soon"
 
     context = {
         'cities': city_data,
