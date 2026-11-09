@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth import get_user_model, update_session_auth_hash, logout as auth_logout
-from django.db.models import Min, Count, Q
+from django.db.models import Min, Count, Q, Case, When, Value, IntegerField, F, Avg, Sum
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -2798,4 +2798,7 @@ def api_delete_account(request):
 # Logout View
 def tenant_logout(request):
     auth_logout(request)
-    return redirect('/admin/login/')
+    next_url = request.GET.get('next')
+    if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+        return redirect(next_url)
+    return redirect('/auth/?role=TENANT')
