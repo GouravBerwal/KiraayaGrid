@@ -1092,7 +1092,16 @@ def user_signup(request):
 
 
 def user_logout(request):
+    next_url = request.GET.get('next') or request.POST.get('next')
+    was_admin = request.user.is_authenticated and (request.user.is_superuser or getattr(request.user, 'role', '') == 'ADMIN')
+    was_owner = request.user.is_authenticated and getattr(request.user, 'role', '') == 'OWNER'
     logout(request)
+    if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+        return redirect(next_url)
+    if was_admin:
+        return redirect('/auth/?role=ADMIN&next=/admin/')
+    if was_owner:
+        return redirect('/auth/?role=OWNER&next=/owner/dashboard/')
     return redirect('public_portal:home')
 
 

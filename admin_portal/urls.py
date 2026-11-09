@@ -4,6 +4,7 @@ from . import views
 app_name = 'admin_portal'
 
 urlpatterns = [
+    path('', views.marketplace_overview, name='marketplace_overview_root'),
     path('dashboard/', views.marketplace_overview, name='marketplace_overview'),
     path('owner-verification/', views.owner_verification, name='owner_verification'),
     path('property-verification/', views.property_verification, name='property_verification'),
