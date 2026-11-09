@@ -23,6 +23,7 @@ urlpatterns = [
     path('locations/', views.locations_overview, name='locations'),
 
     # 7. Apple-grade Auth Suite (Login, Signup, Role Routing, Demo Auto-Login)
+    path('auth/', views.user_login, name='auth'),
     path('login/', views.user_login, name='login'),
     path('signup/', views.user_signup, name='signup'),
     path('logout/', views.user_logout, name='logout'),

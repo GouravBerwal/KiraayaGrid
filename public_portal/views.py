@@ -982,6 +982,11 @@ def user_login(request):
     Users can log in with their Username, Email, or Mobile Phone Number + Password.
     NO OTP DURING LOGIN (per user mandate: only at signup time).
     """
+    if request.GET.get('mode') == 'signup':
+        return user_signup(request)
+
+    role_param = request.GET.get('role', '').upper()
+
     if request.user.is_authenticated:
         role = getattr(request.user, 'role', '')
         next_url = request.GET.get('next')
@@ -1053,6 +1058,7 @@ def user_login(request):
         'mode': 'login',
         'error_msg': error_msg,
         'next_url': next_url,
+        'role_param': role_param,
     })
 
 
