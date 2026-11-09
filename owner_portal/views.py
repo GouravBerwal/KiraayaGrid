@@ -3730,12 +3730,14 @@ def add_property_step(request, step):
     return render(request, 'owner_portal/listing_wizard/wizard_base.html', context)
 
 
-@csrf_exempt
 def save_listing_draft_api(request):
     """
     Saves or updates owner's listing draft in MySQL database (DraftListing).
     """
     owner = get_active_owner(request)
+    if not owner:
+        return JsonResponse({'status': 'error', 'message': 'Owner authentication required'}, status=403)
+
     req_data = {}
     if request.method == 'POST':
         if request.content_type == 'application/json':

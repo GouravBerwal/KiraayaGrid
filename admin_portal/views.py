@@ -325,7 +325,6 @@ def owner_verification(request):
 from django.views.decorators.csrf import csrf_exempt
 
 # API Endpoint: Approve, Reject, or Request Corrections
-@csrf_exempt
 def owner_verification_action(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Only POST method allowed'}, status=405)
@@ -537,7 +536,6 @@ def property_verification(request):
     return render(request, 'admin_portal/03_property_verification.html', context)
 
 # API Endpoint: Approve, Reject, or Request Corrections for Property
-@csrf_exempt
 def property_verification_action(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Only POST method allowed'}, status=405)
@@ -785,7 +783,6 @@ def listing_management(request):
     return render(request, 'admin_portal/04_listing_management.html', context)
 
 
-@csrf_exempt
 def api_listing_toggle_status(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -836,7 +833,6 @@ def api_listing_toggle_status(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@csrf_exempt
 def api_listing_save(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -900,7 +896,6 @@ def api_listing_save(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@csrf_exempt
 def api_listing_delete(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -926,7 +921,6 @@ def api_listing_delete(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@csrf_exempt
 def api_listing_bulk_action(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -1150,7 +1144,6 @@ def user_management(request):
     return render(request, 'admin_portal/05_user_management.html', context)
 
 
-@csrf_exempt
 def api_user_toggle_status(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -1184,7 +1177,6 @@ def api_user_toggle_status(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@csrf_exempt
 def api_user_reset_password(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -1211,7 +1203,6 @@ def api_user_reset_password(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@csrf_exempt
 def api_user_save(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -5128,7 +5119,6 @@ def staff_settings(request):
     return render(request, 'admin_portal/16_staff_settings.html', context)
 
 
-@csrf_exempt
 def api_staff_invite(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST method required'}, status=405)
@@ -5196,7 +5186,6 @@ def api_staff_invite(request):
     })
 
 
-@csrf_exempt
 def api_staff_update_access(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST method required'}, status=405)
@@ -5247,7 +5236,6 @@ def api_staff_update_access(request):
     })
 
 
-@csrf_exempt
 def api_staff_toggle_setting(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST method required'}, status=405)
@@ -5308,7 +5296,6 @@ def api_staff_toggle_setting(request):
     })
 
 
-@csrf_exempt
 def api_staff_save_workspace(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST method required'}, status=405)

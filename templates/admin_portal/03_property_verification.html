@@ -982,7 +982,8 @@
       fetch('/api/property-verification/action/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
           property_id: propId,
