@@ -7,6 +7,7 @@ urlpatterns = [
     # 8. Tenant Overview / Dashboard
     path('', views.tenant_overview, name='overview'),
     path('dashboard/', views.tenant_overview, name='dashboard'),
+    path('overview/', views.tenant_overview, name='overview_alias'),
 
     # 9. Find Accommodation (Full property search & filters)
     path('find/', views.find_accommodation, name='find_accommodation'),

@@ -959,7 +959,7 @@ def api_verify_signup_otp(request):
             redirect_url = '/owner/dashboard/'
         else:
             TenantProfile.objects.get_or_create(user=new_user)
-            redirect_url = '/tenant/overview/'
+            redirect_url = '/tenant/dashboard/'
 
         # Log in the new user
         login(request, new_user)
