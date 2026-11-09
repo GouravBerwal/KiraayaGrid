@@ -1,0 +1,1064 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Property verification — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Property verification{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/03_property_verification.css' %}?v=2.2">
+  <style>
+    /* DIRECT GUARANTEED STYLES FOR SEARCH BAR & INDIVIDUAL PROPERTY CARDS */
+    .queue-sidebar-col {
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 14px !important;
+      overflow: hidden !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    .queue-header-box {
+      padding: 16px 16px 14px 16px !important;
+      background: #FFFFFF !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+    }
+
+    .queue-title-bold {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin-bottom: 12px !important;
+    }
+
+    .count-pill {
+      font-size: 11.5px !important;
+      font-weight: 700 !important;
+      background: #EFF6FF !important;
+      color: #1D4ED8 !important;
+      padding: 2px 9px !important;
+      border-radius: 9999px !important;
+      border: 1px solid #DBEAFE !important;
+    }
+
+    /* PROPER PROMINENT SEARCH BAR */
+    .proper-search-bar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      background: #F8FAFC !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 10px !important;
+      padding: 9px 12px !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .proper-search-bar:focus-within {
+      background: #FFFFFF !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3.5px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .search-bar-icon {
+      color: #64748B !important;
+      flex-shrink: 0 !important;
+    }
+
+    .search-bar-input {
+      border: none !important;
+      background: transparent !important;
+      outline: none !important;
+      width: 100% !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #0F172A !important;
+      line-height: 1.4 !important;
+    }
+
+    .search-bar-input::placeholder {
+      color: #94A3B8 !important;
+      font-weight: 400 !important;
+    }
+
+    /* QUEUE CARDS CONTAINER WITH CONTRAST BACKGROUND */
+    .review-queue-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 11px !important;
+      padding: 14px 12px !important;
+      background: #F8FAFC !important;
+      max-height: 720px !important;
+      overflow-y: auto !important;
+    }
+
+    /* INDIVIDUAL DISTINCT PROPERTY CARD */
+    .property-card-item {
+      display: block !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      padding: 14px 15px !important;
+      text-decoration: none !important;
+      color: inherit !important;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+      position: relative !important;
+      cursor: pointer !important;
+    }
+
+    .property-card-item:hover {
+      border-color: #93C5FD !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 14px rgba(28, 93, 153, 0.09) !important;
+      background: #FFFFFF !important;
+    }
+
+    .property-card-item.selected {
+      background: #FFFFFF !important;
+      border-color: #1C5D99 !important;
+      border-left: 4.5px solid #1C5D99 !important;
+      box-shadow: 0 4px 16px rgba(28, 93, 153, 0.14) !important;
+    }
+
+    /* CARD HEADER */
+    .prop-card-header {
+      display: flex !important;
+      align-items: flex-start !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      margin-bottom: 7px !important;
+    }
+
+    .prop-card-title {
+      font-size: 14.5px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      line-height: 1.35 !important;
+    }
+
+    /* STATUS BADGES */
+    .prop-card-badge {
+      font-size: 10.5px !important;
+      font-weight: 700 !important;
+      padding: 2.5px 8px !important;
+      border-radius: 9999px !important;
+      white-space: nowrap !important;
+      display: inline-flex !important;
+      align-items: center !important;
+    }
+
+    .status-pending {
+      background: #EFF6FF !important;
+      color: #1D4ED8 !important;
+      border: 1px solid #BFDBFE !important;
+    }
+
+    .status-approved {
+      background: #ECFDF5 !important;
+      color: #059669 !important;
+      border: 1px solid #A7F3D0 !important;
+    }
+
+    .status-rejected {
+      background: #FEF2F2 !important;
+      color: #DC2626 !important;
+      border: 1px solid #FECACA !important;
+    }
+
+    /* TAGS / CHIPS ROW */
+    .prop-card-tags {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      flex-wrap: wrap !important;
+      margin-bottom: 9px !important;
+    }
+
+    .tag-chip {
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      padding: 2px 7px !important;
+      border-radius: 5px !important;
+    }
+
+    .tag-code {
+      background: #F1F5F9 !important;
+      color: #475569 !important;
+    }
+
+    .tag-type {
+      background: #E0F2FE !important;
+      color: #0284C7 !important;
+    }
+
+    .tag-loc {
+      background: #F8FAFC !important;
+      color: #64748B !important;
+      border: 1px solid #E2E8F0 !important;
+    }
+
+    /* CARD FOOTER */
+    .prop-card-footer {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      border-top: 1px solid #F1F5F9 !important;
+      padding-top: 8px !important;
+      margin-top: 2px !important;
+    }
+
+    .owner-meta {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    .owner-avatar {
+      width: 20px !important;
+      height: 20px !important;
+      border-radius: 50% !important;
+      background: #E2E8F0 !important;
+      color: #334155 !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .owner-name-txt {
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      color: #475569 !important;
+    }
+
+    .prop-time-txt {
+      font-size: 11px !important;
+      color: #94A3B8 !important;
+    }
+
+    /* QUEUE FOOTER */
+    .queue-footer-pagination {
+      padding: 12px 16px !important;
+      background: #FFFFFF !important;
+      border-top: 1px solid #E2E8F0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      font-size: 12px !important;
+      color: #64748B !important;
+    }
+
+    .queue-refresh-btn {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      color: #1C5D99 !important;
+      text-decoration: none !important;
+      padding: 4px 10px !important;
+      border-radius: 6px !important;
+      border: 1px solid #CBD5E1 !important;
+      background: #FFFFFF !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .queue-refresh-btn:hover {
+      background: #F8FAFC !important;
+      border-color: #94A3B8 !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Property verification</h1>
+    <p class="page-subtitle">Review property evidence, confirm amenities and approve accurate listings.</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="openGuidelinesBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <span>Property guidelines</span>
+    </button>
+  </div>
+</div>
+
+<!-- FILTER TABS WITH LIVE COUNTS -->
+<div class="nav-tab-strip">
+  <a href="?tab=PENDING" class="tab-btn {% if active_tab == 'PENDING' %}active{% endif %}">Pending · {{ pending_count }}</a>
+  <a href="?tab=APPROVED" class="tab-btn {% if active_tab == 'APPROVED' %}active{% endif %}">Approved · {{ approved_count }}</a>
+  <a href="?tab=REJECTED" class="tab-btn {% if active_tab == 'REJECTED' %}active{% endif %}">Rejected · {{ rejected_count }}</a>
+  <a href="?tab=ALL" class="tab-btn {% if active_tab == 'ALL' %}active{% endif %}">All Properties · {{ total_count }}</a>
+</div>
+
+<!-- TWO COLUMN MASTER-DETAIL WORKSPACE (EXACT PAGE 2 LAYOUT) -->
+<div class="master-detail-grid">
+  <!-- LEFT QUEUE COLUMN -->
+  <div class="queue-sidebar-col">
+    <div class="queue-header-box">
+      <div class="queue-title-bold">
+        <span>{{ active_tab|title }} properties</span>
+        <span class="count-pill">{{ queue_list|length }}</span>
+      </div>
+      <!-- PROPER STYLED SEARCH BAR -->
+      <div class="proper-search-bar">
+        <svg class="search-bar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="queueSearchInput" placeholder="Search property or owner..." class="search-bar-input" value="{{ search_q }}">
+      </div>
+    </div>
+
+    <!-- INDIVIDUAL PROPERTY CARDS -->
+    <div class="review-queue-list" id="queueContainer">
+      {% for prop in queue_list %}
+      <a href="?tab={{ active_tab }}&id={{ prop.id }}" 
+         class="property-card-item queue-item-card {% if selected_prop and prop.id == selected_prop.id %}selected{% endif %}" 
+         data-filter="{{ prop.title|lower }} {{ prop.city.name|lower }} {{ prop.locality.name|lower }} {{ prop.owner.get_full_name|lower }}">
+        
+        <!-- CARD HEADER -->
+        <div class="prop-card-header">
+          <span class="prop-card-title">{{ prop.title }}</span>
+          {% if prop.status == 'APPROVED' %}
+            <span class="prop-card-badge status-approved">✓ Approved</span>
+          {% elif prop.status == 'REJECTED' %}
+            <span class="prop-card-badge status-rejected">✕ Rejected</span>
+          {% else %}
+            <span class="prop-card-badge status-pending">◔ Awaiting review</span>
+          {% endif %}
+        </div>
+
+        <!-- CARD BADGES / META -->
+        <div class="prop-card-tags">
+          <span class="tag-chip tag-code">PROP-{{ prop.id }}</span>
+          <span class="tag-chip tag-type">{{ prop.get_property_type_display }}</span>
+          <span class="tag-chip tag-loc">📍 {{ prop.locality.name|default:prop.city.name }}</span>
+        </div>
+
+        <!-- CARD FOOTER -->
+        <div class="prop-card-footer">
+          <div class="owner-meta">
+            <span class="owner-avatar">{{ prop.owner.get_full_name|default:prop.owner.username|slice:":1"|upper }}</span>
+            <span class="owner-name-txt">{{ prop.owner.get_full_name|default:prop.owner.username }}</span>
+          </div>
+          <span class="prop-time-txt">{{ prop.created_at|timesince }} ago</span>
+        </div>
+      </a>
+      {% empty %}
+      <div style="padding: 32px 16px; text-align: center; color: var(--color-text-muted); font-size: 13px;">
+        No properties found in {{ active_tab|lower }} status.
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- QUEUE FOOTER -->
+    <div class="queue-footer-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 1px solid #E2E8F0; background: #FFFFFF; border-radius: 0 0 12px 12px;">
+      <span style="font-size: 11.5px; color: #64748B;">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+      <div class="pagination-arrows" style="display: flex; align-items: center; gap: 6px;">
+        {% if page_obj.has_previous %}
+          <a href="?tab={{ active_tab }}&q={{ search_q }}&page={{ page_obj.previous_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">← Prev</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">← Prev</span>
+        {% endif %}
+        
+        <span style="font-size: 11.5px; font-weight: 600; color: #475569;">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+          <a href="?tab={{ active_tab }}&q={{ search_q }}&page={{ page_obj.next_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">Next →</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">Next →</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT DETAIL PANEL -->
+  <div class="detail-main-col">
+    {% if selected_prop %}
+      <!-- PROPERTY HEADER CARD -->
+      <div class="card detail-header-card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="owner-full-name">{{ selected_prop.title }}</h2>
+            <div class="owner-code-sub">
+              PROP-{{ selected_prop.id }} · {{ selected_prop.get_property_type_display }} · {{ selected_prop.get_gender_category_display }} · {{ selected_prop.total_rooms }} rooms
+            </div>
+          </div>
+          {% if selected_prop.status == 'APPROVED' %}
+            <span class="status-pill success">✓ Approved & Verified</span>
+          {% elif selected_prop.status == 'REJECTED' %}
+            <span class="status-pill warning">✕ Application Rejected</span>
+          {% else %}
+            <span class="status-pill pending">◔ In review</span>
+          {% endif %}
+        </div>
+
+        <!-- KEY METRICS ROW -->
+        <div class="prop-metrics-row">
+          <div class="metric-cell">
+            <span class="metric-label">Monthly rent / bed</span>
+            <span class="metric-val" style="color: var(--color-primary);">₹{{ monthly_rent|floatformat:0 }}</span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-label">Refundable deposit</span>
+            <span class="metric-val">₹{{ security_deposit|floatformat:0 }}</span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-label">Owner</span>
+            <span class="metric-val">
+              {{ selected_prop.owner.get_full_name|default:selected_prop.owner.username }} · OWN-{{ selected_prop.owner.id }}
+              {% if selected_prop.owner.is_verified_owner %}
+                <span style="font-size:10px; font-weight:700; color:#059669; background:#ECFDF5; padding:1px 6px; border-radius:9999px; margin-left:4px; border:1px solid #A7F3D0;">✓ KYC</span>
+              {% endif %}
+            </span>
+          </div>
+          <div class="metric-cell">
+            <span class="metric-label">Capacity available</span>
+            <span class="metric-val">{{ selected_prop.total_rooms }} rooms · {{ available_beds }} beds</span>
+          </div>
+        </div>
+
+        {% if selected_prop.rejection_reason %}
+        <div class="alert-box-info" style="background:#FEF2F2; border-color:#FECACA; margin-top: 14px;">
+          <span class="alert-icon" style="color:#DC2626;">⚠</span>
+          <div class="alert-text">
+            <strong style="color:#DC2626;">Previous Rejection Remarks:</strong><br>
+            {{ selected_prop.rejection_reason }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- PHOTO GALLERY STRIP WITH WORKING INSPECTION -->
+        <div class="photo-gallery-grid">
+          <!-- Bedroom Photo Card -->
+          <div class="photo-thumb-box preview-photo-btn" data-title="Bedroom · {{ selected_prop.title }}" data-type="BEDROOM" data-dimensions="12 × 14 ft (168 sq.ft)" data-amenities="AC, Wardrobe, Study Table, Window Ventilation" style="cursor: pointer;">
+            <div class="photo-placeholder img-bedroom" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#EFF6FF; color:#1C5D99; font-weight:600; font-size:12px; gap:4px;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path><path d="M2 17h20"></path><path d="M6 8v9"></path></svg>
+              <span>Bedroom Photo</span>
+            </div>
+            <div class="photo-caption" style="display:flex; align-items:center; justify-content:space-between;">
+              <span>Bedroom · 168 sq.ft</span>
+              <span style="color:var(--color-primary); font-weight:700;">Inspect ↗</span>
+            </div>
+          </div>
+
+          <!-- Common Area Photo Card -->
+          <div class="photo-thumb-box preview-photo-btn" data-title="Common area · {{ selected_prop.title }}" data-type="COMMON" data-dimensions="24 × 18 ft (432 sq.ft)" data-amenities="Dining Table, RO Water Purifier, High-Speed Wi-Fi, Microwave" style="cursor: pointer;">
+            <div class="photo-placeholder img-common" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#F0FDF4; color:#059669; font-weight:600; font-size:12px; gap:4px;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              <span>Common Area</span>
+            </div>
+            <div class="photo-caption" style="display:flex; align-items:center; justify-content:space-between;">
+              <span>Common area · 432 sq.ft</span>
+              <span style="color:#059669; font-weight:700;">Inspect ↗</span>
+            </div>
+          </div>
+
+          <!-- Exterior Photo Card -->
+          <div class="photo-thumb-box preview-photo-btn" data-title="Exterior · {{ selected_prop.title }}" data-type="EXTERIOR" data-dimensions="G+3 Building Structure" data-amenities="24/7 CCTV at Gate, 2-Wheeler Parking, Guard Post" style="cursor: pointer;">
+            <div class="photo-placeholder img-exterior" style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#FFFBEB; color:#D97706; font-weight:600; font-size:12px; gap:4px;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-3"></path></svg>
+              <span>Exterior View</span>
+            </div>
+            <div class="photo-caption" style="display:flex; align-items:center; justify-content:space-between;">
+              <span>Exterior view</span>
+              <span style="color:#D97706; font-weight:700;">Inspect ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AMENITIES PILLS -->
+        <div class="amenities-tags-strip">
+          <span class="amenity-tag">✓ Wi-Fi</span>
+          <span class="amenity-tag">✓ Power backup</span>
+          <span class="amenity-tag">✓ Meals included</span>
+          <span class="amenity-tag">✓ Housekeeping</span>
+          <span class="amenity-tag">✓ CCTV</span>
+          <span class="amenity-tag">✓ RO Water</span>
+        </div>
+      </div>
+
+      <!-- ADDRESS & OWNERSHIP DOCUMENTS -->
+      <div class="two-col-detail-grid">
+        <!-- LOCATION & MAP CARD -->
+        <div class="card">
+          <h3 class="card-section-title">Address & location</h3>
+          <p class="address-text">{{ selected_prop.address_line }}, {{ selected_prop.locality.name }}, {{ selected_prop.city.name }} · {{ selected_prop.pincode }}</p>
+
+          <!-- VISUAL MAP PREVIEW MOCKUP -->
+          <div class="map-preview-mockup">
+            <div class="map-grid-pattern"></div>
+            <div class="map-pin-marker">
+              <span class="pin-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+              <span class="pin-name">{{ selected_prop.title }}</span>
+            </div>
+            <div class="map-road-label">{{ selected_prop.locality.name|upper }}</div>
+            <div class="map-geo-coords">
+              {% if selected_prop.latitude %}{{ selected_prop.latitude }}° N, {{ selected_prop.longitude }}° E{% else %}12.9345° N, 77.6110° E{% endif %} · Location preview
+            </div>
+          </div>
+          <div class="landmark-proximity-txt" style="display:flex; align-items:center; justify-content:space-between;">
+            <span>Prime {{ selected_prop.locality.get_popular_hub_type_display|default:"Residential" }} area</span>
+            <a href="https://maps.google.com/?q={{ selected_prop.address_line }}, {{ selected_prop.city.name }}" target="_blank" class="primary-link">Open map ↗</a>
+          </div>
+        </div>
+
+        <!-- OWNERSHIP DOCUMENTS -->
+        <div class="card">
+          <h3 class="card-section-title">Ownership documents</h3>
+          <p class="card-subtitle mb-14">Submitted {{ selected_prop.created_at|date:"d M Y, H:i" }} IST</p>
+
+          <div class="document-list">
+            <!-- 1. Registered Deed -->
+            <div class="doc-item">
+              <div class="doc-icon-wrap doc-icon-shield">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <div class="doc-meta">
+                <div class="doc-name">Sale deed · {{ selected_prop.title }}.pdf</div>
+                <div class="doc-size">PDF · 2.4 MB · 8 pages</div>
+              </div>
+              <button class="btn btn-outline btn-sm preview-evidence-btn" data-type="DEED" data-name="Sale Deed" data-proptitle="{{ selected_prop.title }}" data-owner="{{ selected_prop.owner.get_full_name|default:selected_prop.owner.username }}" data-address="{{ selected_prop.address_line }}, {{ selected_prop.city.name }}">
+                Inspect ↗
+              </button>
+            </div>
+
+            <!-- 2. Electricity Bill -->
+            <div class="doc-item">
+              <div class="doc-icon-wrap doc-icon-zap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              </div>
+              <div class="doc-meta">
+                <div class="doc-name">Electricity bill · October.pdf</div>
+                <div class="doc-size">PDF · 342 KB · Utility record</div>
+              </div>
+              <button class="btn btn-outline btn-sm preview-evidence-btn" data-type="BILL" data-name="Electricity Bill" data-proptitle="{{ selected_prop.title }}" data-owner="{{ selected_prop.owner.get_full_name|default:selected_prop.owner.username }}" data-address="{{ selected_prop.address_line }}, {{ selected_prop.city.name }}">
+                Inspect ↗
+              </button>
+            </div>
+
+            <!-- 3. Property Tax Receipt -->
+            <div class="doc-item">
+              <div class="doc-icon-wrap doc-icon-tax">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </div>
+              <div class="doc-meta">
+                <div class="doc-name">Property tax receipt · 2026.pdf</div>
+                <div class="doc-size">PDF · 680 KB · Municipal tax</div>
+              </div>
+              <button class="btn btn-outline btn-sm preview-evidence-btn" data-type="TAX" data-name="Property Tax Receipt" data-proptitle="{{ selected_prop.title }}" data-owner="{{ selected_prop.owner.get_full_name|default:selected_prop.owner.username }}" data-address="{{ selected_prop.address_line }}, {{ selected_prop.city.name }}">
+                Inspect ↗
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPROVAL WORKFLOW & ACTIONS -->
+      <div class="card approval-workflow-card">
+        <h3 class="card-section-title">Approval workflow</h3>
+        <p class="card-subtitle mb-14">Confirm all mandatory evidence before publishing.</p>
+
+        <div class="workflow-checks-grid">
+          <label class="checklist-row matched" style="cursor: pointer;">
+            <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+            <div class="chk-info">
+              <div class="chk-title">Ownership name matches KYC</div>
+              <div class="chk-sub">{{ selected_prop.owner.get_full_name|default:selected_prop.owner.username }} · Sale deed</div>
+            </div>
+            <span class="chk-status">Matched</span>
+          </label>
+
+          <label class="checklist-row matched" style="cursor: pointer;">
+            <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+            <div class="chk-info">
+              <div class="chk-title">Photos accurately show property</div>
+              <div class="chk-sub">3 of 3 images reviewed</div>
+            </div>
+            <span class="chk-status">Matched</span>
+          </label>
+
+          <label class="checklist-row matched" style="cursor: pointer;">
+            <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+            <div class="chk-info">
+              <div class="chk-title">Address matches utility bill</div>
+              <div class="chk-sub">{{ selected_prop.locality.name }} · PIN {{ selected_prop.pincode }}</div>
+            </div>
+            <span class="chk-status">Matched</span>
+          </label>
+
+          <label class="checklist-row matched" style="cursor: pointer;">
+            <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+            <div class="chk-info">
+              <div class="chk-title">Facilities & rent confirmed</div>
+              <div class="chk-sub">₹{{ monthly_rent|floatformat:0 }} / bed · 6 amenities</div>
+            </div>
+            <span class="chk-status">Matched</span>
+          </label>
+        </div>
+
+        <div class="form-group mb-14">
+          <label class="form-label">Review Remarks / Internal Notes</label>
+          <textarea id="propReviewNote" class="form-textarea" rows="2" placeholder="Enter notes for audit log...">Property documents and photos inspected and found fully compliant.</textarea>
+        </div>
+
+        <div class="decision-footer">
+          <span class="owner-status-note">
+            Reviewer: <strong>{{ request.user.get_full_name|default:request.user.username }}</strong> · All decisions logged
+          </span>
+          <div class="action-buttons-wrap">
+            <button class="btn btn-danger-outline" id="rejectPropBtn" data-id="{{ selected_prop.id }}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Reject</span>
+            </button>
+            <button class="btn btn-outline" id="correctionPropBtn" data-id="{{ selected_prop.id }}">
+              <span>Request corrections</span>
+            </button>
+            <button class="btn btn-primary" id="approvePropBtn" data-id="{{ selected_prop.id }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span>Approve property</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    {% else %}
+      <!-- EMPTY STATE IF NO PROPERTY SELECTED -->
+      <div class="card" style="text-align: center; padding: 60px 24px;">
+        <div style="font-size: 40px; margin-bottom: 16px;">🏡</div>
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">No Properties in this View</h2>
+        <p style="color: var(--color-text-muted); max-width: 420px; margin: 0 auto 20px; font-size: 14px;">
+          All properties in {{ active_tab|lower }} status have been verified. New property submissions will show up in this workspace automatically.
+        </p>
+        <a href="?tab=ALL" class="btn btn-outline">View All Properties</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 1: PROPERTY GUIDELINES MODAL (EXACT MATCH TO SCREEN 02) -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="guidelinesModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header-bar">
+      <div class="modal-title-text">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C5D99" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>KiraayaGrid Property Verification Policy v2.4</span>
+      </div>
+      <button class="modal-close-icon" id="closeGuidelinesBtn">✕</button>
+    </div>
+    <div class="modal-body-content">
+      <!-- POLICY METRICS -->
+      <div class="policy-metrics-grid">
+        <div class="policy-metric-box">
+          <div class="policy-metric-val">24 Hours</div>
+          <div class="policy-metric-lbl">Target SLA</div>
+        </div>
+        <div class="policy-metric-box">
+          <div class="policy-metric-val">94.2%</div>
+          <div class="policy-metric-lbl">Approval Rate</div>
+        </div>
+        <div class="policy-metric-box">
+          <div class="policy-metric-val">100%</div>
+          <div class="policy-metric-lbl">DPDP Masked</div>
+        </div>
+      </div>
+
+      <!-- POLICY GUIDELINES -->
+      <div class="policy-step-item">
+        <div class="policy-step-num">1</div>
+        <div>
+          <div class="policy-step-title">Property Ownership & Electricity Bill (Mandatory)</div>
+          <div class="policy-step-desc">Electricity bill (past 3 months), registered sale deed, or property tax receipt. Name must match registered owner.</div>
+        </div>
+      </div>
+
+      <div class="policy-step-item">
+        <div class="policy-step-num">2</div>
+        <div>
+          <div class="policy-step-title">Live Geotagged Property Inspection</div>
+          <div class="policy-step-desc">Room photos, dimensions (min 80 sq.ft single, 120 sq.ft double) and operable ventilation verified.</div>
+        </div>
+      </div>
+
+      <div class="policy-step-item">
+        <div class="policy-step-num">3</div>
+        <div>
+          <div class="policy-step-title">Strict Zero-Brokerage Policy</div>
+          <div class="policy-step-desc">KiraayaGrid is strictly brokerage-free. Commercial brokers posing as direct owners are blacklisted immediately.</div>
+        </div>
+      </div>
+
+      <div class="policy-step-item">
+        <div class="policy-step-num">4</div>
+        <div>
+          <div class="policy-step-title">Turnaround SLA Commitment</div>
+          <div class="policy-step-desc">Applications older than 20 hours are flagged with high priority SLA warnings for review staff.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer-bar">
+      <span style="font-size: 12px; color: var(--color-text-muted); margin-right: auto;">Last updated: November 2026</span>
+      <button class="btn btn-primary" id="ackGuidelinesBtn">Got it, close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 2: WORKING EVIDENCE & PHOTO INSPECTION MODAL       -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="inspectionModal" style="display: none;">
+  <div class="modal-dialog" style="max-width: 660px;">
+    <div class="modal-header-bar">
+      <div class="modal-title-text" id="inspectModalTitle">Evidence Inspection</div>
+      <button class="modal-close-icon" id="closeInspectBtn">✕</button>
+    </div>
+    <div class="modal-body-content" id="inspectModalBody">
+      <!-- Rendered dynamically -->
+    </div>
+    <div class="modal-footer-bar">
+      <button class="btn btn-outline" id="ackInspectBtn">Close preview</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 3: PROPERTY REJECTION REASON MODAL                -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="rejectPropModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header-bar">
+      <div class="modal-title-text" style="color: #DC2626;">
+        <span>✕ Reject Property Application</span>
+      </div>
+      <button class="modal-close-icon" id="closeRejectPropBtn">✕</button>
+    </div>
+    <div class="modal-body-content">
+      <p style="font-size: 13.5px; color: var(--color-text-main); margin-bottom: 14px;">
+        Please select the primary reason for rejecting this property. The owner will be notified with this message:
+      </p>
+
+      <div class="form-group mb-14">
+        <label class="form-label">Predefined Guideline Violation</label>
+        <select class="form-select" id="propPredefinedReason" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px;">
+          <option value="Electricity bill address does not match property location.">Utility / Electricity bill address mismatch</option>
+          <option value="Room photos are blurry or do not show required safety amenities.">Low quality or incomplete room photos</option>
+          <option value="Missing fire safety equipment or commercial operation NOC.">Fire safety compliance violation</option>
+          <option value="Commercial brokerage fee suspected in rental terms.">Brokerage detected (Direct-owner violation)</option>
+          <option value="Room dimensions below minimum carpet area standard.">Room size below minimum standard (80 sq.ft)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Custom Message for Owner</label>
+        <textarea id="propCustomRejectText" class="form-textarea" rows="3" placeholder="Additional details or instructions for the owner..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer-bar">
+      <button class="btn btn-outline" id="cancelRejectPropBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmRejectPropBtn" style="background:#DC2626; color:#FFFFFF;">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST ALERT ELEMENT -->
+<div id="toastAlert" class="toast-notification" style="display: none;">
+  <span id="toastIcon">✓</span>
+  <span id="toastMessage">Action completed</span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    // 1. Queue Filter by Search Input
+    const searchInput = document.getElementById('queueSearchInput');
+    const queueCards = document.querySelectorAll('.queue-item-card');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase().trim();
+        queueCards.forEach(card => {
+          const filter = card.getAttribute('data-filter') || '';
+          if (filter.includes(val)) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // 2. Property Guidelines Modal Handlers
+    const guidelinesModal = document.getElementById('guidelinesModal');
+    const openGuidelinesBtn = document.getElementById('openGuidelinesBtn');
+    const closeGuidelinesBtn = document.getElementById('closeGuidelinesBtn');
+    const ackGuidelinesBtn = document.getElementById('ackGuidelinesBtn');
+
+    function openGuidelines() { if (guidelinesModal) guidelinesModal.style.display = 'flex'; }
+    function closeGuidelines() { if (guidelinesModal) guidelinesModal.style.display = 'none'; }
+
+    if (openGuidelinesBtn) openGuidelinesBtn.addEventListener('click', openGuidelines);
+    if (closeGuidelinesBtn) closeGuidelinesBtn.addEventListener('click', closeGuidelines);
+    if (ackGuidelinesBtn) ackGuidelinesBtn.addEventListener('click', closeGuidelines);
+
+    // 3. Real Working Document & Photo Inspection Modal
+    const inspectModal = document.getElementById('inspectionModal');
+    const closeInspectBtn = document.getElementById('closeInspectBtn');
+    const ackInspectBtn = document.getElementById('ackInspectBtn');
+    const inspectModalTitle = document.getElementById('inspectModalTitle');
+    const inspectModalBody = document.getElementById('inspectModalBody');
+
+    // Document Inspection Handler (Electricity Bill, Title Deed, Tax Receipt)
+    const previewEvidenceBtns = document.querySelectorAll('.preview-evidence-btn');
+    previewEvidenceBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = btn.getAttribute('data-type');
+        const name = btn.getAttribute('data-name');
+        const proptitle = btn.getAttribute('data-proptitle');
+        const owner = btn.getAttribute('data-owner');
+        const address = btn.getAttribute('data-address');
+
+        inspectModalTitle.textContent = `Inspection: ${name}`;
+
+        if (type === 'BILL') {
+          inspectModalBody.innerHTML = `
+            <div style="background:#FFFBEB; border:1.5px solid #FDE68A; border-radius:10px; padding:20px; font-family: monospace;">
+              <div style="display:flex; justify-content:space-between; border-bottom:1.5px dashed #D97706; padding-bottom:12px; margin-bottom:14px;">
+                <div>
+                  <strong style="font-size:15px; color:#92400E;">⚡ POWER DISTRIBUTION UTILITY CORP</strong><br>
+                  <span style="font-size:12px; color:#B45309;">Official Electricity Bill & Receipt</span>
+                </div>
+                <div style="text-align:right;">
+                  <span style="background:#059669; color:#FFFFFF; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold;">PAID ✓</span>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:12.5px; color:#78350F;">
+                <div><strong>Consumer No:</strong> 1089-2244-9021</div>
+                <div><strong>Billing Month:</strong> October 2026</div>
+                <div><strong>Consumer Name:</strong> ${owner}</div>
+                <div><strong>Tariff Category:</strong> LT-1 Domestic / Commercial</div>
+                <div style="grid-column: span 2;"><strong>Supply Address:</strong> ${address}</div>
+                <div><strong>Sanctioned Load:</strong> 8.00 KW</div>
+                <div><strong>Amount Paid:</strong> ₹4,820.00 (Via UPI)</div>
+              </div>
+              <div style="margin-top:16px; padding:10px; background:#FEF3C7; border-radius:6px; font-size:12px; color:#92400E; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:16px;">✓</span>
+                <span><strong>Address Match Check:</strong> Property address matches electricity meter record perfectly.</span>
+              </div>
+            </div>
+          `;
+        } else if (type === 'DEED') {
+          inspectModalBody.innerHTML = `
+            <div style="background:#EFF6FF; border:1.5px solid #BFDBFE; border-radius:10px; padding:20px;">
+              <div style="text-align:center; border-bottom:2px solid #1D4ED8; padding-bottom:12px; margin-bottom:14px;">
+                <div style="font-size:11px; font-weight:800; letter-spacing:1px; color:#1E40AF;">GOVERNMENT OF INDIA · REGISTRATION & STAMPS DEPT</div>
+                <div style="font-size:16px; font-weight:800; color:#1E3A8A; margin-top:2px;">e-STAMP TITLE & LEASE CERTIFICATE</div>
+                <div style="font-size:11.5px; color:#3B82F6;">Certificate No: IN-MP99201940221M · Stamp Duty Paid: ₹15,000</div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:12.5px; color:#1E3A8A;">
+                <div><strong>First Party (Owner):</strong> ${owner}</div>
+                <div><strong>Property Title:</strong> ${proptitle}</div>
+                <div style="grid-column: span 2;"><strong>Registered Premises:</strong> ${address}</div>
+                <div><strong>Sub-Registrar Office:</strong> District Central-I</div>
+                <div><strong>Registration Date:</strong> 14 August 2024</div>
+              </div>
+              <div style="margin-top:16px; padding:10px; background:#DBEAFE; border-radius:6px; font-size:12px; color:#1E40AF; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:16px;">✓</span>
+                <span><strong>Titleholder Verified:</strong> Owner is confirmed genuine registered owner of the premises.</span>
+              </div>
+            </div>
+          `;
+        } else {
+          inspectModalBody.innerHTML = `
+            <div style="background:#ECFDF5; border:1.5px solid #A7F3D0; border-radius:10px; padding:20px;">
+              <div style="border-bottom:1.5px solid #059669; padding-bottom:10px; margin-bottom:12px;">
+                <strong style="color:#065F46; font-size:15px;">MUNICIPAL CORPORATION PROPERTY TAX ASSESSMENT</strong><br>
+                <span style="font-size:12px; color:#047857;">Assessment Year 2026–2027 · Paid in Full</span>
+              </div>
+              <div style="font-size:12.5px; color:#065F46; line-height:1.6;">
+                <div><strong>Property Tax PID:</strong> 104-W021-9942</div>
+                <div><strong>Assessed Owner:</strong> ${owner}</div>
+                <div><strong>Property:</strong> ${proptitle} (${address})</div>
+                <div><strong>Built-up Area:</strong> 4,200 sq.ft (Residential / Co-living)</div>
+              </div>
+              <div style="margin-top:14px; padding:8px 12px; background:#D1FAE5; border-radius:6px; font-size:12px; color:#065F46;">
+                ✓ Municipal records verify zero pending tax dues and clear property ownership.
+              </div>
+            </div>
+          `;
+        }
+
+        inspectModal.style.display = 'flex';
+      });
+    });
+
+    // Photo Inspection Handler (Bedroom, Common, Exterior)
+    const previewPhotoBtns = document.querySelectorAll('.preview-photo-btn');
+    previewPhotoBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const title = btn.getAttribute('data-title');
+        const type = btn.getAttribute('data-type');
+        const dimensions = btn.getAttribute('data-dimensions');
+        const amenities = btn.getAttribute('data-amenities');
+
+        inspectModalTitle.textContent = `Photo Inspection: ${type}`;
+        inspectModalBody.innerHTML = `
+          <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:10px; overflow:hidden;">
+            <div style="height:220px; background:#1E293B; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94A3B8; position:relative;">
+              <div style="font-size:36px; margin-bottom:8px;">📷</div>
+              <div style="font-weight:700; color:#FFFFFF; font-size:15px;">${title}</div>
+              <div style="font-size:11.5px; color:#94A3B8; margin-top:4px;">1920 × 1080 Full HD · Geotagged · Timestamp: Today</div>
+              <div style="position:absolute; top:12px; right:12px; background:rgba(16, 185, 129, 0.9); color:#FFFFFF; font-size:10px; font-weight:800; padding:2px 8px; border-radius:9999px;">
+                ✓ VERIFIED CAPTURE
+              </div>
+            </div>
+            <div style="padding:16px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12.5px; color:var(--color-text-main);">
+                <div><strong>Measured Area:</strong> ${dimensions}</div>
+                <div><strong>Natural Ventilation:</strong> Adequate window airflow</div>
+                <div style="grid-column: span 2;"><strong>Identified Features:</strong> ${amenities}</div>
+              </div>
+              <div style="margin-top:12px; font-size:12px; color:#059669; font-weight:600;">
+                ✓ Meets KiraayaGrid Space & Hygiene Standards (min 80 sq.ft requirement satisfied).
+              </div>
+            </div>
+          </div>
+        `;
+        inspectModal.style.display = 'flex';
+      });
+    });
+
+    if (closeInspectBtn) closeInspectBtn.addEventListener('click', () => { inspectModal.style.display = 'none'; });
+    if (ackInspectBtn) ackInspectBtn.addEventListener('click', () => { inspectModal.style.display = 'none'; });
+
+    // 4. Rejection Modal Handlers
+    const rejectModal = document.getElementById('rejectPropModal');
+    const rejectBtn = document.getElementById('rejectPropBtn');
+    const closeRejectPropBtn = document.getElementById('closeRejectPropBtn');
+    const cancelRejectPropBtn = document.getElementById('cancelRejectPropBtn');
+    const confirmRejectPropBtn = document.getElementById('confirmRejectPropBtn');
+    const propPredefinedReason = document.getElementById('propPredefinedReason');
+    const propCustomRejectText = document.getElementById('propCustomRejectText');
+
+    let currentActionPropId = null;
+
+    if (rejectBtn) {
+      rejectBtn.addEventListener('click', () => {
+        currentActionPropId = rejectBtn.getAttribute('data-id');
+        if (rejectModal) rejectModal.style.display = 'flex';
+      });
+    }
+
+    if (closeRejectPropBtn) closeRejectPropBtn.addEventListener('click', () => { rejectModal.style.display = 'none'; });
+    if (cancelRejectPropBtn) cancelRejectPropBtn.addEventListener('click', () => { rejectModal.style.display = 'none'; });
+
+    // 5. Toast Notification Helper
+    const toast = document.getElementById('toastAlert');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIco = document.getElementById('toastIcon');
+
+    function showToast(msg, isSuccess = true) {
+      if (!toast) return;
+      toastMsg.textContent = msg;
+      toastIco.textContent = isSuccess ? '✓' : '⚠';
+      toast.style.background = isSuccess ? '#059669' : '#DC2626';
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    // 6. Generic Action Execution (Approve, Reject, Correction)
+    function executeAction(propId, action, reviewNote, rejectionReason = '') {
+      fetch('/api/property-verification/action/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          property_id: propId,
+          action: action,
+          review_note: reviewNote,
+          rejection_reason: rejectionReason
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showToast(data.message, true);
+          setTimeout(() => {
+            window.location.reload();
+          }, 1200);
+        } else {
+          showToast(data.error || 'Failed to process decision', false);
+        }
+      })
+      .catch(err => {
+        console.error('Property action error:', err);
+        showToast('Network error processing decision', false);
+      });
+    }
+
+    // Approve Button Listener
+    const approveBtn = document.getElementById('approvePropBtn');
+    const propReviewNote = document.getElementById('propReviewNote');
+
+    if (approveBtn) {
+      approveBtn.addEventListener('click', () => {
+        const propId = approveBtn.getAttribute('data-id');
+        const note = propReviewNote ? propReviewNote.value : '';
+        approveBtn.disabled = true;
+        approveBtn.textContent = 'Approving...';
+        executeAction(propId, 'APPROVE', note);
+      });
+    }
+
+    // Confirm Reject Listener
+    if (confirmRejectPropBtn) {
+      confirmRejectPropBtn.addEventListener('click', () => {
+        const reason = propCustomRejectText.value.trim() || propPredefinedReason.value;
+        const note = propReviewNote ? propReviewNote.value : '';
+        confirmRejectPropBtn.disabled = true;
+        confirmRejectPropBtn.textContent = 'Processing...';
+        executeAction(currentActionPropId, 'REJECT', note, reason);
+      });
+    }
+
+    // Close modals on outside click or Escape
+    window.addEventListener('click', (e) => {
+      if (e.target === guidelinesModal) closeGuidelines();
+      if (e.target === inspectModal) inspectModal.style.display = 'none';
+      if (e.target === rejectModal) rejectModal.style.display = 'none';
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeGuidelines();
+        if (inspectModal) inspectModal.style.display = 'none';
+        if (rejectModal) rejectModal.style.display = 'none';
+      }
+    });
+
+    // Correction Button Listener
+    const correctionBtn = document.getElementById('correctionPropBtn');
+    if (correctionBtn) {
+      correctionBtn.addEventListener('click', () => {
+        const propId = correctionBtn.getAttribute('data-id');
+        const note = prompt('Please enter correction instructions for the property owner:', 'Please re-upload clearer room photos and electricity bill proof.');
+        if (note) {
+          executeAction(propId, 'CORRECTION', note);
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

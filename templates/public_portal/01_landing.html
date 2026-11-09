@@ -1,0 +1,1383 @@
+{% extends 'public_portal/base.html' %}
+{% load static %}
+
+{% block title %}KiraayaGrid — Find a Place That Feels Like Home | Zero Brokerage Stays{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Hero Section */
+  .hero-section {
+    position: relative;
+    min-height: 840px;
+    background: url('/static/public/images/hero_garden_apartment.png') center center / cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 180px 48px 72px;
+    color: #FFFFFF;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 37, 37, 0.55) 0%, rgba(15, 37, 37, 0.35) 40%, rgba(15, 37, 37, 0.8) 100%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .hero-eyebrow {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-tea-green);
+    margin-bottom: 20px;
+  }
+
+  .hero-heading {
+    font-family: var(--font-serif);
+    font-size: clamp(34px, 4vw, 48px);
+    font-weight: 400;
+    line-height: 1.18;
+    max-width: 820px;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+    color: #FFFFFF;
+  }
+
+  .hero-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 580px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+    font-weight: 400;
+  }
+
+  /* Floating Search Pill (1:1 with Figma) */
+  .search-pill-container {
+    background: #FFFFFF;
+    border-radius: 9999px;
+    padding: 8px 12px 8px 32px;
+    display: grid;
+    grid-template-columns: 1.6fr 1.2fr 1.2fr 1.6fr auto;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.25);
+    max-width: 1140px;
+  }
+
+  .search-cell {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 12px;
+    border-right: 1px solid #E2E8F0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .search-cell:last-of-type {
+    border-right: none;
+  }
+
+  .search-cell label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #0F172A;
+    margin-bottom: 2px;
+    display: block;
+  }
+
+  .search-cell input, .search-cell select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #64748B;
+    font-family: var(--font-sans);
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .search-cell input::placeholder {
+    color: #94A3B8;
+  }
+
+  .btn-hero-search {
+    background: #FECDD3;
+    color: #881337;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 16px 36px;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-hero-search:hover {
+    background: #FDA4AF;
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(244, 63, 94, 0.25);
+  }
+
+  .hero-trust-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 28px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .trust-badge-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-corner-tag {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.75);
+    text-transform: uppercase;
+  }
+
+  /* Section Styles */
+  .section-cream {
+    background-color: var(--color-cream-bg);
+    padding: 96px 48px;
+  }
+
+  .section-white {
+    background-color: #FFFFFF;
+    padding: 96px 48px;
+  }
+
+  .section-dark {
+    background-color: var(--color-deep-forest);
+    color: #FFFFFF;
+    padding: 96px 48px;
+  }
+
+  .section-header {
+    max-width: 1280px;
+    margin: 0 auto 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .section-pretitle {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: var(--font-serif);
+    font-size: clamp(26px, 3.2vw, 36px);
+    font-weight: 400;
+    line-height: 1.22;
+    color: #0F172A;
+    letter-spacing: -0.4px;
+  }
+
+  .section-subtitle {
+    font-size: 15px;
+    color: #64748B;
+    margin-top: 10px;
+    max-width: 620px;
+    line-height: 1.6;
+  }
+
+  .section-cta-link {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0F172A;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .section-cta-link:hover {
+    color: var(--color-burnt-peach);
+    transform: translateX(4px);
+  }
+
+  /* 2. Category Cards Row (Figma 1:1) */
+  .categories-grid {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+  }
+
+  .category-card {
+    background: #FAF6EB;
+    border-radius: 20px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 160px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    cursor: pointer;
+  }
+
+  .category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    background: #FFFFFF;
+  }
+
+  .category-card.active-card {
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+  }
+
+  .category-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .category-icon {
+    font-size: 24px;
+  }
+
+  .category-arrow {
+    font-size: 14px;
+    color: currentColor;
+    opacity: 0.7;
+  }
+
+  .category-name {
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 20px;
+  }
+
+  .category-subtext {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 4px;
+  }
+
+  /* 3. Featured Stays 3-Card Grid */
+  .stays-grid {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+
+  .stay-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stay-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  .stay-photo-wrapper {
+    position: relative;
+    aspect-ratio: 16 / 11;
+    overflow: hidden;
+    background: #E2E8F0;
+  }
+
+  .stay-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .stay-card:hover .stay-photo {
+    transform: scale(1.05);
+  }
+
+  .stay-badge-verified {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    color: #0F172A;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .stay-heart-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+  }
+
+  .stay-heart-btn:hover {
+    transform: scale(1.1);
+    background: #FFFFFF;
+  }
+
+  .stay-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .stay-type-sub {
+    font-size: 12px;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .stay-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+
+  .stay-title {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: #0F172A;
+  }
+
+  .stay-rating {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stay-locality {
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 12px;
+  }
+
+  .stay-amenities {
+    font-size: 13px;
+    color: #475569;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #F1F5F9;
+    margin-bottom: 18px;
+  }
+
+  .stay-price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+
+  .stay-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0F172A;
+  }
+
+  .stay-price span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748B;
+  }
+
+  .stay-price-note {
+    font-size: 12px;
+    color: #94A3B8;
+    margin-top: 4px;
+  }
+
+  /* 4. Cities 5-Card Grid */
+  .cities-grid {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+  }
+
+  .city-card {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: 26px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(24, 59, 59, 0.08);
+    background: #183B3B;
+    text-decoration: none;
+    display: block;
+  }
+
+  .city-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 50px rgba(24, 59, 59, 0.22);
+    border-color: rgba(221, 237, 170, 0.6);
+  }
+
+  .city-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .city-card:hover .city-bg {
+    transform: scale(1.06);
+  }
+
+  .city-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 37, 37, 0) 35%, rgba(15, 37, 37, 0.55) 70%, rgba(15, 37, 37, 0.94) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 26px 22px;
+    color: #FFFFFF;
+  }
+
+  .city-count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    background: rgba(24, 59, 59, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(221, 237, 170, 0.45);
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #DDEDAA;
+    margin-bottom: 8px;
+    width: fit-content;
+  }
+
+  .city-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10B981;
+    display: inline-block;
+  }
+
+  .city-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .city-name {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+    margin: 0;
+  }
+
+  .city-arrow {
+    font-size: 18px;
+    color: #DDEDAA;
+    transition: transform 0.25s ease;
+  }
+
+  .city-card:hover .city-arrow {
+    transform: translate(3px, -3px);
+    color: #FFFFFF;
+  }
+
+  .city-tagline {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* 5. Collections Edit 2-Card Row */
+  .collections-grid {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .collection-card {
+    background: #FFFFFF;
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+  }
+
+  .collection-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08);
+  }
+
+  .collection-photo-wrap {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+
+  .collection-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .collection-card:hover .collection-photo {
+    transform: scale(1.04);
+  }
+
+  .collection-badge {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    background: #FFFFFF;
+    color: #0F172A;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 9999px;
+  }
+
+  .collection-badge.badge-maroon {
+    background: #881337;
+    color: #FFFFFF;
+  }
+
+  .collection-body {
+    padding: 32px;
+  }
+
+  .collection-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .collection-title {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 500;
+    color: #0F172A;
+  }
+
+  .collection-desc {
+    font-size: 15px;
+    color: #64748B;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .collection-price-sub {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-burnt-peach);
+  }
+
+  /* 6. The KiraayaGrid Way Pillars */
+  .pillars-grid {
+    max-width: 1280px;
+    margin: 0 auto 64px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+
+  .pillar-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pillar-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-tea-green);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .pillar-heading {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.25;
+    color: #FFFFFF;
+  }
+
+  .pillar-desc {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.6;
+  }
+
+  .pillars-bottom-quote {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* 7. Steps Timeline (Figma 1:1) */
+  .steps-grid {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+
+  .step-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    margin-bottom: 24px;
+  }
+
+  .step-num {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 400;
+    color: #0F172A;
+  }
+
+  .step-icon {
+    font-size: 18px;
+    color: #64748B;
+  }
+
+  .step-title {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 500;
+    color: #0F172A;
+    margin-bottom: 12px;
+  }
+
+  .step-desc {
+    font-size: 15px;
+    color: #64748B;
+    line-height: 1.6;
+  }
+
+  /* 8. Host Callout Box */
+  .host-callout-card {
+    max-width: 1280px;
+    margin: 80px auto 0;
+    background: #FFFFFF;
+    border-radius: 36px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .host-callout-left {
+    padding: 72px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .host-callout-right {
+    position: relative;
+    min-height: 440px;
+  }
+
+  .host-callout-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .host-floating-pill {
+    position: absolute;
+    bottom: 28px;
+    left: 28px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border-radius: 9999px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F172A;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  /* =========================================================================
+     RESPONSIVE BREAKPOINTS (4K, Laptop L, Laptop, Tablet, Mobile L/M/S)
+     ========================================================================= */
+  @media (min-width: 1920px) {
+    .hero-content, .section-container, .footer-container {
+      max-width: 1440px !important;
+      margin: 0 auto;
+    }
+    .search-pill-container {
+      max-width: 1280px;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .cities-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Laptop & Tablet Landscape (<= 1024px) */
+  @media (max-width: 1024px) {
+    .search-pill-container {
+      grid-template-columns: 1fr 1fr;
+      border-radius: 24px;
+      padding: 18px;
+      gap: 14px;
+    }
+    .search-cell { border-right: none; }
+    .btn-hero-search { grid-column: span 2; justify-content: center; width: 100%; padding: 14px; }
+    .categories-grid { grid-template-columns: repeat(3, 1fr); }
+    .stays-grid { grid-template-columns: repeat(2, 1fr); }
+    .cities-grid { grid-template-columns: 1fr 1fr; }
+    .collections-grid { grid-template-columns: 1fr; }
+    .pillars-grid { grid-template-columns: 1fr 1fr; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .host-callout-card { grid-template-columns: 1fr; }
+  }
+
+  /* Tablet Portrait (<= 768px) */
+  @media (max-width: 768px) {
+    .hero-section {
+      padding: 130px 20px 60px;
+      min-height: auto;
+    }
+    .hero-heading {
+      font-size: clamp(30px, 5.5vw, 40px);
+    }
+    .hero-subtitle {
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+    .search-pill-container {
+      grid-template-columns: 1fr;
+      border-radius: 20px;
+      padding: 16px;
+      gap: 10px;
+    }
+    .search-cell {
+      border-right: none;
+      border-bottom: 1px solid #F1F5F9;
+      padding: 8px 6px;
+    }
+    .search-cell:last-of-type {
+      border-bottom: none;
+    }
+    .btn-hero-search {
+      grid-column: span 1;
+      width: 100%;
+    }
+    .trust-badges-row {
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .section-padding {
+      padding: 64px 20px;
+    }
+    .categories-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .stays-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .cities-grid {
+      grid-template-columns: 1fr;
+    }
+    .pillars-grid {
+      grid-template-columns: 1fr;
+    }
+    .steps-grid {
+      grid-template-columns: 1fr;
+    }
+    .host-callout-card {
+      grid-template-columns: 1fr;
+      padding: 32px 24px;
+      border-radius: 24px;
+    }
+  }
+
+  /* Mobile L (<= 425px) */
+  @media (max-width: 425px) {
+    .hero-section {
+      padding: 110px 16px 48px;
+    }
+    .hero-eyebrow {
+      font-size: 11.5px;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+    }
+    .hero-heading {
+      font-size: 28px;
+      line-height: 1.22;
+      margin-bottom: 14px;
+    }
+    .hero-subtitle {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .section-padding {
+      padding: 48px 16px;
+    }
+    .section-title {
+      font-size: 24px !important;
+    }
+    .categories-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .category-card {
+      padding: 16px;
+    }
+    .host-floating-pill {
+      left: 14px;
+      bottom: 14px;
+      font-size: 12px;
+      padding: 8px 14px;
+    }
+  }
+
+  /* Mobile M & S (<= 375px & <= 320px) */
+  @media (max-width: 375px) {
+    .hero-section {
+      padding: 95px 12px 40px;
+    }
+    .hero-heading {
+      font-size: 26px;
+    }
+    .search-pill-container {
+      padding: 12px 10px;
+      border-radius: 16px;
+    }
+    .search-cell input, .search-cell select {
+      font-size: 14px;
+    }
+    .section-padding {
+      padding: 40px 12px;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .hero-heading {
+      font-size: 23px;
+    }
+    .trust-item {
+      font-size: 11.5px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- 1. Hero Section (Figma 1:1) -->
+<section class="hero-section">
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow animate-fade-up">A new city. A familiar feeling.</div>
+    <h1 class="hero-heading animate-fade-up" style="animation-delay: 0.1s;">
+      Find a Place That <span class="apple-gradient-warm">Feels Like Home.</span>
+    </h1>
+    <p class="hero-subtitle animate-fade-up" style="animation-delay: 0.2s;">
+      Thoughtfully chosen stays. People who get you. Discover your own little corner of India, without the brokerage.
+    </p>
+
+    <!-- Floating Interactive Search Pill -->
+    <form action="{% url 'public_portal:explore_stays' %}" method="GET" class="search-pill-container animate-fade-up" style="animation-delay: 0.3s;">
+      <!-- Location -->
+      <div class="search-cell">
+        <label>Location</label>
+        <input type="text" name="q" placeholder="Where do you feel at home?" autocomplete="off">
+      </div>
+
+      <!-- City -->
+      <div class="search-cell">
+        <label>City</label>
+        <select name="city">
+          <option value="">All Cities</option>
+          {% for city in cities %}
+            <option value="{{ city.name }}">{{ city.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Budget -->
+      <div class="search-cell">
+        <label>Budget</label>
+        <select name="max_price">
+          <option value="">Your monthly budget</option>
+          <option value="12000">Under ₹12,000</option>
+          <option value="18000">Under ₹18,000</option>
+          <option value="25000">Under ₹25,000</option>
+          <option value="35000">Under ₹35,000</option>
+        </select>
+      </div>
+
+      <!-- Type -->
+      <div class="search-cell">
+        <label>Accommodation type</label>
+        <select name="type">
+          <option value="">Find your kind of stay</option>
+          <option value="PG">PG</option>
+          <option value="CO_LIVING">Co-living</option>
+          <option value="FLAT">Flat / Apartment</option>
+          <option value="HOSTEL">Hostel</option>
+        </select>
+      </div>
+
+      <!-- Search Submit Button -->
+      <button type="submit" class="btn-hero-search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Search
+      </button>
+    </form>
+
+    <!-- Trust Row -->
+    <div class="hero-trust-bar">
+      <div class="trust-badge-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-tea-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span>Verified spaces. Transparent prices. Zero brokerage.</span>
+      </div>
+      <a href="{% url 'public_portal:explore_stays' %}?city=Indore" class="hero-corner-tag">
+        The Heritage Courtyard · Indore ↗
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Room For Every Version of You (Categories) -->
+<section class="section-cream">
+  <div class="section-header">
+    <div>
+      <div class="section-pretitle">Room for every version of you</div>
+      <h2 class="section-title">Your life. Your kind of <span class="apple-gradient">space.</span></h2>
+    </div>
+  </div>
+
+  <div class="categories-grid">
+    <!-- 1. PG -->
+    <a href="{% url 'public_portal:explore_stays' %}?type=PG" class="category-card active-card">
+      <div class="category-top">
+        <span class="category-icon">🛏️</span>
+        <span class="category-arrow">↗</span>
+      </div>
+      <div>
+        <div class="category-name">PG</div>
+        <div class="category-subtext">Comfort, taken care of</div>
+      </div>
+    </a>
+
+    <!-- 2. Hostels -->
+    <a href="{% url 'public_portal:explore_stays' %}?type=HOSTEL" class="category-card">
+      <div class="category-top">
+        <span class="category-icon">🎒</span>
+        <span class="category-arrow">↗</span>
+      </div>
+      <div>
+        <div class="category-name">Hostels</div>
+        <div class="category-subtext">More stories to share</div>
+      </div>
+    </a>
+
+    <!-- 3. Private Rooms -->
+    <a href="{% url 'public_portal:explore_stays' %}?occupancy=SINGLE" class="category-card">
+      <div class="category-top">
+        <span class="category-icon">🚪</span>
+        <span class="category-arrow">↗</span>
+      </div>
+      <div>
+        <div class="category-name">Private Rooms</div>
+        <div class="category-subtext">A little space for you</div>
+      </div>
+    </a>
+
+    <!-- 4. Shared Rooms -->
+    <a href="{% url 'public_portal:explore_stays' %}?occupancy=DOUBLE" class="category-card">
+      <div class="category-top">
+        <span class="category-icon">👥</span>
+        <span class="category-arrow">↗</span>
+      </div>
+      <div>
+        <div class="category-name">Shared Rooms</div>
+        <div class="category-subtext">Better, together</div>
+      </div>
+    </a>
+
+    <!-- 5. Flats -->
+    <a href="{% url 'public_portal:explore_stays' %}?type=FLAT" class="category-card">
+      <div class="category-top">
+        <span class="category-icon">🏢</span>
+        <span class="category-arrow">↗</span>
+      </div>
+      <div>
+        <div class="category-name">Flats</div>
+        <div class="category-subtext">Make it your own</div>
+      </div>
+    </a>
+
+    <!-- 6. Co-living -->
+    <a href="{% url 'public_portal:explore_stays' %}?type=CO_LIVING" class="category-card">
+      <div class="category-top">
+        <span class="category-icon">🛋️</span>
+        <span class="category-arrow">↗</span>
+      </div>
+      <div>
+        <div class="category-name">Co-living</div>
+        <div class="category-subtext">Find your people</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- 3. Featured Stays (Some places just feel right) -->
+<section class="section-white">
+  <div class="section-header">
+    <div>
+      <div class="section-pretitle">Good places. Great beginnings.</div>
+      <h2 class="section-title">Some places just <span class="apple-gradient">feel right.</span></h2>
+      <p class="section-subtitle">Loved by residents. Checked by us. Ready for your next chapter.</p>
+    </div>
+    <a href="{% url 'public_portal:explore_stays' %}" class="section-cta-link">
+      Explore all stays ↗
+    </a>
+  </div>
+
+  <div class="stays-grid">
+    {% for stay in featured_stays %}
+    <div class="stay-card">
+      <div class="stay-photo-wrapper">
+        <img src="{{ stay.display_photo }}" alt="{{ stay.title }}" class="stay-photo">
+        <div class="stay-badge-verified">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          KiraayaGrid verified
+        </div>
+        <button type="button" class="stay-heart-btn" onclick="openAuthModal('login')" title="Save stay">♡</button>
+      </div>
+      <div class="stay-content">
+        <div class="stay-type-sub">{{ stay.display_type }}</div>
+        <div class="stay-title-row">
+          <h3 class="stay-title">{{ stay.title }}</h3>
+          <span class="stay-rating">★ {{ stay.display_rating }}</span>
+        </div>
+        <div class="stay-locality">{{ stay.locality_name }}, {{ stay.city_name }}</div>
+        <div class="stay-amenities">{{ stay.display_amenities }}</div>
+        <div class="stay-price-row">
+          <div>
+            <div class="stay-price">₹{{ stay.display_price|default:14500 }} <span>/ month</span></div>
+            <div class="stay-price-note">No brokerage · Deposit & charges shown upfront</div>
+          </div>
+          <a href="{% url 'public_portal:stay_details' stay.id %}" style="width: 36px; height: 36px; border-radius: 50%; background: #F1F5F9; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #0F172A; transition: all 0.2s;" onmouseover="this.style.background='#DDEDAA'" onmouseout="this.style.background='#F1F5F9'">
+            ↗
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 24px; background: #FFFFFF; border-radius: 20px; border: 1.5px dashed #CBD5E1; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+      <div style="font-size: 36px; margin-bottom: 12px;">🏡</div>
+      <h3 style="font-size: 19px; font-weight: 800; color: #0F172A; margin: 0 0 8px 0;">New Verified Stays Coming Soon</h3>
+      <p style="font-size: 14.5px; color: #64748B; max-width: 480px; margin: 0 auto 22px auto; line-height: 1.6;">Are you a property owner? List your property today with 100% Zero Brokerage and connect directly with tenants.</p>
+      <a href="{% url 'public_portal:list_property' %}" class="btn-get-started" style="display: inline-flex; text-decoration: none;">List Your Property ↗</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- 4. Cities Explorer (Where will life take you?) -->
+<section class="section-cream">
+  <div class="section-header">
+    <div>
+      <div class="section-pretitle">A city for every chapter</div>
+      <h2 class="section-title">Where will life <span class="apple-gradient-warm">take you?</span></h2>
+      <p class="section-subtitle">From your first job to your next adventure. Find a home in the city calling you.</p>
+    </div>
+    <a href="{% url 'public_portal:locations' %}" class="section-cta-link">
+      All locations ↗
+    </a>
+  </div>
+
+  <div class="cities-grid">
+    {% for city in city_cards %}
+    <a href="{% url 'public_portal:explore_stays' %}?city={{ city.name }}" class="city-card">
+      <img src="{{ city.photo }}?v=3" alt="{{ city.name }}" class="city-bg" loading="lazy">
+      <div class="city-overlay">
+        <div class="city-count-pill">
+          <span class="city-dot"></span>
+          {{ city.count }}
+        </div>
+        <div class="city-name-row">
+          <h3 class="city-name">{{ city.name }}</h3>
+          <span class="city-arrow">↗</span>
+        </div>
+        <div class="city-tagline">{{ city.tagline }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- 5. Curated Shortlist Collections Edit -->
+<section class="section-white">
+  <div class="section-header">
+    <div>
+      <div class="section-pretitle">Consider this your shortlist</div>
+      <h2 class="section-title">Thoughtfully chosen. <span class="apple-gradient">For you.</span></h2>
+    </div>
+    <a href="{% url 'public_portal:explore_stays' %}" class="section-cta-link">
+      Explore collections ↗
+    </a>
+  </div>
+
+  <div class="collections-grid">
+    <!-- 1. The Handpicked Edit -->
+    <a href="{% url 'public_portal:explore_stays' %}?max_price=35000" class="collection-card">
+      <div class="collection-photo-wrap">
+        <img src="/static/public/images/coll_handpicked.png" alt="Handpicked Spaces" class="collection-photo">
+        <div class="collection-badge">The Handpicked Edit</div>
+      </div>
+      <div class="collection-body">
+        <div class="collection-title-row">
+          <h3 class="collection-title">A little extra, every day.</h3>
+          <span style="font-size: 20px; font-weight: 700;">↗</span>
+        </div>
+        <p class="collection-desc">Beautiful spaces, thoughtful details and a true sense of belonging.</p>
+        <div class="collection-price-sub">Private rooms & co-living · From ₹18,500 / month</div>
+      </div>
+    </a>
+
+    <!-- 2. Smarter Starts -->
+    <a href="{% url 'public_portal:explore_stays' %}?max_price=12000" class="collection-card">
+      <div class="collection-photo-wrap">
+        <img src="/static/public/images/coll_budget.png" alt="Smarter Starts" class="collection-photo">
+        <div class="collection-badge badge-maroon">Smarter Starts</div>
+      </div>
+      <div class="collection-body">
+        <div class="collection-title-row">
+          <h3 class="collection-title">Small budget. Big possibilities.</h3>
+          <span style="font-size: 20px; font-weight: 700;">↗</span>
+        </div>
+        <p class="collection-desc">Well-chosen PGs and shared rooms. More life, less rent.</p>
+        <div class="collection-price-sub">PGs & shared rooms · Under ₹12,000 / month</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- 6. The KiraayaGrid Way (Dark Forest Teal) -->
+<section class="section-dark">
+  <div class="section-header" style="color: #FFFFFF;">
+    <div>
+      <div class="section-pretitle" style="color: var(--color-tea-green);">The KiraayaGrid Way</div>
+      <h2 class="section-title" style="color: #FFFFFF;">
+        A little more certainty. A lot more <span class="apple-gradient-gold">peace of mind.</span>
+      </h2>
+    </div>
+  </div>
+
+  <div class="pillars-grid">
+    <!-- Pillar 1 -->
+    <div class="pillar-card">
+      <div class="pillar-icon-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>Verified listings</span>
+      </div>
+      <h3 class="pillar-heading">Real spaces. Really verified.</h3>
+      <p class="pillar-desc">Our team physically inspects every listing, from the room amenities to water pressure. What you see is what you move into.</p>
+    </div>
+
+    <!-- Pillar 2 -->
+    <div class="pillar-card">
+      <div class="pillar-icon-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>Transparent pricing</span>
+      </div>
+      <h3 class="pillar-heading">The whole price. Upfront.</h3>
+      <p class="pillar-desc">Rent, security deposits, and any maintenance charges clearly laid out. No hidden costs waiting behind the welcome mat.</p>
+    </div>
+
+    <!-- Pillar 3 -->
+    <div class="pillar-card">
+      <div class="pillar-icon-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.77.77L12 20.66l7.65-7.66.77-.77a5.4 5.4 0 0 0 0-7.65z"></path></svg>
+        <span>No brokerage</span>
+      </div>
+      <h3 class="pillar-heading">Your home. Not a commission.</h3>
+      <p class="pillar-desc">Connect directly with property owners. Keep the brokerage for something that makes your new place truly yours.</p>
+    </div>
+  </div>
+
+  <div class="pillars-bottom-quote">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-tea-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+    <span>Because finding a home should feel as good as coming home.</span>
+  </div>
+</section>
+
+<!-- 7. Moving In Journey (Your next chapter, in three steps) -->
+<section class="section-cream">
+  <div class="section-header">
+    <div>
+      <div class="section-pretitle">A simpler way to settle in</div>
+      <h2 class="section-title">Your next chapter, in <span class="apple-gradient">three steps.</span></h2>
+    </div>
+  </div>
+
+  <div class="steps-grid">
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-num">01</span>
+        <span class="step-icon">🔍</span>
+      </div>
+      <h3 class="step-title">Discover</h3>
+      <p class="step-desc">Find your neighbourhood, set your budget and explore verified spaces that fit your lifestyle.</p>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-num">02</span>
+        <span class="step-icon">💬</span>
+      </div>
+      <h3 class="step-title">Connect</h3>
+      <p class="step-desc">Speak directly with the owner, ask your questions and schedule a walkthrough visit. No middlemen.</p>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-num">03</span>
+        <span class="step-icon">🔑</span>
+      </div>
+      <h3 class="step-title">Move In</h3>
+      <p class="step-desc">Love the place? Finalise the digital agreement with your host and make yourself completely at home.</p>
+    </div>
+  </div>
+
+  <!-- 8. Host Callout Box (Figma 1:1) -->
+  <div class="host-callout-card">
+    <div class="host-callout-left">
+      <div class="section-pretitle">For spaces with a little soul</div>
+      <h2 class="section-title" style="font-size: 32px; margin-bottom: 16px;">
+        A special place deserves <span class="apple-gradient-warm">the right people.</span>
+      </h2>
+      <p class="section-subtitle" style="margin-bottom: 32px;">
+        Open your doors to people looking for a home like yours. List your PG, room or flat and connect with your next resident, directly.
+      </p>
+      <div>
+        <a href="{% url 'public_portal:list_property' %}" class="btn-get-started" style="font-size: 16px; padding: 14px 32px;">
+          List Your Property ↗
+        </a>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748B; margin-top: 16px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Free to list. Simple to manage.</span>
+        </div>
+      </div>
+    </div>
+    <div class="host-callout-right">
+      <img src="/static/public/images/host_cta_banner.png" alt="Sunny Living Room" class="host-callout-img">
+      <div class="host-floating-pill">
+        <span>🏠</span>
+        <span>Good homes deserve to be found.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

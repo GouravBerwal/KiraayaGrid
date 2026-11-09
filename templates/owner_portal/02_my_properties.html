@@ -1,0 +1,482 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}My Properties — KiraayaGrid Owner Workspace{% endblock %}
+{% block page_title %}My Properties{% endblock %}
+{% block page_subtitle %}Manage your spaces, rooms and listing statuses{% endblock %}
+
+{% block content %}
+<!-- HEADER ROW -->
+<div class="owner-header-row">
+  <div>
+    <h1 class="welcome-heading">My Properties</h1>
+    <p class="welcome-subheading">View, manage rooms, pricing and verification status for all your properties.</p>
+  </div>
+  <a href="{% url 'owner_portal:add_property' %}" class="btn-primary-yale">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <span>Add New Property</span>
+  </a>
+</div>
+
+<!-- TOP SUMMARY KPI BAR (Apple Style) -->
+<div class="owner-stats-grid" style="margin-bottom: 24px;">
+  <!-- Card 1: Total Properties -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Total Properties</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ total_properties_count|stringformat:"02d" }}</div>
+    <div class="stat-meta">
+      <span class="stat-pill sage">Portfolio active</span>
+      <span class="stat-subtext">Across Bengaluru</span>
+    </div>
+  </div>
+
+  <!-- Card 2: Active & Live -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Live Listings</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ count_approved|stringformat:"02d" }}</div>
+    <div class="stat-meta">
+      <span class="stat-pill sage">100% Discoverable</span>
+      <span class="stat-subtext">Public on marketplace</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Pending Verification -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Pending Verification</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ count_pending|stringformat:"02d" }}</div>
+    <div class="stat-meta">
+      <span class="stat-pill powder">In Admin Review</span>
+      <span class="stat-subtext">Within 24 hours</span>
+    </div>
+  </div>
+
+  <!-- Card 4: Bed Occupancy -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Live Bed Occupancy</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ total_occupancy_pct }}%</div>
+    <div class="stat-meta">
+      <span class="stat-pill sage">{{ available_live_beds }} beds vacant</span>
+      <span class="stat-subtext">{{ total_live_beds }} total live beds</span>
+    </div>
+  </div>
+</div>
+
+<!-- 8 STATUS FILTER TABS ROW -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 8px 12px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+    <!-- All -->
+    <a href="?filter=all{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'all' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      All ({{ count_all }})
+    </a>
+
+    <!-- Approved / Live -->
+    <a href="?filter=approved{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'approved' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      Approved ({{ count_approved }})
+    </a>
+
+    <!-- Pending Verification -->
+    <a href="?filter=pending{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'pending' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      Pending Verification ({{ count_pending }})
+    </a>
+
+    <!-- Changes Requested -->
+    <a href="?filter=changes{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'changes' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      Changes Requested ({{ count_changes }})
+    </a>
+
+    <!-- Drafts -->
+    <a href="?filter=draft{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'draft' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      Drafts ({{ count_drafts }})
+    </a>
+
+    <!-- Paused -->
+    <a href="?filter=paused{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'paused' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      Paused ({{ count_paused }})
+    </a>
+
+    <!-- Rejected -->
+    <a href="?filter=rejected{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'rejected' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      Rejected ({{ count_rejected }})
+    </a>
+
+    <!-- Archived -->
+    <a href="?filter=archived{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       style="padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if filter_val == 'archived' %}background: var(--color-yale-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted); background: transparent;{% endif %}">
+      Archived ({{ count_archived }})
+    </a>
+  </div>
+</div>
+
+<!-- SEARCH & TOOLBAR ROW -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 12px 18px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+  <form method="GET" action="" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; width: 100%;">
+    <input type="hidden" name="filter" value="{{ filter_val }}">
+    
+    <!-- Search Input -->
+    <div style="position: relative; flex: 1; min-width: 260px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" name="q" value="{{ search_q }}" placeholder="Search by property title, locality, address or PIN..." 
+             style="width: 100%; padding: 8px 12px 8px 34px; font-size: 12.5px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); outline: none; transition: border-color 0.15s ease;">
+    </div>
+
+    <!-- Property Type Select -->
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span style="font-size: 12px; color: var(--color-text-muted); font-weight: 500;">Type:</span>
+      <select name="type" style="padding: 7px 10px; font-size: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); outline: none; background: #FFFFFF; color: var(--color-text-main); cursor: pointer;">
+        <option value="all" {% if prop_type == 'all' %}selected{% endif %}>All Types</option>
+        <option value="CO_LIVING" {% if prop_type == 'CO_LIVING' %}selected{% endif %}>Co-Living</option>
+        <option value="PG" {% if prop_type == 'PG' %}selected{% endif %}>PG</option>
+        <option value="HOSTEL" {% if prop_type == 'HOSTEL' %}selected{% endif %}>Hostel</option>
+        <option value="FLAT" {% if prop_type == 'FLAT' %}selected{% endif %}>Flat</option>
+      </select>
+    </div>
+
+    <!-- Sort By Select -->
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span style="font-size: 12px; color: var(--color-text-muted); font-weight: 500;">Sort:</span>
+      <select name="sort" style="padding: 7px 10px; font-size: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); outline: none; background: #FFFFFF; color: var(--color-text-main); cursor: pointer;">
+        <option value="updated_desc" {% if sort_by == 'updated_desc' %}selected{% endif %}>Recently Updated</option>
+        <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Name (A &rarr; Z)</option>
+        <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name (Z &rarr; A)</option>
+        <option value="occupancy_desc" {% if sort_by == 'occupancy_desc' %}selected{% endif %}>Highest Occupancy</option>
+        <option value="vacancy_desc" {% if sort_by == 'vacancy_desc' %}selected{% endif %}>Lowest Vacancy</option>
+        <option value="created_desc" {% if sort_by == 'created_desc' %}selected{% endif %}>Newest First</option>
+      </select>
+    </div>
+
+    <!-- Submit & Clear Buttons -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button type="submit" class="btn-primary-yale" style="padding: 7px 14px; font-size: 12px;">Filter</button>
+      {% if search_q or prop_type != 'all' or sort_by != 'updated_desc' or filter_val != 'all' %}
+      <a href="?filter=all" style="font-size: 12px; color: var(--color-text-muted); text-decoration: none; padding: 6px 10px;">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- PROPERTIES LIST CONTAINER -->
+<div id="propertiesList" style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 24px;">
+  {% for p in properties %}
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; display: flex; gap: 24px; box-shadow: var(--shadow-card); align-items: center; flex-wrap: wrap; transition: transform 0.15s ease, box-shadow 0.15s ease;">
+    
+    <!-- Property Thumbnail Image -->
+    <div style="width: 200px; height: 135px; border-radius: var(--radius-md); overflow: hidden; background: #E2E8F0; flex-shrink: 0; position: relative;">
+      <img src="{{ p.photo_url }}" alt="{{ p.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+      {% if p.is_draft %}
+      <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(15, 23, 42, 0.85); color: #FFFFFF; padding: 2px 7px; border-radius: 4px; font-size: 10.5px; font-weight: 600;">
+        Draft Step {{ p.current_step }} of 15
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Main Property Info -->
+    <div style="flex: 1; min-width: 280px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+        <!-- Status Badges -->
+        {% if p.status == 'APPROVED' %}
+          <span class="badge-verified-sage">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Verified & Live</span>
+          </span>
+        {% elif p.status == 'PENDING' %}
+          <span class="badge-pending-powder">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            <span>Pending Verification</span>
+          </span>
+        {% elif p.status == 'CHANGES_REQUESTED' %}
+          <span style="font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #FEF3C7; color: #92400E; display: inline-flex; align-items: center; gap: 4px;">
+            <span>✎ Changes Requested</span>
+          </span>
+        {% elif p.status == 'PAUSED' %}
+          <span style="font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #F1F5F9; color: #475569; display: inline-flex; align-items: center; gap: 4px;">
+            <span>⏸ Paused</span>
+          </span>
+        {% elif p.status == 'REJECTED' %}
+          <span style="font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #FEE2E2; color: #DC2626; display: inline-flex; align-items: center; gap: 4px;">
+            <span>✕ Rejected</span>
+          </span>
+        {% elif p.is_draft %}
+          <span style="font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #E2E8F0; color: #334155; display: inline-flex; align-items: center; gap: 4px;">
+            <span>✎ In-progress Draft</span>
+          </span>
+        {% else %}
+          <span style="font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #F1F5F9; color: #475569;">{{ p.status }}</span>
+        {% endif %}
+
+        <span style="font-size: 11.5px; color: var(--color-text-muted);">
+          {{ p.property_type_display }} · {{ p.gender_display }}
+        </span>
+      </div>
+
+      <!-- Title -->
+      <h3 style="font-size: 17.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">
+        {% if p.is_draft %}
+          {{ p.title }}
+        {% else %}
+          <a href="{% url 'owner_portal:manage_property' p.id %}" style="color: inherit; text-decoration: none;">{{ p.title }}</a>
+        {% endif %}
+      </h3>
+
+      <!-- Location -->
+      <div style="font-size: 12.5px; color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; margin-bottom: 12px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>{{ p.address_line }}, {{ p.locality }}, {{ p.city }} - {{ p.pincode }}</span>
+      </div>
+
+      <!-- Metrics Row -->
+      {% if not p.is_draft %}
+      <div style="display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--color-text-muted); margin-bottom: 10px; flex-wrap: wrap;">
+        <div><strong>{{ p.total_rooms }}</strong> Room{{ p.total_rooms|pluralize }}</div>
+        <div>•</div>
+        <div><strong>{{ p.available_beds }}</strong> Bed{{ p.available_beds|pluralize }} available ({{ p.total_beds }} total)</div>
+        <div>•</div>
+        <div>Starting from <strong style="color: var(--color-text-main); font-size: 13px;">₹{{ p.starting_rent }}</strong> / bed / mo</div>
+      </div>
+
+      <!-- Occupancy Progress Bar -->
+      <div style="max-width: 380px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11.5px; margin-bottom: 4px;">
+          <span style="color: var(--color-text-muted);">
+            {% if p.status == 'APPROVED' %}
+              {{ p.available_beds }} beds available
+            {% elif p.status == 'PENDING' %}
+              {{ p.available_beds }} beds · awaiting approval
+            {% else %}
+              {{ p.status }}
+            {% endif %}
+          </span>
+          <span style="font-weight: 600; color: var(--color-text-main); font-variant-numeric: tabular-nums;">
+            {{ p.occupancy_pct }}% occupied
+          </span>
+        </div>
+        <div style="width: 100%; height: 6px; background-color: #E2E8F0; border-radius: var(--radius-pill); overflow: hidden;">
+          <div style="height: 100%; width: {{ p.occupancy_pct }}%; background-color: {% if p.status == 'APPROVED' %}var(--color-dry-sage){% else %}#94A3B8{% endif %}; border-radius: var(--radius-pill);"></div>
+        </div>
+      </div>
+      {% else %}
+      <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px;">
+        Listing draft saved at Step {{ p.current_step }}. Ready to finish whenever you are.
+      </div>
+      {% endif %}
+
+      <div style="font-size: 11px; color: #94A3B8; margin-top: 10px;">
+        Updated {{ p.updated_at|date:"j M Y, P" }}
+      </div>
+    </div>
+
+    <!-- Action Buttons Cluster -->
+    <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; min-width: 160px;">
+      {% if not p.is_draft %}
+        <!-- Primary Action -->
+        <a href="{% url 'owner_portal:manage_property' p.id %}" class="btn-primary-yale" style="justify-content: center; font-size: 12.5px; padding: 8px 14px;">
+          <span>Manage Property</span>
+        </a>
+
+        <!-- Secondary Actions Row -->
+        <div style="display: flex; gap: 6px;">
+          <a href="{% url 'owner_portal:room_bed_management' p.id %}" class="btn-secondary-light" style="flex: 1; justify-content: center; font-size: 11.5px; padding: 6px;" title="Manage Rooms & Beds">
+            Rooms
+          </a>
+          <a href="{% url 'owner_portal:pricing_availability' %}?property={{ p.id }}" class="btn-secondary-light" style="flex: 1; justify-content: center; font-size: 11.5px; padding: 6px;" title="Update Pricing & Availability">
+            Pricing
+          </a>
+
+          <!-- More Options Dropdown Toggle -->
+          <div style="position: relative;" class="card-more-menu-wrap">
+            <button type="button" class="btn-secondary-light card-more-btn" style="padding: 6px 10px; font-weight: 700;" title="More options" aria-expanded="false">
+              •••
+            </button>
+            <div class="card-more-dropdown" style="display: none; position: absolute; right: 0; top: calc(100% + 4px); background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: 0 10px 25px -4px rgba(15,23,42,0.14); min-width: 190px; z-index: 100; padding: 6px;">
+              <a href="{% url 'owner_portal:manage_property' p.id %}" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; color: var(--color-text-main); text-decoration: none; border-radius: var(--radius-sm);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <span>View Details</span>
+              </a>
+              <a href="{% url 'owner_portal:room_bed_management' p.id %}" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; color: var(--color-text-main); text-decoration: none; border-radius: var(--radius-sm);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+                <span>Update Bed Availability</span>
+              </a>
+              <div style="height: 1px; background: var(--color-border); margin: 4px 0;"></div>
+              
+              <!-- Pause / Resume Toggle -->
+              {% if p.status == 'PAUSED' %}
+              <a href="{% url 'owner_portal:property_status_action' p.id %}?action=resume" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; color: #16A34A; text-decoration: none; border-radius: var(--radius-sm);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span>Resume Listing</span>
+              </a>
+              {% elif p.status == 'APPROVED' %}
+              <a href="{% url 'owner_portal:property_status_action' p.id %}?action=pause" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; color: #D97706; text-decoration: none; border-radius: var(--radius-sm);" onclick="return confirm('Pause this listing temporarily? It will be hidden from public search until resumed.');">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                <span>Pause Listing</span>
+              </a>
+              {% endif %}
+
+              <!-- Archive / Unarchive Toggle -->
+              {% if p.status == 'ARCHIVED' %}
+              <a href="{% url 'owner_portal:property_status_action' p.id %}?action=unarchive" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; color: var(--color-yale-blue); text-decoration: none; border-radius: var(--radius-sm);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                <span>Unarchive Listing</span>
+              </a>
+              {% else %}
+              <a href="{% url 'owner_portal:property_status_action' p.id %}?action=archive" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; color: #64748B; text-decoration: none; border-radius: var(--radius-sm);" onclick="return confirm('Archive this property? It will be stored safely in your archived tab.');">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                <span>Archive Listing</span>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <!-- Draft Actions -->
+        <a href="{% url 'owner_portal:add_property_step' p.current_step %}" class="btn-primary-yale" style="justify-content: center; font-size: 12.5px; padding: 8px 14px;">
+          <span>Continue Listing</span>
+        </a>
+        <div style="display: flex; gap: 6px;">
+          <a href="{% url 'owner_portal:delete_draft_action' p.id %}" class="btn-secondary-light" style="flex: 1; justify-content: center; font-size: 11.5px; padding: 6px; color: #DC2626;" onclick="return confirm('Are you sure you want to delete this draft?');">
+            Delete Draft
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+  {% empty %}
+  <!-- EMPTY FILTER STATE -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 48px 24px; text-align: center; box-shadow: var(--shadow-card);">
+    <div style="width: 52px; height: 52px; background: var(--color-powder-blue-light); border-radius: 14px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: var(--color-yale-blue);">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </div>
+    <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">No properties found in this filter.</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 20px; max-width: 440px; margin-left: auto; margin-right: auto;">
+      {% if search_q %}
+        No listings matching "{{ search_q }}". Try checking for spelling errors or clear your search query.
+      {% elif filter_val != 'all' %}
+        You currently don't have any properties under the "{{ filter_val|title }}" category.
+      {% else %}
+        Ready to welcome your first residents? Add your property details and submit for verification in just a few minutes.
+      {% endif %}
+    </p>
+    <div style="display: flex; justify-content: center; gap: 10px;">
+      {% if search_q or filter_val != 'all' or prop_type != 'all' %}
+      <a href="?filter=all" class="btn-secondary-light" style="padding: 9px 18px; font-size: 13px;">View All Properties</a>
+      {% endif %}
+      <a href="{% url 'owner_portal:add_property' %}" class="btn-primary-yale" style="padding: 9px 18px; font-size: 13px;">+ Add New Property</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- PAGINATION ROW (Limit 5 per page with Scroll Retention) -->
+{% if paginator.num_pages > 1 %}
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 12px;">
+  <!-- Showing Range -->
+  <div style="font-size: 12.5px; color: var(--color-text-muted);">
+    Showing <strong style="color: var(--color-text-main);">{{ page_obj.start_index }}</strong> to <strong style="color: var(--color-text-main);">{{ page_obj.end_index }}</strong> of <strong style="color: var(--color-text-main);">{{ paginator.count }}</strong> properties
+  </div>
+
+  <!-- Page Navigation Controls -->
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <!-- Previous Page -->
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&filter={{ filter_val }}{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+      &larr; Previous
+    </a>
+    {% else %}
+    <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+      &larr; Previous
+    </span>
+    {% endif %}
+
+    <!-- Page Number Pills -->
+    {% for num in paginator.page_range %}
+      {% if num == page_obj.number %}
+      <span style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; background: var(--color-yale-blue); color: #FFFFFF;">
+        {{ num }}
+      </span>
+      {% else %}
+      <a href="?page={{ num }}&filter={{ filter_val }}{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+         style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; color: var(--color-text-main); text-decoration: none; border: 1px solid var(--color-border); background: #FFFFFF;">
+        {{ num }}
+      </a>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next Page -->
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&filter={{ filter_val }}{% if search_q %}&q={{ search_q }}{% endif %}{% if prop_type != 'all' %}&type={{ prop_type }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#propertiesList" 
+       class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+      Next &rarr;
+    </a>
+    {% else %}
+    <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+      Next &rarr;
+    </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- SCRIPT FOR CARD MORE ACTIONS DROPDOWN -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const moreWraps = document.querySelectorAll('.card-more-menu-wrap');
+
+  moreWraps.forEach(wrap => {
+    const btn = wrap.querySelector('.card-more-btn');
+    const menu = wrap.querySelector('.card-more-dropdown');
+
+    if (btn && menu) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Close other open menus
+        document.querySelectorAll('.card-more-dropdown').forEach(m => {
+          if (m !== menu) m.style.display = 'none';
+        });
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+        btn.setAttribute('aria-expanded', !isOpen);
+      });
+    }
+  });
+
+  // Close menus on outside click or Esc
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.card-more-dropdown').forEach(m => m.style.display = 'none');
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.card-more-dropdown').forEach(m => m.style.display = 'none');
+    }
+  });
+});
+</script>
+
+{% endblock %}

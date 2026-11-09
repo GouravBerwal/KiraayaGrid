@@ -1,0 +1,545 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Visit {{ visit.request_id }} — {{ visit.property.title }} — KiraayaGrid{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet CSS for interactive mini-map preview -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+  @media print {
+    .tenant-sidebar, .topbar, .no-print { display: none !important; }
+    .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+    .print-sheet { border: 1px solid #000 !important; box-shadow: none !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- BACK LINK & BREADCRUMBS -->
+<div class="no-print" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <a href="{% url 'tenant_portal:visit_requests' %}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--color-text-muted); text-decoration: none; padding: 6px 12px; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 8px;">
+      <span>&larr;</span>
+      <span>Back to Visit Requests</span>
+    </a>
+    <span style="font-size: 12px; font-weight: 700; color: var(--color-text-dim); background: #F1F5F9; padding: 5px 10px; border-radius: 6px; font-family: ui-monospace, monospace;">
+      {{ visit.request_id }}
+    </span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <button type="button" onclick="window.print()" style="padding: 8px 16px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      <span>Print Walkthrough Pass</span>
+    </button>
+
+    {% if can_accept %}
+      <button type="button" onclick="acceptProposedTime('{{ visit.request_id }}')" style="padding: 8px 18px; border: none; border-radius: 8px; background: #059669; color: #FFFFFF; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+        <span>&check; Accept Proposed Time</span>
+      </button>
+    {% endif %}
+
+    {% if can_reschedule %}
+      <button type="button" onclick="openRescheduleModal()" style="padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); cursor: pointer;">
+        Reschedule Slot
+      </button>
+    {% endif %}
+
+    {% if can_cancel %}
+      <button type="button" onclick="openCancelModal()" style="padding: 8px 14px; border: 1px solid #FECACA; border-radius: 8px; background: #FEF2F2; font-size: 12.5px; font-weight: 600; color: #DC2626; cursor: pointer;">
+        Cancel Visit
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- RESCHEDULED NOTICE BANNER IF APPLICABLE -->
+{% if visit.status == 'RESCHEDULED' %}
+  <div class="no-print" style="background: #EFF6FF; border: 1px solid #BFDBFE; border-left: 4px solid #2563EB; border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+    <div>
+      <div style="font-size: 14.5px; font-weight: 800; color: #1E40AF;">
+        Host {{ owner_name }} Proposed a Revised Walkthrough Time
+      </div>
+      <div style="font-size: 13px; color: #1E3A8A; margin-top: 4px;">
+        New Proposed Slot: <strong>{{ scheduled_full_date }} &bull; {{ time_slot }}</strong>
+        {% if visit.owner_reply %}
+          <div style="font-size: 12px; color: #3B82F6; margin-top: 4px; font-style: italic;">
+            "{{ visit.owner_reply }}"
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button type="button" onclick="acceptProposedTime('{{ visit.request_id }}')" style="padding: 9px 18px; border: none; border-radius: 8px; background: #059669; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Accept This Slot
+      </button>
+      <button type="button" onclick="openRescheduleModal()" style="padding: 9px 16px; border: 1px solid #93C5FD; border-radius: 8px; background: #FFFFFF; font-size: 13px; font-weight: 600; color: #1E40AF; cursor: pointer;">
+        Propose Another Slot
+      </button>
+    </div>
+  </div>
+{% endif %}
+
+<!-- MAIN WALKTHROUGH DOSSIER CARD -->
+<div class="print-sheet" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 30px 34px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 28px;">
+  
+  <!-- Dossier Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <h1 style="font-size: 24px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+          {{ visit.property.title }}
+        </h1>
+        <span style="font-size: 12px; font-weight: 700; background: {{ status_meta.badge_bg }}; color: {{ status_meta.badge_color }}; border: 1px solid {{ status_meta.badge_border }}; padding: 4px 12px; border-radius: var(--radius-pill); display: inline-flex; align-items: center; gap: 4px;">
+          <span>{{ status_meta.icon }}</span>
+          <span>{{ status_meta.label }}</span>
+        </span>
+      </div>
+      <p style="font-size: 13px; color: var(--color-text-muted); margin: 6px 0 0 0;">
+        Walkthrough Request ID: <strong style="font-family: ui-monospace, monospace; color: var(--color-text-main);">{{ visit.request_id }}</strong> &bull; Scheduled with Host {{ owner_name }}
+      </p>
+    </div>
+
+    <!-- Quick Directions Button -->
+    <a href="https://www.google.com/maps/search/?api=1&query={{ lat }},{{ lng }}" target="_blank" class="btn-search-primary no-print" style="padding: 10px 20px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+      <span>Open in Google Maps &nearr;</span>
+    </a>
+  </div>
+
+  <!-- 3 SUMMARY DOSSIER INFO TILES -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+    
+    <!-- 1. Date & Time Tile -->
+    <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">
+          DESIGNATED DATE &amp; SLOT
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px;">
+          <div style="font-size: 28px; font-weight: 800; color: #0F3E4D; line-height: 1;">{{ scheduled_day }}</div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--color-text-main);">{{ scheduled_month }} ({{ scheduled_weekday }})</div>
+        </div>
+        <div style="font-size: 13.5px; font-weight: 700; color: #059669; margin-top: 6px;">
+          ⏰ {{ time_slot }} IST
+        </div>
+      </div>
+      <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 14px; border-top: 1px solid var(--color-border-subtle); padding-top: 10px;">
+        Please plan to arrive 5–10 minutes early at the security gate.
+      </div>
+    </div>
+
+    <!-- 2. Physical Location Tile -->
+    <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">
+          PROPERTY LOCATION
+        </div>
+        <div style="font-size: 14.5px; font-weight: 800; color: var(--color-text-main); margin-top: 8px;">
+          {{ full_address }}
+        </div>
+        <div style="font-size: 12.5px; color: var(--color-text-muted); margin-top: 4px;">
+          Near Indiranagar Metro Station &bull; Landmark: Near BDA Complex
+        </div>
+      </div>
+      <div style="font-size: 11.5px; color: #0369A1; font-weight: 600; margin-top: 14px; border-top: 1px solid var(--color-border-subtle); padding-top: 10px;">
+        📍 Metro Distance: 650 meters (7 mins walk)
+      </div>
+    </div>
+
+    <!-- 3. Host Contact Tile -->
+    <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">
+          HOST &amp; ON-SITE COORDINATOR
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+          <div style="width: 38px; height: 38px; border-radius: 50%; background: #0F3E4D; color: #FFFFFF; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center;">
+            {{ owner_initials }}
+          </div>
+          <div>
+            <div style="font-size: 14.5px; font-weight: 800; color: var(--color-text-main);">{{ owner_name }}</div>
+            <div style="font-size: 11.5px; color: #059669; font-weight: 600;">Verified Property Landlord</div>
+          </div>
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: var(--color-text-main); margin-top: 8px;">
+          {{ owner_phone }}
+        </div>
+      </div>
+      <div class="no-print" style="display: flex; gap: 8px; margin-top: 14px; border-top: 1px solid var(--color-border-subtle); padding-top: 10px;">
+        <a href="tel:{{ owner_phone }}" style="flex: 1; text-align: center; padding: 6px; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 6px; font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-decoration: none;">
+          📞 Call
+        </a>
+        <a href="https://wa.me/{{ owner_phone|cut:' '|cut:'+' }}" target="_blank" style="flex: 1; text-align: center; padding: 6px; background: #DCFCE7; border: 1px solid #BBF7D0; border-radius: 6px; font-size: 11.5px; font-weight: 700; color: #166534; text-decoration: none;">
+          💬 WhatsApp
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 2-COLUMN LOWER SECTION: LEFT (PROPERTY PREVIEW & MAP) + RIGHT (GUIDELINES & TIMELINE) -->
+  <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 24px; align-items: start;">
+    
+    <!-- LEFT: PROPERTY INFO + INTERACTIVE MAP PREVIEW -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Property Specs Card -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 14px; overflow: hidden;">
+        <div style="display: flex; flex-direction: row; height: 160px;">
+          <img src="{{ prop_photo }}" alt="{{ visit.property.title }}" style="width: 220px; height: 100%; object-fit: cover;">
+          <div style="padding: 16px 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #059669; text-transform: uppercase;">Zero Brokerage Stay</div>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--color-text-main); margin: 4px 0 2px 0;">{{ visit.property.title }}</h3>
+              <div style="font-size: 12px; color: var(--color-text-muted);">{{ locality_name }}, {{ city_name }}</div>
+            </div>
+            
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+              <div>
+                <span style="font-size: 11px; color: var(--color-text-muted); display: block;">Monthly Rent</span>
+                <strong style="font-size: 16px; color: #0F3E4D;">₹{{ rent|floatformat:0 }}</strong>
+              </div>
+              <div style="border-left: 1px solid var(--color-border); padding-left: 12px;">
+                <span style="font-size: 11px; color: var(--color-text-muted); display: block;">Security Deposit</span>
+                <strong style="font-size: 14px; color: var(--color-text-main);">₹{{ deposit|floatformat:0 }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div style="padding: 16px 20px; background: #F8FAFC; border-top: 1px solid var(--color-border); font-size: 12.5px;">
+          <div style="font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">Tenant Visit Notes:</div>
+          <div style="color: var(--color-text-muted); font-style: italic;">
+            "{{ visit.notes|default:'Standard property walkthrough requested.' }}"
+          </div>
+
+          {% if visit.owner_reply %}
+            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--color-border);">
+              <div style="font-weight: 700; color: #0F3E4D; margin-bottom: 4px;">Host Response / Gate Instructions:</div>
+              <div style="color: #1E3A8A;">
+                "{{ visit.owner_reply }}"
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Interactive Map Preview Box -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div style="padding: 14px 18px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 12.5px; font-weight: 700; color: var(--color-text-main);">📍 Location Pinpoint on OpenStreetMap</span>
+          <span style="font-size: 11.5px; color: var(--color-text-muted);">{{ lat|floatformat:4 }}, {{ lng|floatformat:4 }}</span>
+        </div>
+        <div id="visitLocationMap" style="height: 220px; width: 100%; z-index: 1;"></div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: VISIT GUIDELINES & STATUS TIMELINE -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Visit Day Guidelines Card -->
+      <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 22px;">
+        <h3 style="font-size: 14px; font-weight: 800; color: #92400E; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+          <span>🛡️</span>
+          <span>Visit Day Gate Pass Guidelines</span>
+        </h3>
+        <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; color: #78350F; line-height: 1.45;">
+          <li style="display: flex; gap: 8px;">
+            <span style="font-weight: 800; color: #B45309;">1.</span>
+            <span><strong>Identity Proof:</strong> Show any valid Government Photo ID (Aadhaar / Voter ID / Driving License) at the main security guard gate.</span>
+          </li>
+          <li style="display: flex; gap: 8px;">
+            <span style="font-weight: 800; color: #B45309;">2.</span>
+            <span><strong>Punctuality:</strong> Please arrive on time ({{ time_slot }}). If running late, please notify {{ owner_name }} directly.</span>
+          </li>
+          <li style="display: flex; gap: 8px;">
+            <span style="font-weight: 800; color: #B45309;">3.</span>
+            <span><strong>Walkthrough Coverage:</strong> You will be shown the specific room, attached bathroom, high-speed Wi-Fi router, laundry, and dining lounge.</span>
+          </li>
+          <li style="display: flex; gap: 8px;">
+            <span style="font-weight: 800; color: #B45309;">4.</span>
+            <span><strong>Instant Token:</strong> If you like the property, you can request digital rental confirmation right from your dashboard without paperwork.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Audit Timeline Card -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 14px; padding: 22px; box-shadow: var(--shadow-card);">
+        <h4 style="font-size: 13.5px; font-weight: 800; color: var(--color-text-main); margin: 0 0 16px 0;">
+          Walkthrough Status Timeline
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 18px; font-size: 12px;">
+          
+          <div style="display: flex; gap: 12px;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: #059669; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">✓</div>
+            <div>
+              <div style="font-weight: 800; color: var(--color-text-main);">Walkthrough Requested by Tenant</div>
+              <div style="color: var(--color-text-muted);">{{ visit.created_at|date:"d M Y, h:i A" }}</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            {% if visit.status != 'PENDING' %}
+              <div style="width: 20px; height: 20px; border-radius: 50%; background: #059669; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">✓</div>
+            {% else %}
+              <div style="width: 20px; height: 20px; border-radius: 50%; background: #FEF3C7; color: #92400E; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">•</div>
+            {% endif %}
+            <div>
+              <div style="font-weight: 800; color: var(--color-text-main);">
+                {% if visit.status == 'RESCHEDULED' %}
+                  Host Proposed Revised Slot
+                {% elif visit.status == 'ACCEPTED' %}
+                  Walkthrough Confirmed by Host
+                {% elif visit.status == 'CANCELLED' %}
+                  Visit Cancelled
+                {% else %}
+                  Host Confirmation Pending
+                {% endif %}
+              </div>
+              <div style="color: var(--color-text-muted);">{{ visit.updated_at|date:"d M Y, h:i A" }}</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            {% if visit.status == 'COMPLETED' %}
+              <div style="width: 20px; height: 20px; border-radius: 50%; background: #059669; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">✓</div>
+            {% else %}
+              <div style="width: 20px; height: 20px; border-radius: 50%; background: #F1F5F9; color: #94A3B8; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">3</div>
+            {% endif %}
+            <div>
+              <div style="font-weight: 800; color: var(--color-text-main);">Physical On-Site Visit</div>
+              <div style="color: var(--color-text-muted);">{{ scheduled_full_date }} &bull; {{ time_slot }}</div>
+            </div>
+          </div>
+
+        </div>
+
+        {% if related_enquiry %}
+          <div class="no-print" style="margin-top: 18px; border-top: 1px solid var(--color-border-subtle); padding-top: 14px;">
+            <a href="{% url 'tenant_portal:enquiry_details' related_enquiry.id %}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #0F3E4D; text-decoration: none;">
+              <span>💬 Open Enquiry Chat with {{ owner_name }} &rarr;</span>
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL: RESCHEDULE VISIT REQUEST -->
+<div id="rescheduleModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">Reschedule Walkthrough</h3>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin: 4px 0 0 0;">{{ visit.property.title }} &bull; {{ visit.request_id }}</p>
+      </div>
+      <button type="button" onclick="closeRescheduleModal()" style="border: none; background: #F1F5F9; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: #64748B;">✕</button>
+    </div>
+
+    <form onsubmit="handleRescheduleSubmit(event)" style="padding: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">New Preferred Date</label>
+          <input type="date" id="reschedDate" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">New Time Slot</label>
+          <select id="reschedTimeSlot" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            <option value="11:00 AM – 11:30 AM">Morning &bull; 11:00 AM – 11:30 AM</option>
+            <option value="2:00 PM – 2:30 PM">Afternoon &bull; 2:00 PM – 2:30 PM</option>
+            <option value="4:30 PM – 5:00 PM">Evening &bull; 4:30 PM – 5:00 PM</option>
+            <option value="6:00 PM – 6:30 PM">Late Evening &bull; 6:00 PM – 6:30 PM</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Reason / Note for Host</label>
+          <textarea id="reschedNotes" rows="2" placeholder="e.g. Have college exams in the morning, requesting afternoon slot." style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none; resize: none;"></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="button" onclick="closeRescheduleModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="submit" id="reschedSubmitBtn" class="btn-search-primary" style="flex: 2; padding: 11px; font-size: 13px; font-weight: 700;">
+          Submit Reschedule Request
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: CANCEL VISIT -->
+<div id="cancelModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1); padding: 26px;">
+    <div style="width: 48px; height: 48px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 16px auto;">
+      ✕
+    </div>
+    <h3 style="font-size: 18px; font-weight: 800; text-align: center; color: var(--color-text-main); margin: 0 0 8px 0;">
+      Cancel Walkthrough Visit?
+    </h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); text-align: center; margin: 0 0 22px 0; line-height: 1.5;">
+      Are you sure you want to cancel your scheduled visit for <strong>{{ visit.property.title }}</strong>? Host {{ owner_name }} will be notified immediately.
+    </p>
+
+    <div style="display: flex; gap: 12px;">
+      <button type="button" onclick="closeCancelModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Keep Visit
+      </button>
+      <button type="button" onclick="confirmCancelVisit()" id="confirmCancelBtn" style="flex: 1; padding: 11px; border: none; border-radius: 10px; background: #DC2626; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Yes, Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize Leaflet Map
+  let mapInstance = null;
+  window.addEventListener('load', function() {
+    const lat = {{ lat }};
+    const lng = {{ lng }};
+    const mapContainer = document.getElementById('visitLocationMap');
+    if (mapContainer && typeof L !== 'undefined') {
+      mapInstance = L.map('visitLocationMap', { zoomControl: false }).setView([lat, lng], 15);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(mapInstance);
+
+      // Custom Pin Marker
+      const customIcon = L.divIcon({
+        className: 'custom-pin',
+        html: `<div style="background: #0F3E4D; color: #FFFFFF; padding: 5px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; border: 2px solid #FFFFFF; box-shadow: 0 3px 8px rgba(0,0,0,0.25); white-space: nowrap;">🏡 {{ visit.property.title|escapejs }}</div>`,
+        iconSize: [120, 30],
+        iconAnchor: [60, 15]
+      });
+
+      L.marker([lat, lng], { icon: customIcon }).addTo(mapInstance)
+        .bindPopup(`<strong>{{ visit.property.title|escapejs }}</strong><br>{{ full_address|escapejs }}`)
+        .openPopup();
+    }
+  });
+
+  // Accept proposed time
+  function acceptProposedTime(requestId) {
+    if (!confirm('Accept this proposed walkthrough time slot?')) return;
+    
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/visit/accept/' + requestId + '/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        alert(data.message || 'Error accepting time slot');
+      }
+    })
+    .catch(err => alert('Network error'));
+  }
+
+  // Reschedule Modal Handlers
+  function openRescheduleModal() {
+    const modal = document.getElementById('rescheduleModal');
+    modal.style.display = 'flex';
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('reschedDate').value = tomorrow.toISOString().split('T')[0];
+  }
+  function closeRescheduleModal() {
+    document.getElementById('rescheduleModal').style.display = 'none';
+  }
+
+  function handleRescheduleSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('reschedSubmitBtn');
+    btn.disabled = true;
+    btn.innerText = 'Submitting...';
+
+    const formData = new FormData();
+    formData.append('scheduled_date', document.getElementById('reschedDate').value);
+    formData.append('scheduled_time_slot', document.getElementById('reschedTimeSlot').value);
+    formData.append('notes', document.getElementById('reschedNotes').value);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/visit/reschedule/{{ visit.request_id }}/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Reschedule Request';
+      if (data.status === 'success') {
+        closeRescheduleModal();
+        showTenantToast(data.message);
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        alert(data.message || 'Error rescheduling');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Reschedule Request';
+      alert('Network error');
+    });
+  }
+
+  // Cancel Modal Handlers
+  function openCancelModal() {
+    document.getElementById('cancelModal').style.display = 'flex';
+  }
+  function closeCancelModal() {
+    document.getElementById('cancelModal').style.display = 'none';
+  }
+
+  function confirmCancelVisit() {
+    const btn = document.getElementById('confirmCancelBtn');
+    btn.disabled = true;
+    btn.innerText = 'Cancelling...';
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/visit/cancel/{{ visit.request_id }}/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Yes, Cancel';
+      if (data.status === 'success') {
+        closeCancelModal();
+        showTenantToast(data.message);
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        alert(data.message || 'Error cancelling visit');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Yes, Cancel';
+      alert('Network error');
+    });
+  }
+</script>
+{% endblock %}

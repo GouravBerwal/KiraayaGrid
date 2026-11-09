@@ -1,0 +1,494 @@
+{% extends 'public_portal/base.html' %}
+{% load static %}
+
+{% block title %}About Us & Founder Spotlight · Radical Rental Transparency · KiraayaGrid{% endblock %}
+
+{% block meta_description %}Learn about KiraayaGrid's mission to eliminate predatory rental brokerage with engineering rigor. Founded by Gourav Gurjar, Ex-FAANG distributed systems architect.{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     APPLE OFFICIAL WEBSITE DESIGN LANGUAGE — ABOUT US & FOUNDER SPOTLIGHT
+     ========================================================================== */
+
+  :root {
+    --apple-bg: #F5F5F7;
+    --apple-card-bg: #FFFFFF;
+    --apple-text-dark: #1D1D1F;
+    --apple-text-secondary: #86868B;
+    --apple-text-tertiary: #6E6E73;
+    --apple-border: rgba(0, 0, 0, 0.08);
+    --apple-border-light: rgba(0, 0, 0, 0.04);
+    --apple-emerald: #10B981;
+    --apple-deep-forest: #183B3B;
+  }
+
+  body {
+    background-color: var(--apple-bg);
+  }
+
+  /* Apple Hero */
+  .apple-about-hero {
+    position: relative;
+    padding: 130px 24px 64px;
+    max-width: 1320px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .apple-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    background: rgba(24, 59, 59, 0.06);
+    border: 1px solid rgba(24, 59, 59, 0.12);
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-deep-forest);
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .apple-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    animation: applePulse 2s infinite;
+  }
+
+  @keyframes applePulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .apple-about-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-size: clamp(28px, 3.5vw, 38px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--apple-text-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+
+  .apple-about-subtitle {
+    font-size: 16px;
+    color: var(--apple-text-tertiary);
+    line-height: 1.55;
+    max-width: 760px;
+    margin: 0 auto 30px;
+  }
+
+  /* Founder Spotlight Luxury Bento Card */
+  .apple-founder-section {
+    max-width: 1240px;
+    margin: 0 auto 96px;
+    padding: 0 24px;
+  }
+
+  .apple-founder-card {
+    background: #FFFFFF;
+    border-radius: 36px;
+    padding: 56px;
+    border: 1px solid var(--apple-border);
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.08);
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 56px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .founder-photo-container {
+    position: relative;
+    border-radius: 30px;
+    overflow: hidden;
+    aspect-ratio: 4 / 4.6;
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.16);
+    background: #E2E8F0;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .founder-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .founder-photo-container:hover .founder-photo-img {
+    transform: scale(1.04);
+  }
+
+  .founder-tag-pill-floating {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #FFFFFF;
+    padding: 10px 14px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  /* Content Column */
+  .founder-details-col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .founder-leadership-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-burnt-peach);
+    margin-bottom: 8px;
+  }
+
+  .founder-name-heading {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--apple-text-dark);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .founder-role-sub {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--apple-text-tertiary);
+    margin-bottom: 22px;
+  }
+
+  .founder-quote-card {
+    background: var(--apple-bg);
+    border-left: 4px solid var(--color-burnt-peach);
+    padding: 18px 24px;
+    border-radius: 0 16px 16px 0;
+    font-size: 17px;
+    font-weight: 600;
+    font-style: italic;
+    color: #1E293B;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
+  .founder-bio-text {
+    font-size: 15px;
+    color: #475569;
+    line-height: 1.7;
+    margin-bottom: 26px;
+  }
+
+  /* Engineering Credential Chips */
+  .founder-credentials-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .credential-chip-item {
+    background: #F1F5F9;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    border: 1px solid #E2E8F0;
+  }
+
+  /* Verified Metrics Bar */
+  .founder-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding-top: 24px;
+    border-top: 1px solid #F1F5F9;
+  }
+
+  .metric-num-big {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--color-deep-forest);
+    line-height: 1;
+  }
+
+  .metric-label-sub {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+
+  /* The 4 Standards Bento Grid */
+  .apple-standards-section {
+    background: #FFFFFF;
+    padding: 96px 24px;
+    border-top: 1px solid var(--apple-border);
+    border-bottom: 1px solid var(--apple-border);
+  }
+
+  .standards-container {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .standards-four-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    margin-top: 52px;
+  }
+
+  .standard-bento-tile {
+    background: var(--apple-bg);
+    border-radius: 24px;
+    padding: 32px 26px;
+    border: 1px solid var(--apple-border);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .standard-bento-tile:hover {
+    transform: translateY(-4px);
+    background: #FFFFFF;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+    border-color: var(--color-deep-forest);
+  }
+
+  .standard-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #DDEDAA;
+    color: #183B3B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .standard-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    margin-bottom: 10px;
+  }
+
+  .standard-desc {
+    font-size: 14px;
+    color: #64748B;
+    line-height: 1.6;
+  }
+
+  /* Help & Support Hub */
+  .support-concierge-card {
+    margin-top: 64px;
+    background: #FFFFFF;
+    border: 1px solid var(--apple-border);
+    border-radius: 28px;
+    padding: 44px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  /* =========================================================================
+     RESPONSIVE BREAKPOINTS (4K, Laptop L, Laptop, Tablet, Mobile L/M/S)
+     ========================================================================= */
+  @media (min-width: 1920px) {
+    .apple-about-hero, .apple-about-body {
+      max-width: 1440px !important;
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 1080px) {
+    .apple-founder-card { grid-template-columns: 1fr; }
+    .founder-photo-container { max-width: 380px; margin: 0 auto; }
+    .standards-four-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .apple-about-hero { padding: 105px 20px 28px; }
+    .apple-about-body { padding: 0 16px 64px; }
+    .apple-founder-card { padding: 32px 20px; border-radius: 24px; }
+    .support-concierge-card { padding: 28px 20px; border-radius: 22px; }
+    .standards-four-grid { grid-template-columns: 1fr; }
+    .founder-headline { font-size: 26px; }
+  }
+
+  @media (max-width: 425px) {
+    .apple-about-hero { padding: 95px 14px 20px; }
+    .apple-about-body { padding: 0 12px 48px; }
+    .apple-founder-card { padding: 24px 16px; border-radius: 20px; }
+    .founder-metrics-grid { grid-template-columns: 1fr; gap: 12px; }
+    .support-concierge-card { padding: 22px 16px; }
+    .founder-headline { font-size: 22px; }
+    .support-links-row { flex-direction: column; align-items: stretch; }
+  }
+
+  @media (max-width: 340px) {
+    .apple-about-hero { padding: 85px 10px 16px; }
+    .apple-about-body { padding: 0 10px 36px; }
+    .apple-founder-card { padding: 18px 12px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main style="overflow-x: hidden;">
+
+  <!-- Apple Hero Section -->
+  <section class="apple-about-hero">
+    <!-- Aurora background glow -->
+    <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 850px; height: 380px; background: radial-gradient(circle, rgba(147, 181, 198, 0.22) 0%, rgba(221, 237, 170, 0.16) 40%, transparent 70%); pointer-events: none; z-index: 0;"></div>
+
+    <div style="position: relative; z-index: 1;">
+      <!-- Pill Badge -->
+      <div class="apple-badge-pill">
+        <span class="apple-pulse-dot"></span>
+        The KiraayaGrid Philosophy · Built with Engineering Rigor
+      </div>
+
+      <!-- Main Headline with Apple Gradient -->
+      <h1 class="apple-about-title">
+        Built for real people. <br>
+        <span class="apple-gradient-warm">Engineered for zero compromise.</span>
+      </h1>
+
+      <p class="apple-about-subtitle">
+        We believe that moving to a new city should be an empowering new chapter — never an exploitative trap of brokerage haircuts, manipulated photos, and disputed deposits.
+      </p>
+    </div>
+  </section>
+
+  <!-- Founder Spotlight Luxury Bento Card -->
+  <section class="apple-founder-section">
+    <div class="apple-founder-card">
+      
+      <!-- Founder Portrait (High-Res, Prominent Size) -->
+      <div class="founder-photo-container">
+        <img src="{{ founder.photo }}" alt="{{ founder.name }}" class="founder-photo-img" loading="eager">
+        <div class="founder-tag-pill-floating">
+          🛡️ {{ founder.credentials }}
+        </div>
+      </div>
+
+      <!-- Founder Leadership Bio & Story -->
+      <div class="founder-details-col">
+        <div class="founder-leadership-eyebrow">Engineering Leadership Spotlight</div>
+        <h2 class="founder-name-heading">{{ founder.name }}</h2>
+        <div class="founder-role-sub">{{ founder.role }} · KiraayaGrid Technologies</div>
+
+        <div class="founder-quote-card">
+          "{{ founder.mission_headline }}"
+        </div>
+
+        <p class="founder-bio-text">
+          {{ founder.full_story|linebreaksbr }}
+        </p>
+
+        <!-- Engineering Credentials Tags -->
+        <div class="founder-credentials-wrap">
+          <span class="credential-chip-item">🚀 Distributed Systems Architecture</span>
+          <span class="credential-chip-item">💎 Apple-Grade Product Craft</span>
+          <span class="credential-chip-item">⚖️ Zero-Commission Protocol</span>
+          <span class="credential-chip-item">⚡ Sub-Second Verification Engine</span>
+          <span class="credential-chip-item">🇮🇳 Built for Urban India</span>
+        </div>
+
+        <!-- Verified Platform Metrics -->
+        <div class="founder-metrics-grid">
+          {% for stat in founder.stats %}
+          <div>
+            <div class="metric-num-big">{{ stat.num }}</div>
+            <div class="metric-label-sub">{{ stat.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- The Four Engineering Standards -->
+  <section class="apple-standards-section" id="trust">
+    <div class="standards-container">
+      <div style="text-align: center; max-width: 680px; margin: 0 auto;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 8px;">The Four Standards</div>
+        <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: clamp(24px, 2.8vw, 32px); font-weight: 700; color: var(--apple-text-dark); letter-spacing: -0.02em;">
+          How we safeguard every <span class="apple-gradient-warm">resident & homeowner.</span>
+        </h2>
+      </div>
+
+      <div class="standards-four-grid">
+        {% for pillar in founder.pillars %}
+        <div class="standard-bento-tile">
+          <div class="standard-icon-circle">
+            {% if forloop.counter == 1 %}💸{% elif forloop.counter == 2 %}📍{% elif forloop.counter == 3 %}💬{% else %}✨{% endif %}
+          </div>
+          <h3 class="standard-title">{{ pillar.title }}</h3>
+          <p class="standard-desc">{{ pillar.desc }}</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Help & Support Concierge Desk -->
+      <div id="help" class="support-concierge-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 28px;">
+          <div style="max-width: 580px;">
+            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 6px;">Concierge & Resident Care</div>
+            <h3 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 22px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">
+              We're here whenever you need us.
+            </h3>
+            <p style="font-size: 15px; color: #64748B; line-height: 1.6; margin: 0;">
+              Have questions regarding verified walkthroughs, digital lease agreements, or listing your accommodation? Our dedicated concierge support is active 7 days a week.
+            </p>
+          </div>
+          <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+            <a href="mailto:hello@kiraayagrid.in" class="btn-get-started" style="padding: 14px 28px; font-size: 14px; border-radius: 9999px;">
+              Email Concierge ↗
+            </a>
+            <a href="tel:+918045678900" style="padding: 14px 24px; font-size: 14px; font-weight: 700; border-radius: 9999px; border: 1px solid #CBD5E1; color: #0F172A; background: #F8FAFC; text-decoration: none;">
+              Call +91 80 4567 8900
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Action Bar -->
+      <div style="margin-top: 56px; text-align: center; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <a href="{% url 'public_portal:explore_stays' %}" class="btn-get-started" style="padding: 16px 36px; font-size: 15px; border-radius: 9999px;">
+          Explore Verified Stays ↗
+        </a>
+        <a href="{% url 'public_portal:list_property' %}" style="padding: 16px 30px; font-size: 15px; font-weight: 700; border-radius: 9999px; border: 1px solid #CBD5E1; color: #0F172A; background: #FFFFFF; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          List Your Property Free ↗
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+{% endblock %}

@@ -1,0 +1,1611 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Notifications — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Notifications{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/13_notifications.css' %}?v=6.0">
+  <style>
+    /* ==============================================================
+       SCREEN 13 NOTIFICATIONS — APPLE/FAANG-GRADE STYLES (v6.0)
+       ============================================================== */
+    
+    /* TOP 4 ELEVATED KPI METRICS CARDS */
+    .notif-stats-grid-4 {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 18px !important;
+      margin-bottom: 22px !important;
+    }
+
+    @media (max-width: 1080px) {
+      .notif-stats-grid-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    .notif-stat-box {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 16px !important;
+      padding: 20px 22px !important;
+      position: relative !important;
+      overflow: hidden !important;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .notif-stat-box:hover {
+      transform: translateY(-3px) !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .notif-stat-box::before {
+      content: "" !important;
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      right: 0 !important;
+      height: 4px !important;
+      background: #1C5D99 !important;
+    }
+
+    .notif-stat-box:nth-child(2)::before { background: #639FAB !important; }
+    .notif-stat-box:nth-child(3)::before { background: #059669 !important; }
+    .notif-stat-box:nth-child(4)::before { background: #D97706 !important; }
+
+    .notif-stat-lbl {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #64748B !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.4px !important;
+      margin-bottom: 6px !important;
+    }
+
+    .notif-stat-val {
+      font-size: 24px !important;
+      font-weight: 800 !important;
+      color: #0F172A !important;
+      line-height: 1.1 !important;
+      margin-bottom: 6px !important;
+    }
+
+    .notif-stat-trend {
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      color: #059669 !important;
+    }
+
+    .notif-stat-trend.neutral {
+      color: #64748B !important;
+    }
+
+    /* SINGLE-LINE RESPONSIVE FILTER TOOLBAR */
+    .notif-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      padding-bottom: 4px !important;
+    }
+
+    .notif-search-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      padding: 8px 12px !important;
+      flex: 1 1 auto !important;
+      min-width: 250px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .notif-search-wrap:focus-within {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .notif-search-icon {
+      color: #64748B !important;
+      flex-shrink: 0 !important;
+    }
+
+    .notif-search-input {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      width: 100% !important;
+      font-size: 13px !important;
+      color: #0F172A !important;
+      font-weight: 500 !important;
+    }
+
+    .notif-filter-select {
+      width: auto !important;
+      min-width: 140px !important;
+      padding: 8px 30px 8px 12px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+    }
+
+    .notif-filter-select:focus {
+      outline: none !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .notif-btn {
+      padding: 8px 16px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 9px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      text-decoration: none !important;
+      transition: all 0.15s ease !important;
+    }
+
+    /* COMPOSER & PREVIEW SPLIT GRID */
+    .composer-split-grid {
+      display: grid !important;
+      grid-template-columns: 1.25fr 1fr !important;
+      gap: 24px !important;
+      align-items: stretch !important;
+      margin-bottom: 24px !important;
+    }
+
+    @media (max-width: 1040px) {
+      .composer-split-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* ELEVATED COMPOSER & PREVIEW CARDS */
+    .composer-main-card {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-top: 4px solid #1C5D99 !important;
+      border-radius: 20px !important;
+      padding: 26px !important;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+
+    .preview-main-card {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-top: 4px solid #639FAB !important;
+      border-radius: 20px !important;
+      overflow: hidden !important;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+
+    /* RICH CHANNEL TOGGLE CHIPS */
+    .channels-pill-group {
+      display: flex !important;
+      gap: 10px !important;
+      flex-wrap: wrap !important;
+      margin-bottom: 16px !important;
+    }
+
+    .channel-pill-item {
+      padding: 7px 15px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 30px !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      background: #FFFFFF !important;
+      color: #475569 !important;
+      user-select: none !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 7px !important;
+    }
+
+    .channel-pill-item:hover {
+      border-color: #94A3B8 !important;
+      background: #F8FAFC !important;
+    }
+
+    .channel-pill-item.active {
+      background: #EFF6FF !important;
+      border-color: #1C5D99 !important;
+      color: #1C5D99 !important;
+      box-shadow: 0 2px 8px rgba(28, 93, 153, 0.15) !important;
+    }
+
+    .channel-pill-item input {
+      display: none !important;
+    }
+
+    /* EDITOR TOOLBAR */
+    .editor-toolbar-clean {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      background: #F8FAFC !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-bottom: none !important;
+      border-radius: 10px 10px 0 0 !important;
+      padding: 6px 10px !important;
+    }
+
+    .editor-btn-tool {
+      background: #FFFFFF !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 6px !important;
+      padding: 3px 8px !important;
+      font-size: 11.5px !important;
+      font-weight: 700 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .editor-btn-tool:hover {
+      background: #EFF6FF !important;
+      color: #1C5D99 !important;
+      border-color: #1C5D99 !important;
+    }
+
+    .editor-btn-tag {
+      background: #EFF6FF !important;
+      border: 1px solid #BFDBFE !important;
+      color: #1C5D99 !important;
+      border-radius: 6px !important;
+      padding: 3px 8px !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .editor-btn-tag:hover {
+      background: #DBEAFE !important;
+    }
+
+    .editor-textarea-custom {
+      width: 100% !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 0 0 10px 10px !important;
+      padding: 12px 14px !important;
+      font-size: 13.5px !important;
+      font-family: inherit !important;
+      line-height: 1.6 !important;
+      color: #0F172A !important;
+      outline: none !important;
+      resize: vertical !important;
+      transition: border 0.15s ease !important;
+    }
+
+    .editor-textarea-custom:focus {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    /* DEVICE PREVIEW SEGMENTED SWITCHER */
+    .preview-device-segmented {
+      display: inline-flex !important;
+      align-items: center !important;
+      background: #E2E8F0 !important;
+      border-radius: 9px !important;
+      padding: 3px !important;
+      gap: 2px !important;
+    }
+
+    .device-switch-btn {
+      padding: 5px 12px !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      color: #64748B !important;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 7px !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+    }
+
+    .device-switch-btn:hover {
+      color: #0F172A !important;
+    }
+
+    .device-switch-btn.active {
+      background: #FFFFFF !important;
+      color: #1C5D99 !important;
+      font-weight: 700 !important;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    /* IPHONE / MOBILE NOTIFICATION MOCKUP */
+    .iphone-frame-wrapper {
+      background: #0F172A !important;
+      border-radius: 28px !important;
+      padding: 14px !important;
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3) !important;
+      width: 100% !important;
+      max-width: 380px !important;
+      margin: 0 auto !important;
+    }
+
+    .iphone-screen {
+      background: #F8FAFC !important;
+      border-radius: 20px !important;
+      padding: 14px 16px 20px !important;
+      position: relative !important;
+      min-height: 250px !important;
+    }
+
+    .iphone-top-bar {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin-bottom: 14px !important;
+    }
+
+    .iphone-island {
+      width: 80px !important;
+      height: 18px !important;
+      background: #0F172A !important;
+      border-radius: 20px !important;
+    }
+
+    .ios-notif-card {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border-radius: 16px !important;
+      padding: 12px 14px !important;
+      box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.12) !important;
+      border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    }
+
+    /* MODAL WINDOWS */
+    .modal-backdrop {
+      display: none !important;
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(15, 23, 42, 0.72) !important;
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+      z-index: 99999 !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px !important;
+    }
+
+    .modal-backdrop.open {
+      display: flex !important;
+    }
+
+    .modal-content-box {
+      background: #FFFFFF !important;
+      border-radius: 18px !important;
+      width: 100% !important;
+      max-width: 600px !important;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4) !important;
+      overflow: hidden !important;
+      animation: modalScaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      border: 1px solid #E2E8F0 !important;
+      max-height: 90vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    @keyframes modalScaleUp {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 18px 24px !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #F8FAFC !important;
+    }
+
+    .modal-title {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin: 0 !important;
+    }
+
+    .modal-close-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      width: 32px !important;
+      height: 32px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+      color: #64748B !important;
+      cursor: pointer !important;
+    }
+
+    .modal-close-btn:hover {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+    }
+
+    .modal-body {
+      padding: 22px 24px !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 14px !important;
+    }
+
+    .modal-footer {
+      padding: 16px 24px !important;
+      border-top: 1px solid #E2E8F0 !important;
+      background: #F8FAFC !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 12px !important;
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast-container {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 99999 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 10px !important;
+      pointer-events: none !important;
+    }
+
+    .toast {
+      pointer-events: auto !important;
+      background: #0F172A !important;
+      color: #FFFFFF !important;
+      padding: 12px 18px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      animation: toastIn 0.25s ease !important;
+    }
+
+    .toast.success { background: #065F46 !important; border-left: 4px solid #34D399 !important; }
+    .toast.error { background: #991B1B !important; border-left: 4px solid #F87171 !important; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     PAGE HEADER
+     ============================================================== -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Notifications</h1>
+    <p class="page-subtitle">Send relevant updates to the right audience through email, SMS and platform announcements.</p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 'admin_portal:notification_export_csv' %}?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}" class="btn btn-outline" title="Export Campaigns CSV">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Export CSV
+    </a>
+    <button type="button" class="btn btn-outline" onclick="openManageTemplatesModal()">
+      <span>📑</span> Manage templates
+    </button>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOP 4 ELEVATED METRIC KPI CARDS
+     ============================================================== -->
+<div class="notif-stats-grid-4">
+  <div class="notif-stat-box">
+    <div class="notif-stat-lbl">Campaigns Broadcast</div>
+    <div class="notif-stat-val">{{ count_sent }}</div>
+    <div class="notif-stat-trend">↑ 14.2% MoM delivery</div>
+  </div>
+  <div class="notif-stat-box">
+    <div class="notif-stat-lbl">Audience Reach</div>
+    <div class="notif-stat-val">{{ audience_reach_display }}</div>
+    <div class="notif-stat-trend neutral">Across top 5 cities</div>
+  </div>
+  <div class="notif-stat-box">
+    <div class="notif-stat-lbl">Avg Open Rate</div>
+    <div class="notif-stat-val">{{ avg_open_rate }}</div>
+    <div class="notif-stat-trend">↑ 2.8 pts above benchmark</div>
+  </div>
+  <div class="notif-stat-box">
+    <div class="notif-stat-lbl">Scheduled Queues</div>
+    <div class="notif-stat-val">{{ count_scheduled }}</div>
+    <div class="notif-stat-trend neutral">Next: 07 Nov 11:00 IST</div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     NAV TABS STRIP
+     ============================================================== -->
+<div class="nav-tab-strip">
+  <a href="?tab=compose" class="tab-btn {% if tab == 'compose' %}active{% endif %}">Compose announcement</a>
+  <a href="?tab=sent" class="tab-btn {% if tab == 'sent' %}active{% endif %}">Sent · {{ count_sent }}</a>
+  <a href="?tab=scheduled" class="tab-btn {% if tab == 'scheduled' %}active{% endif %}">Scheduled · {{ count_scheduled }}</a>
+  <a href="?tab=drafts" class="tab-btn {% if tab == 'drafts' %}active{% endif %}">Drafts · {{ count_drafts }}</a>
+  <a href="?tab=all" class="tab-btn {% if tab == 'all' %}active{% endif %}">All campaigns · {{ count_all }}</a>
+</div>
+
+<!-- ==============================================================
+     SINGLE-LINE FILTER TOOLBAR
+     ============================================================== -->
+<form method="GET" action="{% url 'admin_portal:notifications' %}" class="notif-filter-toolbar">
+  <input type="hidden" name="tab" value="{{ tab }}">
+
+  <!-- Search Input -->
+  <div class="notif-search-wrap">
+    <span class="notif-search-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </span>
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Search campaigns by subject, keyword, city, audience..." class="notif-search-input">
+  </div>
+
+  <!-- Channel Filter -->
+  <select name="channel" class="notif-filter-select" onchange="this.form.submit()">
+    <option value="">All channels</option>
+    <option value="Email" {% if channel_filter == 'Email' %}selected{% endif %}>Email</option>
+    <option value="Platform" {% if channel_filter == 'Platform' %}selected{% endif %}>Platform / In-App</option>
+    <option value="SMS" {% if channel_filter == 'SMS' %}selected{% endif %}>SMS</option>
+    <option value="WhatsApp" {% if channel_filter == 'WhatsApp' %}selected{% endif %}>WhatsApp</option>
+  </select>
+
+  <!-- City Filter -->
+  <select name="city" class="notif-filter-select" onchange="this.form.submit()">
+    <option value="">All cities</option>
+    {% for c in cities %}
+      <option value="{{ c.name }}" {% if city_filter == c.name %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Status Filter -->
+  <select name="status" class="notif-filter-select" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <option value="SENT" {% if status_filter == 'SENT' %}selected{% endif %}>Sent</option>
+    <option value="SCHEDULED" {% if status_filter == 'SCHEDULED' %}selected{% endif %}>Scheduled</option>
+    <option value="DRAFT" {% if status_filter == 'DRAFT' %}selected{% endif %}>Draft</option>
+  </select>
+
+  <!-- Buttons -->
+  <button type="submit" class="notif-btn" style="background: #1C5D99; color: #FFFFFF; border: none;">Filter</button>
+  {% if search_q or channel_filter or city_filter or status_filter %}
+    <a href="?tab={{ tab }}" class="notif-btn" style="background: #F1F5F9; color: #475569; border: 1.5px solid #CBD5E1;">Reset</a>
+  {% endif %}
+</form>
+
+{% if tab == 'compose' %}
+  <!-- ==============================================================
+       COMPOSER & LIVE PREVIEW SPLIT GRID (COMPOSE TAB)
+       ============================================================== -->
+  <div class="composer-split-grid">
+
+    <!-- LEFT COMPOSER FORM CARD -->
+    <div class="composer-main-card">
+      <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+          <h3 style="font-size: 17px; font-weight: 700; color: #0F172A; margin: 0;">New announcement</h3>
+          <span style="font-size: 11px; font-weight: 700; color: #1C5D99; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 2px 8px; border-radius: 6px;">Draft Active</span>
+        </div>
+        <p style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Compose multi-channel broadcast for property owners and tenants.</p>
+
+        <form id="announcementComposerForm">
+          <div class="two-col-inputs mb-14" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Target Audience</label>
+              <select class="form-select" id="composeAudience" onchange="updateAudienceEstimates()" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; background: #FFFFFF;">
+                <option value="VERIFIED_OWNERS" selected>Verified property owners</option>
+                <option value="ALL_OWNERS">All property owners</option>
+                <option value="ALL_TENANTS">All active tenants</option>
+                <option value="ALL_USERS">All registered users</option>
+                <option value="UNVERIFIED_OWNERS">Unverified owners (KYC pending)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Target Location</label>
+              <select class="form-select" id="composeLocation" onchange="updateAudienceEstimates()" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; background: #FFFFFF;">
+                <option value="Bengaluru" selected>Bengaluru</option>
+                <option value="All cities">All cities</option>
+                <option value="Pune">Pune</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi NCR">Delhi NCR</option>
+                <option value="Hyderabad">Hyderabad</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Channel Selection Pills -->
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">DELIVERY CHANNELS</label>
+            <div class="channels-pill-group">
+              <label class="channel-pill-item active" id="chipEmail" onclick="toggleChannelChip('chipEmail')">
+                <input type="checkbox" id="chkEmail" checked> <span>✉️ Email</span>
+              </label>
+              <label class="channel-pill-item active" id="chipPlatform" onclick="toggleChannelChip('chipPlatform')">
+                <input type="checkbox" id="chkPlatform" checked> <span>📱 In-App Mobile</span>
+              </label>
+              <label class="channel-pill-item" id="chipSMS" onclick="toggleChannelChip('chipSMS')">
+                <input type="checkbox" id="chkSMS"> <span>💬 SMS</span>
+              </label>
+              <label class="channel-pill-item" id="chipWhatsApp" onclick="toggleChannelChip('chipWhatsApp')">
+                <input type="checkbox" id="chkWhatsApp"> <span>🟢 WhatsApp</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Subject Line -->
+          <div class="form-group mb-14" style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; margin: 0;">Subject line / Title</label>
+              <span id="subjectCharCount" style="font-size: 11.5px; font-weight: 600; color: #64748B;">39 / 80 characters</span>
+            </div>
+            <input type="text" class="form-input" id="composeSubject" value="Make your listing stand out this November" oninput="syncLivePreview()" maxlength="80" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13.5px;">
+          </div>
+
+          <!-- Rich Message Editor -->
+          <div class="form-group mb-14" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Announcement body</label>
+            
+            <div class="editor-toolbar-clean">
+              <button type="button" class="editor-btn-tool" onclick="wrapTextareaSelection('**', '**')">B</button>
+              <button type="button" class="editor-btn-tool" onclick="wrapTextareaSelection('*', '*')">I</button>
+              <button type="button" class="editor-btn-tool" onclick="wrapTextareaSelection('__', '__')">U</button>
+              <span style="color: #CBD5E1; margin: 0 4px;">|</span>
+              <button type="button" class="editor-btn-tool" onclick="insertLinkPrompt()">🔗 Link</button>
+              <button type="button" class="editor-btn-tag" onclick="insertVariable('{owner_name}')">+ {owner_name}</button>
+              <button type="button" class="editor-btn-tag" onclick="insertVariable('{city}')">+ {city}</button>
+              <button type="button" class="editor-btn-tag" onclick="insertVariable('{platform_name}')">+ {platform_name}</button>
+            </div>
+            <textarea class="editor-textarea-custom" id="composeMessage" rows="5" oninput="syncLivePreview()">Hi {owner_name},
+
+Help more tenants find their next home. Update your room availability, add recent photos and confirm your amenities to keep your KiraayaGrid listing fresh.
+
+You can manage everything from your owner dashboard.</textarea>
+          </div>
+
+          <!-- CTA Config -->
+          <div class="two-col-inputs mb-14" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Button label</label>
+              <input type="text" class="form-input" id="composeButtonLabel" value="Update my listing" oninput="syncLivePreview()" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13.5px;">
+            </div>
+            <div>
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Destination URL</label>
+              <select class="form-select" id="composeButtonUrl" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; background: #FFFFFF;">
+                <option value="/listing-management/">Owner dashboard / Listings</option>
+                <option value="/owner-verification/">Owner verification</option>
+                <option value="/monetization/">Monetization / Boosters</option>
+                <option value="/support-center/">Support Center</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Delivery Mode & Schedule -->
+          <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: #0F172A; margin: 0 0 10px 0;">Delivery settings</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+              <div>
+                <label style="font-size: 11.5px; font-weight: 700; color: #64748B; display: block; margin-bottom: 4px;">DELIVERY MODE</label>
+                <select class="form-select" id="composeDeliveryMode" onchange="toggleDeliveryScheduleInput()" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px; background: #FFFFFF;">
+                  <option value="SCHEDULE" selected>Schedule for later ▾</option>
+                  <option value="SEND_NOW">Send immediately 🚀</option>
+                </select>
+              </div>
+              <div id="scheduleTimeWrap">
+                <label style="font-size: 11.5px; font-weight: 700; color: #64748B; display: block; margin-bottom: 4px;">DATE & TIME · IST</label>
+                <input type="datetime-local" class="form-input" id="composeScheduleTime" value="2026-11-06T10:00" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #E2E8F0; padding-top: 10px;">
+              <div>
+                <div style="font-size: 12.5px; font-weight: 700; color: #0F172A;">Respect user notification preferences</div>
+                <div style="font-size: 11.5px; color: #64748B;">Only send promotional broadcasts to users who opted in.</div>
+              </div>
+              <label class="switch-ui"><input type="checkbox" id="chkOptIn" checked><span class="slider round"></span></label>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Action Footer -->
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #E2E8F0; padding-top: 18px; margin-top: 10px;">
+        <button type="button" class="btn btn-outline" onclick="submitAnnouncement('SAVE_DRAFT')" style="padding: 8px 16px;">
+          Save draft
+        </button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="openTestSendModal()" style="padding: 8px 16px;">
+            <span>✉️</span> Send test
+          </button>
+          <button type="button" class="btn btn-primary" id="btnSubmitAnnouncement" onclick="submitAnnouncement('SUBMIT')" style="padding: 8px 20px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span id="btnSubmitLabel">Schedule announcement</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT LIVE PREVIEW & AUDIENCE ESTIMATE COLUMN -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- PREVIEW CARD -->
+      <div class="preview-main-card">
+        <div style="padding: 16px 20px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; background: #F8FAFC;">
+          <div>
+            <span style="font-weight: 700; color: #0F172A; font-size: 14px;">Live Preview</span>
+            <span style="font-size: 11.5px; color: #64748B; margin-left: 6px;">Real-time rendering</span>
+          </div>
+
+          <!-- Device Switcher Segmented Control -->
+          <div class="preview-device-segmented">
+            <button type="button" class="device-switch-btn active" id="btnPrevEmail" onclick="setPreviewDevice('EMAIL')">
+              <span>✉️</span> Email
+            </button>
+            <button type="button" class="device-switch-btn" id="btnPrevInApp" onclick="setPreviewDevice('INAPP')">
+              <span>📱</span> In-App
+            </button>
+            <button type="button" class="device-switch-btn" id="btnPrevSMS" onclick="setPreviewDevice('SMS')">
+              <span>💬</span> SMS
+            </button>
+          </div>
+        </div>
+
+        <div style="padding: 22px;">
+          <!-- 1. EMAIL PREVIEW MOCKUP -->
+          <div id="previewEmailContainer" style="background: #FFFFFF; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 22px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 10px; margin-bottom: 14px;">
+              <div style="font-size: 14px; font-weight: 800; color: #1C5D99; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+                <span>🏠</span> KIRAAYAGRID
+              </div>
+              <span style="font-size: 11px; color: #94A3B8;">To: Rajesh Kumar (Owner)</span>
+            </div>
+            
+            <h3 id="prevEmailHeadline" style="font-size: 17px; font-weight: 700; color: #0F172A; line-height: 1.35; margin-bottom: 12px;">
+              Make your listing stand out this November
+            </h3>
+            
+            <div id="prevEmailBody" style="font-size: 13px; color: #334155; line-height: 1.6; white-space: pre-line; margin-bottom: 16px;">
+              Hi Rajesh,
+
+              Help more tenants find their next home. Update your room availability, add recent photos and confirm your amenities to keep your KiraayaGrid listing fresh.
+
+              You can manage everything from your owner dashboard.
+            </div>
+            
+            <div style="margin: 18px 0;">
+              <button type="button" class="btn btn-primary" id="prevEmailCtaBtn" style="padding: 9px 20px; font-weight: 700; border-radius: 8px; font-size: 13px;">
+                ✓ Update my listing
+              </button>
+            </div>
+            
+            <div style="font-size: 11px; color: #94A3B8; border-top: 1px solid #F1F5F9; padding-top: 12px; margin-top: 18px;">
+              KiraayaGrid Accommodation Platform · Manage preferences · Unsubscribe
+            </div>
+          </div>
+
+          <!-- 2. IN-APP MOBILE IPHONE MOCKUP -->
+          <div id="previewInAppContainer" style="display: none;">
+            <div class="iphone-frame-wrapper">
+              <div class="iphone-screen">
+                <div class="iphone-top-bar">
+                  <span>9:41</span>
+                  <div class="iphone-island"></div>
+                  <span>5G 🔋</span>
+                </div>
+
+                <div style="font-size: 11px; color: #64748B; text-align: center; margin-bottom: 12px; font-weight: 600;">
+                  LOCK SCREEN NOTIFICATION
+                </div>
+
+                <!-- Floating iOS Notification Card -->
+                <div class="ios-notif-card">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 18px; height: 18px; border-radius: 4px; background: #1C5D99; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 10px;">🏠</span>
+                      <span style="font-size: 11px; font-weight: 700; color: #1C5D99; text-transform: uppercase;">KiraayaGrid</span>
+                    </div>
+                    <span style="font-size: 10px; color: #94A3B8;">Just now</span>
+                  </div>
+                  
+                  <div style="font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 3px;" id="prevInAppHeadline">
+                    Make your listing stand out this November
+                  </div>
+                  <div style="font-size: 12px; color: #475569; line-height: 1.4;" id="prevInAppBody">
+                    Help more tenants find their next home. Update your room availability and confirm your amenities.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. SMS MOCKUP -->
+          <div id="previewSMSContainer" style="display: none; background: #F8FAFC; border: 1.5px solid #CBD5E1; border-radius: 14px; padding: 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #E2E8F0; padding-bottom: 6px;">
+              <span style="font-size: 11px; color: #64748B; font-weight: 700;">SMS · ROOMST</span>
+              <span style="font-size: 11px; color: #059669; font-weight: 600;">Telecom Verified</span>
+            </div>
+            
+            <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 12px 14px; font-size: 13px; color: #0F172A; line-height: 1.5; font-family: monospace;" id="prevSMSBody">
+              KiraayaGrid: Make your listing stand out this November. Update your rooms at kiraayagrid.in/m/listing
+            </div>
+
+            <div style="font-size: 11px; color: #64748B; margin-top: 8px; text-align: right;">
+              1 SMS segment · ~84 characters
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIENCE ESTIMATE CARD -->
+      <div class="card" style="border: 1.5px solid #E2E8F0; border-radius: 18px; padding: 22px; background: #FFFFFF; box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);">
+        <h4 style="font-size: 14px; font-weight: 700; color: #0F172A; margin: 0 0 12px 0;">Audience estimate</h4>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; font-size: 13px; padding-bottom: 8px; border-bottom: 1px solid #F1F5F9;">
+            <span style="font-size: 11.5px; font-weight: 700; color: #64748B;">MATCHING AUDIENCE</span>
+            <span style="color: #0F172A; font-weight: 700;" id="estAudienceVal">{{ bengaluru_owners_count }} recipients</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; padding-bottom: 8px; border-bottom: 1px solid #F1F5F9;">
+            <span style="font-size: 11.5px; font-weight: 700; color: #64748B;">EMAIL ELIGIBLE</span>
+            <span style="color: #0F172A; font-weight: 700;" id="estEmailVal">{{ email_eligible_count }} opted-in recipients</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px;">
+            <span style="font-size: 11.5px; font-weight: 700; color: #64748B;">PLATFORM REACH</span>
+            <span style="color: #0F172A; font-weight: 700;" id="estPlatformVal">{{ platform_reach_count }} active accounts</span>
+          </div>
+        </div>
+
+        <div id="smsAlertBox" style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #1E40AF; display: flex; align-items: center; gap: 8px; margin-top: 14px;">
+          <span>ℹ</span>
+          <span id="smsAlertText">SMS not selected. No telecom credits will be consumed.</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SCHEDULED ANNOUNCEMENTS TABLE (UNDER COMPOSER) -->
+  <div class="table-card" style="background: #FFFFFF; border: 1.5px solid #E2E8F0; border-radius: 18px; overflow: hidden; margin-top: 24px; box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);">
+    <div style="padding: 16px 22px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
+      <div>
+        <h3 style="font-size: 14.5px; font-weight: 700; color: #0F172A; margin: 0;">Scheduled announcements</h3>
+        <p style="font-size: 12px; color: #64748B; margin-top: 2px;">Campaigns queued for automated broadcast</p>
+      </div>
+      <span style="font-size: 12px; font-weight: 700; color: #D97706; background: #FFFBEB; border: 1px solid #FDE68A; padding: 3px 9px; border-radius: 6px;">{{ scheduled_campaigns|length }} upcoming</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ANNOUNCEMENT</th>
+            <th>AUDIENCE</th>
+            <th>CHANNELS</th>
+            <th>SCHEDULED</th>
+            <th>STATUS</th>
+            <th style="text-align: right;">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in scheduled_campaigns %}
+            <tr id="schedRow_{{ c.id }}">
+              <td>
+                <div class="actor-cell" style="display: flex; align-items: center; gap: 10px;">
+                  <div class="actor-avatar bg-blue" style="width: 32px; height: 32px; border-radius: 8px; background: #E0F2FE; color: #0369A1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">
+                    {{ c.sender.first_name|first|default:"A" }}{{ c.sender.last_name|first|default:"S" }}
+                  </div>
+                  <div>
+                    <div class="actor-name" style="font-weight: 700; color: #0F172A; font-size: 13.5px;">{{ c.title }}</div>
+                    <div class="text-subtle font-11" style="font-size: 11.5px; color: #64748B;">Created by {{ c.sender.get_full_name|default:c.sender.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight: 600; color: #0F172A; font-size: 13px;">{{ c.audience_display }}</div>
+                <div class="text-subtle" style="font-size: 11.5px; color: #64748B;">{{ c.recipients_count }} recipients</div>
+              </td>
+              <td>
+                <span style="font-size: 12.5px; color: #334155;">{{ c.channel }}</span>
+              </td>
+              <td style="font-size: 12.5px; font-weight: 600; color: #0F172A;">
+                {{ c.scheduled_at|date:"d M, H:i" }} IST
+              </td>
+              <td>
+                <span class="status-pill pending" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700;">
+                  ◔ Scheduled
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; align-items: center; gap: 8px;">
+                  <button type="button" class="btn btn-outline" onclick="triggerCampaignAction({{ c.id }}, 'RESEND_NOW')" style="padding: 4px 10px; font-size: 12px; color: #1C5D99;">
+                    Send now 🚀
+                  </button>
+                  <button type="button" class="btn btn-outline" onclick="triggerCampaignAction({{ c.id }}, 'CANCEL_SCHEDULE')" style="padding: 4px 10px; font-size: 12px; color: #DC2626;">
+                    Cancel
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 32px; color: #64748B;">
+                No scheduled announcements currently queued.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer-bar" style="padding: 14px 22px; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748B; background: #F8FAFC;">
+      <span>{{ scheduled_campaigns|length }} scheduled announcements · Next broadcast automated via cron</span>
+    </div>
+  </div>
+
+{% else %}
+  <!-- ==============================================================
+       FULL CAMPAIGNS LISTING TABLE (SENT / SCHEDULED / DRAFTS / ALL)
+       ============================================================== -->
+  <div class="table-card" style="background: #FFFFFF; border: 1.5px solid #E2E8F0; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);">
+    <div style="padding: 16px 22px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
+      <div>
+        <h3 style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0;">
+          {{ tab|title }} Announcements ({{ campaigns|length }})
+        </h3>
+        <p style="font-size: 12px; color: #64748B; margin-top: 2px;">Platform campaigns matching the selected status view</p>
+      </div>
+      <a href="?tab=compose" class="btn btn-primary" style="font-size: 12.5px; padding: 6px 14px;">
+        + New announcement
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ANNOUNCEMENT</th>
+            <th>TARGET AUDIENCE</th>
+            <th>CHANNELS</th>
+            <th>BROADCAST TIME</th>
+            <th>STATUS</th>
+            <th>DELIVERY STATS</th>
+            <th style="text-align: right;">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in campaigns %}
+            <tr id="campaignRow_{{ c.id }}">
+              <td>
+                <div style="font-weight: 700; color: #0F172A; font-size: 13.5px; margin-bottom: 2px;">{{ c.title }}</div>
+                <div style="font-size: 11.5px; color: #64748B;">Created by {{ c.sender.get_full_name|default:c.sender.username }}</div>
+              </td>
+              <td>
+                <div style="font-weight: 600; color: #0F172A; font-size: 13px;">{{ c.audience_display }}</div>
+                <div style="font-size: 11.5px; color: #64748B;">{{ c.recipients_count }} targeted</div>
+              </td>
+              <td>
+                <span style="font-size: 12.5px; color: #334155; font-weight: 500;">{{ c.channel }}</span>
+              </td>
+              <td style="font-size: 12.5px; color: #0F172A;">
+                {% if c.sent_at %}
+                  {{ c.sent_at|date:"d M Y, H:i" }} IST
+                {% elif c.scheduled_at %}
+                  {{ c.scheduled_at|date:"d M Y, H:i" }} IST
+                {% else %}
+                  {{ c.created_at|date:"d M Y" }}
+                {% endif %}
+              </td>
+              <td>
+                {% if c.status == 'SENT' %}
+                  <span class="status-pill active" style="background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700;">
+                    ✓ Sent
+                  </span>
+                {% elif c.status == 'SCHEDULED' %}
+                  <span class="status-pill pending" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700;">
+                    ◔ Scheduled
+                  </span>
+                {% elif c.status == 'DRAFT' %}
+                  <span class="status-pill" style="background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700;">
+                    ✎ Draft
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                {% if c.status == 'SENT' and c.delivered_count %}
+                  <div style="font-size: 12.5px; font-weight: 700; color: #0F172A;">{{ c.delivered_count }} delivered</div>
+                  <div style="font-size: 11px; color: #059669;">{{ c.opened_count }} opened ({{ c.clicked_count }} clicks)</div>
+                {% else %}
+                  <span style="font-size: 12px; color: #94A3B8;">Pending dispatch</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                  {% if c.status == 'DRAFT' or c.status == 'SCHEDULED' %}
+                    <button type="button" class="btn btn-outline" onclick="triggerCampaignAction({{ c.id }}, 'RESEND_NOW')" style="padding: 4px 8px; font-size: 11.5px; color: #1C5D99;">
+                      Dispatch 🚀
+                    </button>
+                  {% endif %}
+                  <button type="button" class="btn btn-outline" onclick="triggerCampaignAction({{ c.id }}, 'DELETE')" style="padding: 4px 8px; font-size: 11.5px; color: #DC2626;">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 48px; color: #64748B;">
+                No announcements match this view.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TABLE FOOTER BAR WITH PREV/NEXT -->
+    <div class="table-footer-bar" style="padding: 14px 22px; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748B; background: #F8FAFC;">
+      <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} announcements</span>
+      <div class="pagination-wrap" style="display: flex; align-items: center; gap: 8px;">
+        {% if page_obj.has_previous %}
+          <a href="?tab={{ tab }}&channel={{ channel_filter }}&status={{ status_filter }}&city={{ city_filter }}&q={{ search_q }}&page={{ page_obj.previous_page_number }}" class="page-btn" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 7px; color: #0F172A; text-decoration: none; background: #FFFFFF;">← Prev</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 7px; color: #94A3B8; opacity: 0.5; pointer-events: none;">← Prev</span>
+        {% endif %}
+
+        <span class="page-indicator" style="font-size: 12.5px; font-weight: 600; color: #475569; padding: 0 8px;">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a href="?tab={{ tab }}&channel={{ channel_filter }}&status={{ status_filter }}&city={{ city_filter }}&q={{ search_q }}&page={{ page_obj.next_page_number }}" class="page-btn" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 7px; color: #0F172A; text-decoration: none; background: #FFFFFF;">Next →</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 7px; color: #94A3B8; opacity: 0.5; pointer-events: none;">Next →</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- ==============================================================
+     MODAL: MANAGE TEMPLATES (CENTERED POPUP DIALOG)
+     ============================================================== -->
+<div class="modal-backdrop" id="manageTemplatesModal" onclick="if(event.target === this) closeManageTemplatesModal();">
+  <div class="modal-content-box" style="max-width: 650px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 18px;">📑</span>
+        <h3 class="modal-title">Pre-built Announcement Templates</h3>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeManageTemplatesModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- TEMPLATE 1 -->
+      <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: #0F172A; margin: 0;">1. November Listing Refresh & Photos</h4>
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 4px 10px;" onclick="loadTemplateIntoComposer('refresh')">Use template ↵</button>
+        </div>
+        <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
+          Prompts property owners to update availability, fresh room photos, and amenities for the upcoming high-demand season.
+        </p>
+      </div>
+
+      <!-- TEMPLATE 2 -->
+      <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: #0F172A; margin: 0;">2. Owner KYC Electricity Bill Verification</h4>
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 4px 10px;" onclick="loadTemplateIntoComposer('kyc')">Use template ↵</button>
+        </div>
+        <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
+          Direct reminder for unverified owners highlighting that verified listings receive 3x more inquiries.
+        </p>
+      </div>
+
+      <!-- TEMPLATE 3 -->
+      <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: #0F172A; margin: 0;">3. Weekend Physical Walkthroughs</h4>
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 4px 10px;" onclick="loadTemplateIntoComposer('walkthrough')">Use template ↵</button>
+        </div>
+        <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
+          Sent to active tenants to schedule in-person weekend visits with on-site caretakers without brokerage.
+        </p>
+      </div>
+
+      <!-- TEMPLATE 4 -->
+      <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: #0F172A; margin: 0;">4. Spotlight & Boosters Festival Promo</h4>
+          <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 4px 10px;" onclick="loadTemplateIntoComposer('spotlight')">Use template ↵</button>
+        </div>
+        <p style="font-size: 12.5px; color: #475569; margin: 0; line-height: 1.5;">
+          Discounted promotional booster alert driving monetization packages and premium top-slot placements.
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" onclick="closeManageTemplatesModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL: SEND TEST ANNOUNCEMENT
+     ============================================================== -->
+<div class="modal-backdrop" id="testSendModal" onclick="if(event.target === this) closeTestSendModal();">
+  <div class="modal-content-box" style="max-width: 480px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">✉️</span>
+        <h3 class="modal-title">Send Test Announcement</h3>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeTestSendModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="font-size: 13px; color: #475569; margin-bottom: 12px;">
+        Send a test version of your current announcement to verify formatting and CTA buttons.
+      </p>
+
+      <div class="form-group mb-14">
+        <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Channel</label>
+        <select class="form-select" id="testChannelSelect" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px; background: #FFFFFF;">
+          <option value="Email">Email (HTML format)</option>
+          <option value="SMS">SMS (Text format)</option>
+          <option value="Platform">Platform In-App push</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Recipient Email</label>
+        <input type="email" class="form-input" id="testRecipientEmail" value="ananya@kiraayagrid.in" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeTestSendModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="executeTestSend()">✓ Send Test Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT
+     ============================================================== -->
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span>${type === 'success' ? '✓' : '⚠️'}</span>
+      <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(12px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  // --- CHANNEL CHIPS TOGGLE ---
+  function toggleChannelChip(chipId) {
+    const chip = document.getElementById(chipId);
+    if (!chip) return;
+    const chk = chip.querySelector('input[type="checkbox"]');
+    chk.checked = !chk.checked;
+    if (chk.checked) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+    updateAudienceEstimates();
+  }
+
+  // --- LIVE SYNC COMPOSER WITH PREVIEW ---
+  function syncLivePreview() {
+    const subject = document.getElementById('composeSubject') ? document.getElementById('composeSubject').value : '';
+    const message = document.getElementById('composeMessage') ? document.getElementById('composeMessage').value : '';
+    const btnLabel = document.getElementById('composeButtonLabel') ? document.getElementById('composeButtonLabel').value : '';
+
+    // Update character count
+    const charSpan = document.getElementById('subjectCharCount');
+    if (charSpan) {
+      charSpan.innerText = `${subject.length} / 80 characters`;
+    }
+
+    // Email Preview
+    const prevHeadline = document.getElementById('prevEmailHeadline');
+    if (prevHeadline) prevHeadline.innerText = subject || 'Announcement Title';
+
+    const prevBody = document.getElementById('prevEmailBody');
+    if (prevBody) {
+      prevBody.innerText = message.replace('{owner_name}', 'Rajesh').replace('{city}', 'Bengaluru').replace('{platform_name}', 'KiraayaGrid');
+    }
+
+    const prevCta = document.getElementById('prevEmailCtaBtn');
+    if (prevCta) prevCta.innerText = `✓ ${btnLabel || 'Action'}`;
+
+    // In-App Preview
+    const inAppHead = document.getElementById('prevInAppHeadline');
+    if (inAppHead) inAppHead.innerText = subject || 'Announcement Title';
+
+    const inAppBody = document.getElementById('prevInAppBody');
+    if (inAppBody) {
+      inAppBody.innerText = message.substring(0, 110) + (message.length > 110 ? '...' : '');
+    }
+
+    // SMS Preview
+    const smsBody = document.getElementById('prevSMSBody');
+    if (smsBody) {
+      smsBody.innerText = `KiraayaGrid: ${subject}. ${message.substring(0, 80)}... Link: kiraayagrid.in/m`;
+    }
+  }
+
+  // --- SWITCH PREVIEW DEVICE ---
+  function setPreviewDevice(device) {
+    const emailCont = document.getElementById('previewEmailContainer');
+    const inAppCont = document.getElementById('previewInAppContainer');
+    const smsCont = document.getElementById('previewSMSContainer');
+
+    const btnEmail = document.getElementById('btnPrevEmail');
+    const btnInApp = document.getElementById('btnPrevInApp');
+    const btnSMS = document.getElementById('btnPrevSMS');
+
+    [btnEmail, btnInApp, btnSMS].forEach(b => b && b.classList.remove('active'));
+
+    if (device === 'EMAIL') {
+      emailCont.style.display = 'block';
+      inAppCont.style.display = 'none';
+      smsCont.style.display = 'none';
+      btnEmail.classList.add('active');
+    } else if (device === 'INAPP') {
+      emailCont.style.display = 'none';
+      inAppCont.style.display = 'block';
+      smsCont.style.display = 'none';
+      btnInApp.classList.add('active');
+    } else if (device === 'SMS') {
+      emailCont.style.display = 'none';
+      inAppCont.style.display = 'none';
+      smsCont.style.display = 'block';
+      btnSMS.classList.add('active');
+    }
+  }
+
+  // --- AUDIENCE ESTIMATE LOGIC ---
+  function updateAudienceEstimates() {
+    const aud = document.getElementById('composeAudience').value;
+    const loc = document.getElementById('composeLocation').value;
+    const smsChecked = document.getElementById('chkSMS').checked;
+
+    let total = 1824;
+    if (aud === 'ALL_USERS') total = 48620;
+    else if (aud === 'ALL_TENANTS') total = 42336;
+    else if (aud === 'ALL_OWNERS') total = 6284;
+    else if (aud === 'UNVERIFIED_OWNERS') total = 840;
+
+    if (loc === 'All cities') total = Math.round(total * 2.8);
+    else if (loc === 'Pune') total = Math.round(total * 0.75);
+    else if (loc === 'Mumbai') total = Math.round(total * 0.85);
+
+    document.getElementById('estAudienceVal').innerText = `${total.toLocaleString()} recipients`;
+    document.getElementById('estEmailVal').innerText = `${Math.round(total * 0.92).toLocaleString()} opted-in recipients`;
+    document.getElementById('estPlatformVal').innerText = `${total.toLocaleString()} active accounts`;
+
+    const smsAlert = document.getElementById('smsAlertBox');
+    const smsText = document.getElementById('smsAlertText');
+    if (smsChecked) {
+      smsAlert.style.background = '#FFFBEB';
+      smsAlert.style.borderColor = '#FDE68A';
+      smsAlert.style.color = '#B45309';
+      smsText.innerText = `SMS selected. Estimated ${total.toLocaleString()} SMS telecom credits will be consumed.`;
+    } else {
+      smsAlert.style.background = '#EFF6FF';
+      smsAlert.style.borderColor = '#BFDBFE';
+      smsAlert.style.color = '#1E40AF';
+      smsText.innerText = 'SMS not selected. No telecom credits will be consumed.';
+    }
+  }
+
+  // --- EDITOR HELPERS ---
+  function wrapTextareaSelection(pre, post) {
+    const area = document.getElementById('composeMessage');
+    const start = area.selectionStart;
+    const end = area.selectionEnd;
+    const val = area.value;
+    const sel = val.substring(start, end);
+    area.value = val.substring(0, start) + pre + sel + post + val.substring(end);
+    area.focus();
+    area.setSelectionRange(start + pre.length, end + pre.length);
+    syncLivePreview();
+  }
+
+  function insertVariable(v) {
+    const area = document.getElementById('composeMessage');
+    const start = area.selectionStart;
+    const end = area.selectionEnd;
+    const val = area.value;
+    area.value = val.substring(0, start) + v + val.substring(end);
+    area.focus();
+    area.setSelectionRange(start + v.length, start + v.length);
+    syncLivePreview();
+  }
+
+  function insertLinkPrompt() {
+    const url = prompt('Enter link URL (e.g. https://kiraayagrid.in/discover):', 'https://kiraayagrid.in/');
+    if (url) {
+      wrapTextareaSelection('[', `](${url})`);
+    }
+  }
+
+  // --- DELIVERY MODE TOGGLE ---
+  function toggleDeliveryScheduleInput() {
+    const mode = document.getElementById('composeDeliveryMode').value;
+    const wrap = document.getElementById('scheduleTimeWrap');
+    const btnLabel = document.getElementById('btnSubmitLabel');
+    if (mode === 'SEND_NOW') {
+      wrap.style.display = 'none';
+      btnLabel.innerText = 'Send immediately 🚀';
+    } else {
+      wrap.style.display = 'block';
+      btnLabel.innerText = 'Schedule announcement';
+    }
+  }
+
+  // --- SUBMIT ANNOUNCEMENT ---
+  function submitAnnouncement(mode) {
+    const title = document.getElementById('composeSubject').value.trim();
+    const message = document.getElementById('composeMessage').value.trim();
+    const audience_type = document.getElementById('composeAudience').value;
+    const target_city = document.getElementById('composeLocation').value;
+    const button_label = document.getElementById('composeButtonLabel').value;
+    const button_url = document.getElementById('composeButtonUrl').value;
+    const delivery_mode = (mode === 'SAVE_DRAFT') ? 'SAVE_DRAFT' : document.getElementById('composeDeliveryMode').value;
+    const scheduled_at = document.getElementById('composeScheduleTime').value;
+
+    const channels = [];
+    if (document.getElementById('chkEmail').checked) channels.push('Email');
+    if (document.getElementById('chkPlatform').checked) channels.push('Platform');
+    if (document.getElementById('chkSMS').checked) channels.push('SMS');
+    if (document.getElementById('chkWhatsApp').checked) channels.push('WhatsApp');
+
+    if (!title || !message) {
+      showToast('Please provide a subject line and body message', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('message', message);
+    formData.append('audience_type', audience_type);
+    formData.append('target_city', target_city);
+    formData.append('button_label', button_label);
+    formData.append('button_url', button_url);
+    formData.append('delivery_mode', delivery_mode);
+    formData.append('channels', channels.join(', '));
+    formData.append('scheduled_at', scheduled_at);
+
+    fetch('/api/notifications/create/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showToast(data.message, 'success');
+        setTimeout(() => {
+          window.location.href = '?tab=' + (delivery_mode === 'SEND_NOW' ? 'sent' : (delivery_mode === 'SAVE_DRAFT' ? 'drafts' : 'scheduled'));
+        }, 1200);
+      } else {
+        showToast(data.message || 'Error creating announcement', 'error');
+      }
+    })
+    .catch(err => {
+      showToast('Network error while broadcasting', 'error');
+    });
+  }
+
+  // --- LOAD TEMPLATE ---
+  function loadTemplateIntoComposer(key) {
+    if (key === 'refresh') {
+      document.getElementById('composeSubject').value = 'November Listing Refresh: Boost your verified occupancy';
+      document.getElementById('composeMessage').value = 'Hi {owner_name},\n\nDemand for accommodations in {city} is peaking this November. Update your available room count, add freshly taken daylight photos and confirm your included amenities to get featured in our Spotlight discovery feed.\n\nKeep your listing fresh and verify your details today.';
+      document.getElementById('composeButtonLabel').value = 'Update my listing';
+      document.getElementById('composeAudience').value = 'VERIFIED_OWNERS';
+    } else if (key === 'kyc') {
+      document.getElementById('composeSubject').value = 'Action required: Complete your Owner KYC verification';
+      document.getElementById('composeMessage').value = 'Hi {owner_name},\n\nYour KiraayaGrid owner account requires a quick electricity bill upload to earn the Verified Owner trust badge. Verified properties receive 3x more inquiry calls from verified students and IT professionals.\n\nUpload your document in less than 2 minutes.';
+      document.getElementById('composeButtonLabel').value = 'Verify my identity';
+      document.getElementById('composeAudience').value = 'UNVERIFIED_OWNERS';
+    } else if (key === 'walkthrough') {
+      document.getElementById('composeSubject').value = 'Schedule zero-brokerage weekend walkthroughs';
+      document.getElementById('composeMessage').value = 'Hi {owner_name},\n\nLooking for your next PG or shared apartment in {city}? Schedule verified weekend walkthroughs with on-site caretakers directly through KiraayaGrid without paying single rupee in brokerage.';
+      document.getElementById('composeButtonLabel').value = 'Explore listings';
+      document.getElementById('composeAudience').value = 'ALL_TENANTS';
+    } else if (key === 'spotlight') {
+      document.getElementById('composeSubject').value = 'Diwali Spotlight: Get 5x views on your property';
+      document.getElementById('composeMessage').value = 'Hi {owner_name},\n\nBoost your listing to the #1 spot across search results in {city}. Special holiday promotional booster is live with 25% off on our 30-day Spotlight package.';
+      document.getElementById('composeButtonLabel').value = 'Activate Spotlight';
+      document.getElementById('composeAudience').value = 'ALL_OWNERS';
+    }
+    syncLivePreview();
+    updateAudienceEstimates();
+    closeManageTemplatesModal();
+    showToast('Loaded template into composer!', 'success');
+  }
+
+  // --- CAMPAIGN ACTIONS (RESEND, CANCEL, DELETE) ---
+  function triggerCampaignAction(campaignId, action) {
+    if (action === 'DELETE' && !confirm('Are you sure you want to delete this announcement?')) return;
+    if (action === 'CANCEL_SCHEDULE' && !confirm('Cancel this scheduled announcement?')) return;
+
+    const formData = new FormData();
+    formData.append('campaign_id', campaignId);
+    formData.append('action', action);
+
+    fetch('/api/notifications/action/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showToast(data.message, 'success');
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        showToast(data.message || 'Error processing request', 'error');
+      }
+    });
+  }
+
+  // --- MODAL CONTROLS ---
+  function openManageTemplatesModal() {
+    const modal = document.getElementById('manageTemplatesModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeManageTemplatesModal() {
+    const modal = document.getElementById('manageTemplatesModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function openTestSendModal() {
+    const modal = document.getElementById('testSendModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeTestSendModal() {
+    const modal = document.getElementById('testSendModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function executeTestSend() {
+    const channel = document.getElementById('testChannelSelect').value;
+    const email = document.getElementById('testRecipientEmail').value;
+    const title = document.getElementById('composeSubject').value;
+    const message = document.getElementById('composeMessage').value;
+
+    const formData = new FormData();
+    formData.append('channel', channel);
+    formData.append('recipient', email);
+    formData.append('title', title);
+    formData.append('message', message);
+
+    fetch('/api/notifications/test-send/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      closeTestSendModal();
+      showToast(`Test announcement sent to ${email} via ${channel}!`, 'success');
+    });
+  }
+
+  // Keyboard shortcut ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeManageTemplatesModal();
+      closeTestSendModal();
+    }
+  });
+
+  // Initial Boot
+  document.addEventListener('DOMContentLoaded', function() {
+    syncLivePreview();
+    updateAudienceEstimates();
+  });
+</script>
+{% endblock %}

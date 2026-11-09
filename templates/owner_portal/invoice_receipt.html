@@ -1,0 +1,130 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Tax Invoice {{ invoice.invoice_number }} — KiraayaGrid{% endblock %}
+{% block page_title %}Invoice Receipt{% endblock %}
+{% block page_subtitle %}Official tax invoice &amp; payment receipt for {{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto 30px auto;">
+  <!-- Back Link & Print Action -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <a href="{% url 'owner_portal:subscription' %}#invoicesList" class="btn-secondary-light" style="padding: 7px 12px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      &larr; Back to Billing
+    </a>
+    <button type="button" onclick="window.print()" class="btn-primary-yale" style="padding: 7px 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      <span>Print / Save PDF</span>
+    </button>
+  </div>
+
+  <!-- INVOICE SHEET (APPLE STYLE RECEIPT) -->
+  <div id="invoicePrintSheet" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 36px 40px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+    <!-- Top Brand Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--color-border); padding-bottom: 24px; margin-bottom: 24px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <div style="width: 28px; height: 28px; background: var(--color-yale-blue); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px;">
+            A
+          </div>
+          <span style="font-size: 20px; font-weight: 800; color: var(--color-text-main); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">KiraayaGrid</span>
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-muted); line-height: 1.5;">
+          KiraayaGrid Living Spaces Technologies Pvt. Ltd.<br>
+          GSTIN: 29AABCU9603R1ZM &middot; CIN: U72900KA2024PTC184920<br>
+          Koramangala 4th Block, Bengaluru, KA 560034
+        </div>
+      </div>
+
+      <div style="text-align: right;">
+        <div style="font-size: 20px; font-weight: 800; color: var(--color-yale-blue); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+          TAX INVOICE
+        </div>
+        <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-top: 4px;">
+          {{ invoice.invoice_number }}
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+          Date: {{ invoice.billing_date|date:"d F Y" }}
+        </div>
+        <div style="margin-top: 6px;">
+          {% if invoice.status == 'PAID' %}
+            <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill); background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0;">
+              &check; PAID IN FULL
+            </span>
+          {% elif invoice.status == 'PENDING' %}
+            <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill); background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;">
+              PENDING PAYMENT
+            </span>
+          {% else %}
+            <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-pill); background: #EDE9FE; color: #5B21B6; border: 1px solid #DDD6FE;">
+              REFUNDED
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Billed To Details -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; font-size: 12.5px;">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">BILLED TO</div>
+        <div style="font-weight: 700; font-size: 14px; color: var(--color-text-main);">{{ owner_user.get_full_name|default:owner_user.username }}</div>
+        <div style="color: var(--color-text-muted); margin-top: 2px;">Email: {{ owner_user.email }}</div>
+        <div style="color: var(--color-text-muted);">Verified Owner Account</div>
+      </div>
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">PAYMENT METHOD</div>
+        <div style="font-weight: 600; color: var(--color-text-main);">UPI / Net Banking Auto-Debited</div>
+        <div style="color: var(--color-text-muted); margin-top: 2px;">Transaction: TXN-{{ invoice.id }}98204X</div>
+      </div>
+    </div>
+
+    <!-- Line Items Table -->
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--color-border); text-align: left; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">
+          <th style="padding: 10px 0;">DESCRIPTION</th>
+          <th style="padding: 10px 0; text-align: center;">HSN / SAC</th>
+          <th style="padding: 10px 0; text-align: right;">AMOUNT (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--color-border); font-size: 13.5px;">
+          <td style="padding: 14px 0;">
+            <div style="font-weight: 700; color: var(--color-text-main);">{{ invoice.plan_name }}</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">Platform discovery fee &amp; verified host services</div>
+          </td>
+          <td style="padding: 14px 0; text-align: center; color: var(--color-text-muted); font-size: 12px;">998314</td>
+          <td style="padding: 14px 0; text-align: right; font-weight: 700; color: var(--color-text-main); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+            ₹{{ subtotal|floatformat:2 }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Totals & Taxes Summary -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+      <div style="width: 260px; font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; color: var(--color-text-muted);">
+          <span>Subtotal:</span>
+          <span style="font-weight: 600; color: var(--color-text-main);">₹{{ subtotal|floatformat:2 }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; color: var(--color-text-muted);">
+          <span>Integrated GST (18%):</span>
+          <span style="font-weight: 600; color: var(--color-text-main);">₹{{ invoice.gst_amount|floatformat:2 }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; border-top: 2px solid var(--color-border); padding-top: 10px; color: var(--color-yale-blue); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+          <span>Total Paid:</span>
+          <span>₹{{ invoice.amount|floatformat:2 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div style="border-top: 1px solid var(--color-border); padding-top: 16px; font-size: 11.5px; color: var(--color-text-muted); text-align: center; line-height: 1.5;">
+      This is a computer-generated tax invoice. No signature required.<br>
+      For any billing questions, contact support@kiraayagrid.in or call +91 80 4000 1234.
+    </div>
+  </div>
+</div>
+{% endblock %}

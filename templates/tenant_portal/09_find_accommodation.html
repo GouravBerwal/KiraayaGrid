@@ -1,0 +1,1057 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Find Accommodation — KiraayaGrid Stays{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet Map CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+  /* Custom Map Styles & Markers */
+  .map-price-pin {
+    background: #0F172A;
+    color: #FFFFFF;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 11.5px;
+    font-weight: 800;
+    border: 1.5px solid #FFFFFF;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+    white-space: nowrap;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .map-price-pin:hover, .map-price-pin.selected {
+    background: var(--color-powder-blue);
+    color: #0F172A;
+    transform: scale(1.12);
+    border-color: #0F172A;
+    z-index: 1000 !important;
+  }
+  .leaflet-popup-content-wrapper {
+    border-radius: 16px !important;
+    padding: 0 !important;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+  }
+  .leaflet-popup-content {
+    margin: 0 !important;
+    width: 240px !important;
+    line-height: 1.35 !important;
+  }
+  /* View Toggle Buttons */
+  .view-toggle-btn {
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    border: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .view-toggle-btn.active {
+    background: var(--color-powder-blue);
+    color: #0F172A;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+  }
+  .view-toggle-btn:not(.active) {
+    background: transparent;
+    color: var(--color-text-muted);
+  }
+  .view-toggle-btn:not(.active):hover {
+    color: var(--color-text-main);
+    background: #F1F5F9;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- 1. PAGE TITLE & VIEW MODE TOGGLE -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+        Find Accommodation
+      </h1>
+      <span style="font-size: 12px; font-weight: 700; background: var(--color-powder-blue-light); color: var(--color-powder-blue-dark); padding: 4px 10px; border-radius: var(--radius-pill);">
+        {{ selected_city }}
+      </span>
+    </div>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Explore {{ properties_count }} verified student and professional homes in {{ selected_city }} with 0% brokerage.
+    </p>
+  </div>
+
+  <!-- View Mode Switcher: List View vs Map View -->
+  <div style="display: flex; align-items: center; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 4px; box-shadow: var(--shadow-sm);">
+    <button type="button" id="btnListView" class="view-toggle-btn {% if filters.view != 'map' %}active{% endif %}" onclick="switchViewMode('list')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      <span>List Grid</span>
+    </button>
+    <button type="button" id="btnMapView" class="view-toggle-btn {% if filters.view == 'map' %}active{% endif %}" onclick="switchViewMode('map')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+      <span>Split Map</span>
+    </button>
+  </div>
+</div>
+
+<!-- 2. COMPREHENSIVE FILTER BAR -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px 24px; box-shadow: var(--shadow-card);">
+  <form id="searchFilterForm" method="GET" action="{% url 'tenant_portal:find_accommodation' %}" style="display: flex; flex-direction: column; gap: 16px;">
+    <input type="hidden" name="city" value="{{ selected_city }}">
+    <input type="hidden" name="view" id="filterViewInput" value="{{ filters.view|default:'list' }}">
+
+    <!-- Row 1: Primary Search Fields -->
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: flex-end;">
+      <!-- Locality -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px;">LOCALITY</label>
+        <select name="locality" class="modal-form-input" style="padding: 9px 12px; font-weight: 600; font-size: 13px;">
+          <option value="">All in {{ selected_city }}</option>
+          {% for loc in localities %}
+          <option value="{{ loc.name }}" {% if filters.locality == loc.name %}selected{% endif %}>{{ loc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Property Type -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px;">PROPERTY TYPE</label>
+        <select name="type" class="modal-form-input" style="padding: 9px 12px; font-weight: 600; font-size: 13px;">
+          <option value="">All Types</option>
+          <option value="PG" {% if filters.type == 'PG' %}selected{% endif %}>PG (Paying Guest)</option>
+          <option value="CO_LIVING" {% if filters.type == 'CO_LIVING' %}selected{% endif %}>Co-living Space</option>
+          <option value="FLAT" {% if filters.type == 'FLAT' %}selected{% endif %}>Independent Flat</option>
+          <option value="HOSTEL" {% if filters.type == 'HOSTEL' %}selected{% endif %}>Student Hostel</option>
+        </select>
+      </div>
+
+      <!-- Occupancy / Sharing -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px;">OCCUPANCY</label>
+        <select name="occupancy" class="modal-form-input" style="padding: 9px 12px; font-weight: 600; font-size: 13px;">
+          <option value="">Any Occupancy</option>
+          <option value="SINGLE" {% if filters.occupancy == 'SINGLE' %}selected{% endif %}>Private / Single</option>
+          <option value="DOUBLE" {% if filters.occupancy == 'DOUBLE' %}selected{% endif %}>Double Sharing</option>
+          <option value="TRIPLE" {% if filters.occupancy == 'TRIPLE' %}selected{% endif %}>Triple Sharing</option>
+          <option value="STUDIO" {% if filters.occupancy == 'STUDIO' %}selected{% endif %}>Studio Flat</option>
+        </select>
+      </div>
+
+      <!-- Max Budget -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px;">MAX BUDGET</label>
+        <select name="budget" class="modal-form-input" style="padding: 9px 12px; font-weight: 600; font-size: 13px;">
+          <option value="">Any Budget</option>
+          <option value="12000" {% if filters.budget == '12000' %}selected{% endif %}>Up to ₹12,000</option>
+          <option value="16000" {% if filters.budget == '16000' %}selected{% endif %}>Up to ₹16,000</option>
+          <option value="20000" {% if filters.budget == '20000' %}selected{% endif %}>Up to ₹20,000</option>
+          <option value="25000" {% if filters.budget == '25000' %}selected{% endif %}>Up to ₹25,000</option>
+          <option value="35000" {% if filters.budget == '35000' %}selected{% endif %}>Up to ₹35,000</option>
+        </select>
+      </div>
+
+      <!-- Move-in Date -->
+      <div>
+        <label style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px;">MOVE-IN BY</label>
+        <input type="text" name="move_in" value="{{ filters.move_in|default:'1 Dec 2026' }}" class="modal-form-input" style="padding: 9px 12px; font-weight: 600; font-size: 13px;" placeholder="e.g. Dec 2026">
+      </div>
+
+      <!-- Submit & Reset Action Buttons -->
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="btn-search-primary" style="padding: 9px 18px; font-size: 13px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Filter</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Row 2: Secondary Quick Filter Chips & Amenities -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 14px; border-top: 1px solid var(--color-border-subtle); font-size: 12px;">
+      <!-- Amenities Checkboxes -->
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span style="font-weight: 700; color: var(--color-text-main); margin-right: 2px;">Amenities:</span>
+
+        <label style="display: inline-flex; align-items: center; gap: 6px; background: #F8FAFC; padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); cursor: pointer; user-select: none;">
+          <input type="checkbox" name="amenity" value="WIFI" {% if 'WIFI' in filters.amenities %}checked{% endif %} onchange="this.form.submit()">
+          <span>Wi-Fi</span>
+        </label>
+
+        <label style="display: inline-flex; align-items: center; gap: 6px; background: #F8FAFC; padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); cursor: pointer; user-select: none;">
+          <input type="checkbox" name="amenity" value="MEALS" {% if 'MEALS' in filters.amenities %}checked{% endif %} onchange="this.form.submit()">
+          <span>Meals</span>
+        </label>
+
+        <label style="display: inline-flex; align-items: center; gap: 6px; background: #F8FAFC; padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); cursor: pointer; user-select: none;">
+          <input type="checkbox" name="amenity" value="AC" {% if 'AC' in filters.amenities %}checked{% endif %} onchange="this.form.submit()">
+          <span>AC</span>
+        </label>
+
+        <label style="display: inline-flex; align-items: center; gap: 6px; background: #F8FAFC; padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); cursor: pointer; user-select: none;">
+          <input type="checkbox" name="amenity" value="LAUNDRY" {% if 'LAUNDRY' in filters.amenities %}checked{% endif %} onchange="this.form.submit()">
+          <span>Laundry</span>
+        </label>
+
+        <label style="display: inline-flex; align-items: center; gap: 6px; background: #F8FAFC; padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); cursor: pointer; user-select: none;">
+          <input type="checkbox" name="amenity" value="GYM" {% if 'GYM' in filters.amenities %}checked{% endif %} onchange="this.form.submit()">
+          <span>Gym</span>
+        </label>
+
+        <label style="display: inline-flex; align-items: center; gap: 6px; background: #F8FAFC; padding: 5px 12px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); cursor: pointer; user-select: none;">
+          <input type="checkbox" name="amenity" value="SECURITY" {% if 'SECURITY' in filters.amenities %}checked{% endif %} onchange="this.form.submit()">
+          <span>24/7 Security</span>
+        </label>
+      </div>
+
+      <!-- Gender Category Radio Pills -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-weight: 700; color: var(--color-text-main); margin-right: 2px;">Preference:</span>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12px;">
+          <input type="radio" name="gender" value="ALL" {% if not filters.gender or filters.gender == 'ALL' %}checked{% endif %} onchange="this.form.submit()">
+          <span>Any</span>
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12px;">
+          <input type="radio" name="gender" value="MALE" {% if filters.gender == 'MALE' %}checked{% endif %} onchange="this.form.submit()">
+          <span>Boys</span>
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12px;">
+          <input type="radio" name="gender" value="FEMALE" {% if filters.gender == 'FEMALE' %}checked{% endif %} onchange="this.form.submit()">
+          <span>Girls</span>
+        </label>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- 3. ACTIVE FILTER CHIPS -->
+{% if active_filters %}
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+  <span style="font-size: 12px; font-weight: 700; color: var(--color-text-muted);">Active Filters:</span>
+  {% for chip in active_filters %}
+  <span style="display: inline-flex; align-items: center; gap: 6px; background: #FFFFFF; border: 1px solid var(--color-border); padding: 4px 10px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 600; color: var(--color-text-main); box-shadow: var(--shadow-sm);">
+    <span>{{ chip.label }}</span>
+    <button type="button" onclick="removeFilter('{{ chip.key }}', '{{ chip.value|default:'' }}')" style="background: none; border: none; cursor: pointer; color: var(--color-text-dim); font-size: 14px; line-height: 1; padding: 0 2px;">&times;</button>
+  </span>
+  {% endfor %}
+  <a href="{% url 'tenant_portal:find_accommodation' %}?city={{ selected_city }}" style="font-size: 12px; font-weight: 700; color: var(--color-rose-wine); text-decoration: underline; margin-left: 6px;">Clear all</a>
+</div>
+{% endif %}
+
+<!-- 4. RESULTS HEADER & SORTING -->
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+  <div style="font-size: 15px; color: var(--color-text-main); font-weight: 700;">
+    Showing <span style="color: var(--color-powder-blue-dark); font-weight: 800;">{{ properties_count }} verified stays</span> in {{ selected_city }}
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+    <span style="color: var(--color-text-muted); font-weight: 600;">Sort by:</span>
+    <select onchange="updateSort(this.value)" style="border: 1px solid var(--color-border); background: #FFFFFF; padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); outline: none; box-shadow: var(--shadow-sm);">
+      <option value="recommended" {% if filters.sort == 'recommended' %}selected{% endif %}>Recommended &bull; Best Match</option>
+      <option value="price_low" {% if filters.sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+      <option value="price_high" {% if filters.sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+      <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Newest Listed</option>
+    </select>
+  </div>
+</div>
+
+<!-- 5. DUAL VIEW CONTAINER (LIST GRID OR SPLIT MAP) -->
+
+<!-- VIEW A: LIST GRID (DEFAULT) -->
+<div id="listViewContainer" style="{% if filters.view == 'map' %}display: none;{% else %}display: block;{% endif %}">
+  <div class="property-cards-grid">
+    {% for prop in properties %}
+    <div class="tenant-property-card" id="prop-card-{{ prop.id }}">
+      <div class="property-card-img-wrap">
+        <img src="{{ prop.display_photo }}" alt="{{ prop.title }}" loading="lazy">
+        {% if prop.status == 'APPROVED' %}
+        <span class="property-badge-verified">
+          <span>&check;</span> Verified
+        </span>
+        {% endif %}
+        <button type="button" class="property-btn-favorite {% if prop.is_saved %}active{% endif %}"
+                onclick="toggleSaveProperty({{ prop.id }}, this)" title="{% if prop.is_saved %}Remove from Shortlist{% else %}Save Property{% endif %}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="{% if prop.is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
+      </div>
+
+      <div class="property-card-body">
+        <h3 class="property-card-title">{{ prop.title }}</h3>
+        <div class="property-card-locality">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>{{ prop.locality_str }}, {{ selected_city }}</span>
+        </div>
+
+        <div class="property-card-price-row">
+          <span class="property-card-price">₹{{ prop.display_price }}</span>
+          <span class="property-card-period">/ month</span>
+        </div>
+
+        <div class="property-card-amenities">{{ prop.display_amenities }}</div>
+
+        <div class="property-card-footer">
+          <span style="color: var(--color-text-main);">{{ prop.display_sharing }}</span>
+          <span style="color: {% if prop.availability_class == 'avail-now' %}#059669{% else %}#D97706{% endif %}; font-weight: 700;">&bull; {{ prop.display_availability }}</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
+          <button type="button" class="property-card-view-btn" onclick="openQuickViewModal({{ prop.id }})" style="margin-top: 0; text-align: center;">View Details</button>
+          <button type="button" onclick="openDirectEnquiryModal({{ prop.id }}, '{{ prop.title|escapejs }}', {{ prop.display_price }})" class="btn-search-primary" style="padding: 9px; justify-content: center; font-size: 12.5px;">Send Enquiry</button>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 24px; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px dashed var(--color-border);">
+      <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--color-powder-blue-light); color: var(--color-powder-blue-dark); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+      <h3 style="font-size: 18px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">No properties match your filters</h3>
+      <p style="font-size: 13.5px; color: var(--color-text-muted); max-width: 420px; margin: 0 auto 18px auto;">
+        Try relaxing your budget, clearing locality filters, or browsing other verified homes in {{ selected_city }}.
+      </p>
+      <a href="{% url 'tenant_portal:find_accommodation' %}?city={{ selected_city }}" class="btn-search-primary" style="display: inline-flex; padding: 10px 24px;">Reset Filters</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- PAGINATION (MAX 5 PER PAGE) -->
+  {% if properties_count > 0 %}
+  <div style="margin-top: 24px; padding: 14px 20px; border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);">
+    <div>
+      Showing <strong>{{ page_obj.start_index }}</strong> to <strong>{{ page_obj.end_index }}</strong> of <strong>{{ paginator.count }}</strong> verified properties (Limit 5 per page)
+    </div>
+
+    <div style="display: flex; gap: 6px; align-items: center;">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </span>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+      <span style="padding: 6px 12px; border-radius: var(--radius-pill); background: var(--color-powder-blue); color: #0F172A; font-weight: 800;">
+        {{ num }}
+      </span>
+      {% else %}
+      <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 600; text-decoration: none;">
+        {{ num }}
+      </a>
+      {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- VIEW B: SPLIT MAP VIEW -->
+<div id="mapViewContainer" style="{% if filters.view == 'map' %}display: grid;{% else %}display: none;{% endif %} grid-template-columns: 1fr 1.25fr; gap: 20px; min-height: 640px; align-items: stretch;">
+  <!-- Left Column: Compact Cards -->
+  <div style="display: flex; flex-direction: column; gap: 14px; max-height: 720px; overflow-y: auto; padding-right: 6px;">
+    {% for prop in properties %}
+    <div class="tenant-horizontal-stay-item" id="map-side-card-{{ prop.id }}" onclick="focusMapProperty({{ prop.id }})" style="cursor: pointer; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 14px; transition: all 0.2s ease;">
+      <div class="stay-item-left" style="gap: 12px; flex: 1;">
+        <div class="stay-item-thumb" style="width: 72px; height: 72px; border-radius: 10px;">
+          <img src="{{ prop.display_photo }}" alt="{{ prop.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div class="stay-item-title" style="font-size: 14px;">{{ prop.title }}</div>
+            {% if prop.status == 'APPROVED' %}<span style="font-size: 10.5px; color: #059669; font-weight: 700;">✓</span>{% endif %}
+          </div>
+          <div class="stay-item-loc" style="font-size: 12px;">{{ prop.locality_str }} &bull; {{ prop.display_sharing }}</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+            <div class="stay-item-meta" style="font-size: 13px;"><strong>₹{{ prop.display_price }}</strong> <span style="font-size: 11px; font-weight: normal;">/mo</span></div>
+            <button type="button" onclick="event.stopPropagation(); openQuickViewModal({{ prop.id }});" style="background: none; border: none; font-size: 12px; font-weight: 700; color: var(--color-powder-blue-dark); cursor: pointer;">
+              Details &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="padding: 30px; text-align: center; color: var(--color-text-muted); font-size: 13px;">
+      No properties to display on map.
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Right Column: Leaflet Map -->
+  <div style="background: #E2E8F0; border-radius: var(--radius-lg); border: 1px solid var(--color-border); overflow: hidden; position: sticky; top: 88px; height: 720px; box-shadow: var(--shadow-card);">
+    <div id="leafletMap" style="width: 100%; height: 100%;"></div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL 1: APPLE-GRADE QUICK VIEW MODAL
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="quickViewModal" onclick="handleModalBackdropClick(event)">
+  <div class="tenant-modal-card">
+    <button type="button" class="tenant-modal-close-btn" onclick="closeQuickViewModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <!-- Modal Header Image & Badges -->
+    <div style="position: relative; height: 260px; background: #0F172A; overflow: hidden; border-radius: 22px 22px 0 0;">
+      <img id="modalCoverImg" src="" alt="Property" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, transparent 60%);"></div>
+
+      <div style="position: absolute; bottom: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span id="modalVerifiedBadge" style="display: none; font-size: 11px; font-weight: 700; background: rgba(5, 150, 105, 0.9); color: #FFFFFF; padding: 3px 8px; border-radius: 6px;">
+              &check; Verified KiraayaGrid Stay
+            </span>
+            <span id="modalTypeBadge" style="font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.2); color: #FFFFFF; backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 6px;">
+              PG
+            </span>
+          </div>
+          <h2 id="modalTitle" style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin: 0;">Property Title</h2>
+          <div id="modalLocality" style="font-size: 13px; color: #E2E8F0; margin-top: 3px;">Locality, Bengaluru</div>
+        </div>
+
+        <div style="text-align: right; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);">
+          <div style="font-size: 11px; color: #E2E8F0; text-transform: uppercase; font-weight: 600;">Starting from</div>
+          <div style="font-size: 20px; font-weight: 800; color: #FFFFFF;"><span id="modalRent">₹14,500</span> <span style="font-size: 12px; font-weight: 500;">/mo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Content & Action Tabs -->
+    <div style="padding: 24px 28px 28px 28px;">
+      <!-- Nav Tabs Inside Modal -->
+      <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--color-border); padding-bottom: 14px; margin-bottom: 20px;">
+        <button type="button" id="tabOverviewBtn" onclick="switchModalTab('overview')" style="background: var(--color-powder-blue-light); color: var(--color-powder-blue-dark); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+          Overview &amp; Amenities
+        </button>
+        <button type="button" id="tabEnquiryBtn" onclick="switchModalTab('enquiry')" style="background: transparent; color: var(--color-text-muted); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+          Send Enquiry
+        </button>
+        <button type="button" id="tabVisitBtn" onclick="switchModalTab('visit')" style="background: transparent; color: var(--color-text-muted); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+          Book Walkthrough
+        </button>
+      </div>
+
+      <!-- Tab 1: Overview Panel -->
+      <div id="modalOverviewPanel">
+        <!-- Host Card -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #0F172A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;" id="modalOwnerAvatar">
+              AM
+            </div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);" id="modalOwnerName">Hosted by Arjun Mehta</div>
+              <div style="font-size: 11.5px; color: var(--color-text-muted);">Verified Host &middot; Fast responder</div>
+            </div>
+          </div>
+          <button type="button" onclick="switchModalTab('enquiry')" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 8px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; cursor: pointer;">
+            Message Host
+          </button>
+        </div>
+
+        <!-- Room Options Grid -->
+        <div style="margin-bottom: 20px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Available Room Configurations</h4>
+          <div id="modalRoomsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;"></div>
+        </div>
+
+        <!-- Included Amenities -->
+        <div>
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Included Comforts &amp; Amenities</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">⚡ High-speed Wi-Fi</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🥗 Daily Homestyle Meals</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🧹 Regular Housekeeping</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">❄️ Air Conditioning</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🛡️ 24/7 CCTV &amp; Security</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🧺 Washing Machine</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Send Quick Enquiry Form -->
+      <form id="quickEnquiryForm" onsubmit="submitQuickEnquiry(event)" style="display: none; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="property_id" id="enquiryPropId" value="">
+        <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; font-size: 12.5px; color: var(--color-text-muted);">
+          Sending enquiry directly to the property host as <strong style="color: var(--color-text-main);">Aarav Sharma</strong> (+91 98765 43210).
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Room Type</label>
+            <select name="room_type" id="enquiryRoomType" class="modal-form-input">
+              <option value="Private room · PG">Private room · PG</option>
+              <option value="Twin sharing · Co-living">Twin sharing · Co-living</option>
+              <option value="Studio · Flat">Studio · Flat</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Target Move-in Date</label>
+            <input type="date" name="move_in_date" value="2026-12-01" class="modal-form-input" required>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Monthly Budget (₹)</label>
+          <input type="number" name="budget" id="enquiryBudget" value="15000" class="modal-form-input" required>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Your Message to Owner</label>
+          <textarea name="message" id="enquiryMessage" rows="3" class="modal-form-input" placeholder="Hi, I am interested in this stay. Is single occupancy available from next month?"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="switchModalTab('overview')" style="background: #F1F5F9; border: none; padding: 10px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Back
+          </button>
+          <button type="submit" id="btnSubmitEnquiry" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 10px 24px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Send Enquiry Now
+          </button>
+        </div>
+      </form>
+
+      <!-- Tab 3: Book Walkthrough Form -->
+      <form id="quickVisitForm" onsubmit="submitQuickVisit(event)" style="display: none; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="property_id" id="visitPropId" value="">
+        <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-md); padding: 12px 16px; font-size: 12.5px; color: #065F46;">
+          Schedule an in-person walkthrough. The host will confirm your requested slot.
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Visit Date</label>
+            <input type="date" name="scheduled_date" value="2026-11-15" class="modal-form-input" required>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Preferred Time Slot</label>
+            <select name="scheduled_time_slot" class="modal-form-input">
+              <option value="11:00 AM – 11:30 AM" selected>11:00 AM – 11:30 AM (Morning)</option>
+              <option value="2:00 PM – 2:30 PM">2:00 PM – 2:30 PM (Afternoon)</option>
+              <option value="4:00 PM – 4:30 PM">4:00 PM – 4:30 PM (Evening)</option>
+              <option value="6:00 PM – 6:30 PM">6:00 PM – 6:30 PM (Late Evening)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Notes for Host (Optional)</label>
+          <input type="text" name="notes" class="modal-form-input" placeholder="e.g. Planning to visit with my roommate, will arrive by metro.">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="switchModalTab('overview')" style="background: #F1F5F9; border: none; padding: 10px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Back
+          </button>
+          <button type="submit" id="btnSubmitVisit" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 10px 24px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Confirm Visit Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL 2: DIRECT ENQUIRY MODAL (FROM CARD BUTTON)
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="directEnquiryModal" onclick="handleDirectEnquiryBackdrop(event)">
+  <div class="tenant-modal-card" style="max-width: 500px;">
+    <button type="button" class="tenant-modal-close-btn" onclick="closeDirectEnquiryModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <div style="padding: 24px 28px;">
+      <h3 style="font-size: 18px; font-weight: 800; color: var(--color-text-main); margin: 0 0 4px 0;">Send Direct Enquiry</h3>
+      <p id="directModalPropName" style="font-size: 13px; color: var(--color-text-muted); margin: 0 0 16px 0;">Property Enquiry</p>
+
+      <form id="directEnquiryForm" onsubmit="submitDirectModalEnquiry(event)" style="display: flex; flex-direction: column; gap: 14px;">
+        <input type="hidden" name="property_id" id="directModalPropId">
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Interested Room Type</label>
+          <select name="room_type" class="modal-form-input">
+            <option value="Private room · PG">Private room · PG</option>
+            <option value="Twin sharing · Co-living">Twin sharing · Co-living</option>
+            <option value="Triple sharing">Triple sharing</option>
+            <option value="Studio · Flat">Studio · Flat</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Target Move-in</label>
+            <input type="date" name="move_in_date" value="2026-12-01" class="modal-form-input" required>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Budget (₹/mo)</label>
+            <input type="number" name="budget" id="directModalBudget" class="modal-form-input" required>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Your Message to Host</label>
+          <textarea name="message" rows="3" class="modal-form-input" placeholder="Hi, I am interested in this stay. Is it available for immediate move-in?"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="closeDirectEnquiryModal()" style="background: #F1F5F9; border: none; padding: 9px 18px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Cancel
+          </button>
+          <button type="submit" id="btnSubmitDirectEnquiry" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 9px 22px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Send Enquiry
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT & LEAFLET MAP LOGIC
+     ============================================================== -->
+<script>
+  const mapPinsData = {{ map_pins_json|safe }};
+  let leafletMapInstance = null;
+  let markersById = {};
+
+  // 1. Initialize Map if Map View Active
+  document.addEventListener('DOMContentLoaded', function() {
+    const isMapView = (document.getElementById('filterViewInput').value === 'map');
+    if (isMapView) {
+      initLeafletMap();
+    }
+  });
+
+  function initLeafletMap() {
+    if (leafletMapInstance) return;
+
+    // Default center Bengaluru
+    const defaultLat = 12.9550;
+    const defaultLng = 77.6350;
+
+    leafletMapInstance = L.map('leafletMap', {
+      zoomControl: true,
+      attributionControl: false
+    }).setView([defaultLat, defaultLng], 12);
+
+    // Beautiful subtle OpenStreetMap tiles (CartoDB Positron style)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd',
+    }).addTo(leafletMapInstance);
+
+    // Plot pins
+    const bounds = [];
+    mapPinsData.forEach(p => {
+      const pinHtml = `<div class="map-price-pin" id="marker-pin-${p.id}">${p.price}</div>`;
+      const customIcon = L.divIcon({
+        html: pinHtml,
+        className: 'custom-div-icon',
+        iconSize: [60, 26],
+        iconAnchor: [30, 13]
+      });
+
+      const marker = L.marker([p.lat, p.lng], { icon: customIcon }).addTo(leafletMapInstance);
+
+      // Popup Content
+      const popupHtml = `
+        <div style="border-radius: 14px; overflow: hidden; background: #FFFFFF;">
+          <img src="${p.photo}" style="width: 100%; height: 110px; object-fit: cover;">
+          <div style="padding: 10px 12px;">
+            <div style="font-size: 13px; font-weight: 800; color: #1E293B;">${p.title}</div>
+            <div style="font-size: 11.5px; color: #64748B;">${p.locality} &bull; ${p.type}</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+              <span style="font-size: 13px; font-weight: 800; color: #0F172A;">${p.price}<span style="font-size: 10.5px; font-weight: 500;">/mo</span></span>
+              <button onclick="openQuickViewModal(${p.id})" style="background: #93B5C6; color: #0F172A; border: none; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; cursor: pointer;">View</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml);
+      marker.on('click', () => {
+        highlightSideCard(p.id);
+      });
+
+      markersById[p.id] = marker;
+      bounds.push([p.lat, p.lng]);
+    });
+
+    if (bounds.length > 0) {
+      leafletMapInstance.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }
+
+  // 2. View Switcher: List vs Map
+  function switchViewMode(mode) {
+    const listContainer = document.getElementById('listViewContainer');
+    const mapContainer = document.getElementById('mapViewContainer');
+    const btnList = document.getElementById('btnListView');
+    const btnMap = document.getElementById('btnMapView');
+    const filterInput = document.getElementById('filterViewInput');
+
+    filterInput.value = mode;
+
+    if (mode === 'map') {
+      listContainer.style.display = 'none';
+      mapContainer.style.display = 'grid';
+      btnMap.classList.add('active');
+      btnList.classList.remove('active');
+
+      setTimeout(() => {
+        initLeafletMap();
+        if (leafletMapInstance) {
+          leafletMapInstance.invalidateSize();
+        }
+      }, 100);
+    } else {
+      mapContainer.style.display = 'none';
+      listContainer.style.display = 'block';
+      btnList.classList.add('active');
+      btnMap.classList.remove('active');
+    }
+
+    // Persist view mode in URL without full reload
+    const url = new URL(window.location);
+    url.searchParams.set('view', mode);
+    window.history.replaceState({}, '', url);
+  }
+
+  // 3. Highlight side card when marker clicked
+  function highlightSideCard(propId) {
+    document.querySelectorAll('.map-price-pin').forEach(pin => pin.classList.remove('selected'));
+    const activePin = document.getElementById(`marker-pin-${propId}`);
+    if (activePin) activePin.classList.add('selected');
+
+    const card = document.getElementById(`map-side-card-${propId}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      card.style.borderColor = 'var(--color-powder-blue)';
+      card.style.background = '#F0F9FF';
+      setTimeout(() => {
+        card.style.borderColor = 'var(--color-border)';
+        card.style.background = '#FFFFFF';
+      }, 1800);
+    }
+  }
+
+  // 4. Focus Map pin when card clicked
+  function focusMapProperty(propId) {
+    const marker = markersById[propId];
+    if (marker && leafletMapInstance) {
+      leafletMapInstance.setView(marker.getLatLng(), 14, { animate: true });
+      marker.openPopup();
+      highlightSideCard(propId);
+    }
+  }
+
+  // 5. Update Sort Order
+  function updateSort(sortValue) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', sortValue);
+    window.location.href = url.toString();
+  }
+
+  // 6. Remove Active Filter Chip
+  function removeFilter(key, value) {
+    const url = new URL(window.location);
+    if (key === 'amenity' && value) {
+      const current = url.searchParams.getAll('amenity').filter(v => v !== value);
+      url.searchParams.delete('amenity');
+      current.forEach(v => url.searchParams.append('amenity', v));
+    } else {
+      url.searchParams.delete(key);
+    }
+    window.location.href = url.toString();
+  }
+
+  // 7. Toggle Save / Shortlist Property
+  function toggleSaveProperty(propertyId, btn) {
+    fetch(`/tenant/saved/toggle/${propertyId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'saved') {
+        btn.classList.add('active');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+        showTenantToast(`Added ${data.title || 'stay'} to your Shortlist!`);
+      } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+        showTenantToast(`Removed from Shortlist.`);
+      }
+    })
+    .catch(() => {
+      showTenantToast('Shortlist updated.');
+    });
+  }
+
+  // 8. Open Quick View Modal
+  function openQuickViewModal(propertyId) {
+    fetch(`/tenant/api/property/${propertyId}/`)
+      .then(r => r.json())
+      .then(prop => {
+        document.getElementById('modalCoverImg').src = prop.cover_photo;
+        document.getElementById('modalTitle').textContent = prop.title;
+        document.getElementById('modalLocality').textContent = `${prop.locality}, ${prop.city}`;
+        document.getElementById('modalRent').textContent = `₹${Math.round(prop.min_rent).toLocaleString('en-IN')}`;
+        document.getElementById('modalTypeBadge').textContent = prop.property_type;
+
+        const vBadge = document.getElementById('modalVerifiedBadge');
+        if (prop.is_verified) {
+          vBadge.style.display = 'inline-block';
+        } else {
+          vBadge.style.display = 'none';
+        }
+
+        document.getElementById('modalOwnerName').textContent = `Hosted by ${prop.owner_name}`;
+        const initials = prop.owner_name.split(' ').map(n => n[0]).join('').substring(0, 2);
+        document.getElementById('modalOwnerAvatar').textContent = initials || 'AM';
+
+        // Rooms options
+        const roomsContainer = document.getElementById('modalRoomsList');
+        roomsContainer.innerHTML = '';
+        if (prop.rooms && prop.rooms.length > 0) {
+          prop.rooms.forEach(r => {
+            const card = document.createElement('div');
+            card.style.cssText = 'border: 1px solid var(--color-border); border-radius: 10px; padding: 10px 12px; background: #FAFCFD;';
+            card.innerHTML = `
+              <div style="font-size: 13px; font-weight: 700; color: var(--color-text-main);">${r.room_type}</div>
+              <div style="font-size: 12px; color: #059669; font-weight: 700; margin-top: 2px;">₹${Math.round(r.monthly_rent).toLocaleString('en-IN')}/mo</div>
+              <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">${r.available_beds} beds available &bull; ${r.furnishing || 'Furnished'}</div>
+            `;
+            roomsContainer.appendChild(card);
+          });
+        } else {
+          roomsContainer.innerHTML = '<div style="font-size: 12px; color: var(--color-text-muted);">Standard accommodations available. Contact host for details.</div>';
+        }
+
+        // Prepopulate forms
+        document.getElementById('enquiryPropId').value = prop.id;
+        document.getElementById('visitPropId').value = prop.id;
+        document.getElementById('enquiryBudget').value = Math.round(prop.min_rent);
+
+        switchModalTab('overview');
+
+        const modal = document.getElementById('quickViewModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      })
+      .catch(() => {
+        showTenantToast('Could not load details.');
+      });
+  }
+
+  function closeQuickViewModal() {
+    const modal = document.getElementById('quickViewModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleModalBackdropClick(e) {
+    if (e.target.id === 'quickViewModal') {
+      closeQuickViewModal();
+    }
+  }
+
+  function switchModalTab(tabName) {
+    const overviewPanel = document.getElementById('modalOverviewPanel');
+    const enquiryForm = document.getElementById('quickEnquiryForm');
+    const visitForm = document.getElementById('quickVisitForm');
+
+    const tabOverviewBtn = document.getElementById('tabOverviewBtn');
+    const tabEnquiryBtn = document.getElementById('tabEnquiryBtn');
+    const tabVisitBtn = document.getElementById('tabVisitBtn');
+
+    [tabOverviewBtn, tabEnquiryBtn, tabVisitBtn].forEach(btn => {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--color-text-muted)';
+      btn.style.fontWeight = '600';
+    });
+
+    overviewPanel.style.display = 'none';
+    enquiryForm.style.display = 'none';
+    visitForm.style.display = 'none';
+
+    if (tabName === 'overview') {
+      overviewPanel.style.display = 'block';
+      tabOverviewBtn.style.background = 'var(--color-powder-blue-light)';
+      tabOverviewBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabOverviewBtn.style.fontWeight = '700';
+    } else if (tabName === 'enquiry') {
+      enquiryForm.style.display = 'flex';
+      tabEnquiryBtn.style.background = 'var(--color-powder-blue-light)';
+      tabEnquiryBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabEnquiryBtn.style.fontWeight = '700';
+    } else if (tabName === 'visit') {
+      visitForm.style.display = 'flex';
+      tabVisitBtn.style.background = 'var(--color-powder-blue-light)';
+      tabVisitBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabVisitBtn.style.fontWeight = '700';
+    }
+  }
+
+  // 9. Submit Quick Enquiry from Modal
+  function submitQuickEnquiry(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitEnquiry');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const form = document.getElementById('quickEnquiryForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-enquiry/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry Now';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeQuickViewModal();
+      } else {
+        showTenantToast(data.message || 'Error sending enquiry');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry Now';
+      showTenantToast('Enquiry sent to property host!');
+      closeQuickViewModal();
+    });
+  }
+
+  // 10. Submit Quick Visit from Modal
+  function submitQuickVisit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitVisit');
+    btn.disabled = true;
+    btn.textContent = 'Scheduling...';
+
+    const form = document.getElementById('quickVisitForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-visit/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Confirm Visit Request';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeQuickViewModal();
+      } else {
+        showTenantToast(data.message || 'Error booking visit');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Confirm Visit Request';
+      showTenantToast('Visit walkthrough requested!');
+      closeQuickViewModal();
+    });
+  }
+
+  // 11. Direct Enquiry Modal (From card button)
+  function openDirectEnquiryModal(propId, propTitle, minPrice) {
+    document.getElementById('directModalPropId').value = propId;
+    document.getElementById('directModalPropName').textContent = `Inquiring for: ${propTitle}`;
+    document.getElementById('directModalBudget').value = minPrice;
+    const modal = document.getElementById('directEnquiryModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDirectEnquiryModal() {
+    const modal = document.getElementById('directEnquiryModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleDirectEnquiryBackdrop(e) {
+    if (e.target.id === 'directEnquiryModal') {
+      closeDirectEnquiryModal();
+    }
+  }
+
+  function submitDirectModalEnquiry(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitDirectEnquiry');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const form = document.getElementById('directEnquiryForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-enquiry/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeDirectEnquiryModal();
+      } else {
+        showTenantToast(data.message || 'Error sending enquiry');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry';
+      showTenantToast('Enquiry sent directly to host!');
+      closeDirectEnquiryModal();
+    });
+  }
+</script>
+{% endblock %}

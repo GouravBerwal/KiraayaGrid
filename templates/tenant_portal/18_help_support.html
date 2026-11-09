@@ -1,0 +1,569 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Help &amp; Support — KiraayaGrid{% endblock %}
+
+{% block content %}
+<!-- HEADER ROW -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+      Help &amp; Support Concierge
+    </h1>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Direct tenant assistance, searchable FAQs, safety guidelines, and 24/7 dedicated concierge desk.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <button type="button" onclick="openRaiseTicketModal()" class="btn-search-primary" style="padding: 9px 18px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span>Raise Support Ticket</span>
+    </button>
+  </div>
+</div>
+
+<!-- 24/7 CONCIERGE HOTLINE BANNER -->
+<div style="background: linear-gradient(135deg, #0F3E4D 0%, #1E293B 100%); border-radius: var(--radius-xl); padding: 24px 30px; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; box-shadow: 0 10px 25px rgba(15, 62, 77, 0.2); margin-bottom: 26px;">
+  <div style="display: flex; align-items: center; gap: 18px;">
+    <div style="width: 50px; height: 50px; border-radius: 14px; background: rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6EE7B7" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    </div>
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h2 style="font-size: 18px; font-weight: 800; margin: 0; color: #FFFFFF;">Dedicated Tenant Concierge Desk</h2>
+        <span style="font-size: 10.5px; font-weight: 800; background: #059669; color: #FFFFFF; padding: 2px 8px; border-radius: 10px;">24/7 ACTIVE</span>
+      </div>
+      <div style="font-size: 12.5px; opacity: 0.85; margin-top: 3px;">
+        Immediate escalation for property access, landlord coordination, and deposit security.
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <a href="tel:+918004724842" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; padding: 9px 18px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      <span>📞 +91 800-472-4842</span>
+    </a>
+    <a href="https://wa.me/918004724842" target="_blank" style="background: #059669; color: #FFFFFF; padding: 9px 18px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      <span>💬 WhatsApp Support</span>
+    </a>
+  </div>
+</div>
+
+<!-- 4 ASSISTANCE QUICK TILES -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 30px;">
+  
+  <a href="{% url 'tenant_portal:my_enquiries' %}" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <div style="width: 36px; height: 36px; border-radius: 10px; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+      💬
+    </div>
+    <div style="font-size: 14.5px; font-weight: 800; color: var(--color-text-main);">Enquiry Support</div>
+    <div style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">
+      Track host conversation history and fast-track responses.
+    </div>
+    <div style="font-size: 11.5px; font-weight: 700; color: #0F3E4D; margin-top: auto;">Open Enquiries &rarr;</div>
+  </a>
+
+  <a href="{% url 'tenant_portal:visit_requests' %}" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <div style="width: 36px; height: 36px; border-radius: 10px; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+      📅
+    </div>
+    <div style="font-size: 14.5px; font-weight: 800; color: var(--color-text-main);">Visit &amp; Walkthrough</div>
+    <div style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">
+      Reschedule or accept proposed walkthrough slots instantly.
+    </div>
+    <div style="font-size: 11.5px; font-weight: 700; color: #0F3E4D; margin-top: auto;">Manage Visits &rarr;</div>
+  </a>
+
+  <a href="{% url 'tenant_portal:my_bookings' %}" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <div style="width: 36px; height: 36px; border-radius: 10px; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+      📋
+    </div>
+    <div style="font-size: 14.5px; font-weight: 800; color: var(--color-text-main);">Bookings &amp; Deposits</div>
+    <div style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">
+      Token receipts, move-in gate passes, and tenancy agreements.
+    </div>
+    <div style="font-size: 11.5px; font-weight: 700; color: #0F3E4D; margin-top: auto;">View Bookings &rarr;</div>
+  </a>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm);">
+    <div style="width: 36px; height: 36px; border-radius: 10px; background: #F3E8FF; color: #7E22CE; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+      🛡️
+    </div>
+    <div style="font-size: 14.5px; font-weight: 800; color: var(--color-text-main);">KiraayaGrid Shield</div>
+    <div style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">
+      100% Zero Brokerage and Verified Landlord UIDAI protection.
+    </div>
+    <div style="font-size: 11.5px; font-weight: 700; color: #059669; margin-top: auto;">Zero Brokerage Guarantee</div>
+  </div>
+
+</div>
+
+<!-- EXISTING SUPPORT TICKETS SECTION -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 28px 32px; box-shadow: var(--shadow-card); margin-bottom: 30px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 16px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+          My Support Tickets
+        </h3>
+        <span style="font-size: 11.5px; font-weight: 700; background: #F1F5F9; color: var(--color-text-muted); padding: 3px 9px; border-radius: 12px;">
+          {{ total_tickets }} Total &bull; {{ open_tickets }} Active
+        </span>
+      </div>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 3px 0 0 0;">
+        Track ticket resolution progress and communicate directly with the support desk.
+      </p>
+    </div>
+
+    <button type="button" onclick="openRaiseTicketModal()" class="btn-search-primary" style="padding: 8px 16px; font-size: 12.5px;">
+      + New Ticket
+    </button>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px;" id="ticketsListContainer">
+    {% for t in tickets %}
+      <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="flex: 1; min-width: 280px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-family: ui-monospace, monospace; font-size: 13px; font-weight: 800; color: #0F3E4D; background: #FFFFFF; border: 1px solid var(--color-border); padding: 2px 8px; border-radius: 5px;">
+              {{ t.ticket_code }}
+            </span>
+            <span style="font-size: 11.5px; font-weight: 700; background: {{ t.status_meta.bg }}; color: {{ t.status_meta.color }}; border: 1px solid {{ t.status_meta.border }}; padding: 3px 10px; border-radius: var(--radius-pill);">
+              {{ t.status_meta.label }}
+            </span>
+            <span style="font-size: 11px; font-weight: 700; background: #FFFFFF; color: var(--color-text-muted); border: 1px solid var(--color-border); padding: 2px 8px; border-radius: 4px;">
+              {{ t.category }}
+            </span>
+          </div>
+
+          <h4 style="font-size: 15px; font-weight: 800; color: var(--color-text-main); margin: 8px 0 4px 0;">
+            {{ t.subject }}
+          </h4>
+          <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 6px 0; line-height: 1.45;">
+            {{ t.last_message_preview|truncatechars:120 }}
+          </p>
+          <div style="font-size: 11px; color: var(--color-text-dim);">
+            Updated: {{ t.last_updated|date:"d M Y, h:i A" }} &bull; {{ t.msgs_count }} messages in thread
+          </div>
+        </div>
+
+        <div>
+          <button type="button" onclick="openConversationDrawer('{{ t.id }}')" class="btn-search-primary" style="padding: 8px 18px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>View Conversation ({{ t.msgs_count }})</span>
+          </button>
+        </div>
+      </div>
+    {% empty %}
+      <div style="text-align: center; padding: 30px; color: var(--color-text-muted); font-size: 13px;">
+        You currently have no open support tickets. Need help? Click <strong>Raise Support Ticket</strong> above.
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- PAGINATION (MAX 5 PER PAGE) -->
+  {% if total_tickets > 0 %}
+  <div style="margin-top: 18px; padding: 12px 18px; border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);">
+    <div>
+      Showing <strong>{{ page_obj.start_index }}</strong> to <strong>{{ page_obj.end_index }}</strong> of <strong>{{ paginator.count }}</strong> support tickets (Limit 5 per page)
+    </div>
+
+    <div style="display: flex; gap: 6px; align-items: center;">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </span>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+      <span style="padding: 6px 12px; border-radius: var(--radius-pill); background: var(--color-powder-blue); color: #0F172A; font-weight: 800;">
+        {{ num }}
+      </span>
+      {% else %}
+      <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 600; text-decoration: none;">
+        {{ num }}
+      </a>
+      {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- 2-COLUMN: FAQs & SEARCH + SAFETY GUIDELINES -->
+<div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start;">
+  
+  <!-- LEFT: SEARCHABLE FAQs -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 28px 32px; box-shadow: var(--shadow-card);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+          Frequently Asked Questions
+        </h3>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin: 2px 0 0 0;">Instant answers to common seeker questions</p>
+      </div>
+    </div>
+
+    <!-- Search Input for FAQs -->
+    <div style="position: relative; margin-bottom: 18px;">
+      <input type="text" id="faqSearchInput" onkeyup="filterFaqs()" placeholder="Type keyword (e.g. brokerage, deposit, visit, refund)..." style="width: 100%; padding: 11px 16px 11px 38px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none; background: #F8FAFC;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5" style="position: absolute; left: 12px; top: 13px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </div>
+
+    <!-- Category Filter Pills -->
+    <div style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 4px; scrollbar-width: none;">
+      <button type="button" onclick="filterFaqCategory('ALL')" class="faq-cat-btn active" style="padding: 5px 12px; border-radius: 14px; font-size: 11.5px; font-weight: 700; border: 1px solid var(--color-border); background: var(--color-powder-blue); color: #FFFFFF; cursor: pointer;">
+        All
+      </button>
+      <button type="button" onclick="filterFaqCategory('Search & Verification')" class="faq-cat-btn" style="padding: 5px 12px; border-radius: 14px; font-size: 11.5px; font-weight: 600; border: 1px solid var(--color-border); background: #F1F5F9; color: var(--color-text-main); cursor: pointer;">
+        Zero Brokerage
+      </button>
+      <button type="button" onclick="filterFaqCategory('Visit Support')" class="faq-cat-btn" style="padding: 5px 12px; border-radius: 14px; font-size: 11.5px; font-weight: 600; border: 1px solid var(--color-border); background: #F1F5F9; color: var(--color-text-main); cursor: pointer;">
+        Walkthroughs
+      </button>
+      <button type="button" onclick="filterFaqCategory('Bookings & Payments')" class="faq-cat-btn" style="padding: 5px 12px; border-radius: 14px; font-size: 11.5px; font-weight: 600; border: 1px solid var(--color-border); background: #F1F5F9; color: var(--color-text-main); cursor: pointer;">
+        Deposits
+      </button>
+    </div>
+
+    <!-- Accordion List -->
+    <div style="display: flex; flex-direction: column; gap: 12px;" id="faqsAccordionContainer">
+      {% for faq in faqs %}
+        <details class="faq-item" data-category="{{ faq.category }}" style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: 10px; padding: 14px 18px; font-size: 13px;" {% if forloop.first %}open{% endif %}>
+          <summary style="font-weight: 700; cursor: pointer; color: var(--color-text-main); outline: none;">
+            {{ faq.question }}
+          </summary>
+          <p style="margin: 10px 0 0 0; color: var(--color-text-muted); font-size: 12.5px; line-height: 1.5; border-top: 1px solid var(--color-border-subtle); padding-top: 8px;">
+            {{ faq.answer }}
+          </p>
+        </details>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- RIGHT: SAFETY & VERIFICATION GUIDELINES -->
+  <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius-lg); padding: 26px 28px; box-shadow: var(--shadow-card);">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+      <span style="font-size: 22px;">🛡️</span>
+      <h3 style="font-size: 16px; font-weight: 800; color: #92400E; margin: 0;">
+        Tenant Safety &amp; Protection Tips
+      </h3>
+    </div>
+    <p style="font-size: 12.5px; color: #78350F; margin: 0 0 18px 0; line-height: 1.45;">
+      Follow these essential guidelines to ensure safe tenancy and seamless room handover.
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 16px; font-size: 12.5px; color: #78350F;">
+      <div style="display: flex; gap: 12px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; font-size: 11px;">1</div>
+        <div>
+          <strong style="color: #92400E;">Always Inspect in Person:</strong>
+          <div style="color: #78350F; margin-top: 2px; line-height: 1.4;">Never transfer money prior to physically visiting the property and meeting the building manager.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; font-size: 11px;">2</div>
+        <div>
+          <strong style="color: #92400E;">Check Government UIDAI Badges:</strong>
+          <div style="color: #78350F; margin-top: 2px; line-height: 1.4;">Ensure your listing displays the green "Verified Owner" UIDAI/ITD compliance seal.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; font-size: 11px;">3</div>
+        <div>
+          <strong style="color: #92400E;">Model Tenancy Act Contract:</strong>
+          <div style="color: #78350F; margin-top: 2px; line-height: 1.4;">Always obtain a digitally generated tenancy slip specifying deposit and refund terms.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #F59E0B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; font-size: 11px;">4</div>
+        <div>
+          <strong style="color: #92400E;">Emergency Escalation:</strong>
+          <div style="color: #78350F; margin-top: 2px; line-height: 1.4;">If any landlord requests cash deposits without receipts, report immediately to our concierge.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL 1: RAISE SUPPORT TICKET -->
+<div id="raiseTicketModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 500px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">Raise Support Ticket</h3>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin: 3px 0 0 0;">Dedicated support team SLA &lt; 2 hours</p>
+      </div>
+      <button type="button" onclick="closeRaiseTicketModal()" style="border: none; background: #F1F5F9; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: #64748B;">✕</button>
+    </div>
+
+    <form onsubmit="handleRaiseTicketSubmit(event)" style="padding: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Issue Category *</label>
+          <select id="ticketCategory" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            <option value="Visit Support">Visit &amp; Walkthrough Coordination</option>
+            <option value="Enquiry Support">Host Communication &amp; Chat</option>
+            <option value="Booking &amp; Payment">Rental Booking &amp; Token Deposit</option>
+            <option value="Safety &amp; Verification">Safety / Landlord Dispute</option>
+            <option value="General Support">General Platform Inquiry</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Priority Level</label>
+          <select id="ticketPriority" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            <option value="NORMAL">Normal &bull; Standard SLA &lt; 4h</option>
+            <option value="HIGH">High &bull; Move-in within 48 hours</option>
+            <option value="URGENT">Urgent &bull; Immediate Walkthrough Issue</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Subject *</label>
+          <input type="text" id="ticketSubject" placeholder="e.g. Assistance with Indiranagar walkthrough rescheduling" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Detailed Description *</label>
+          <textarea id="ticketMessage" rows="3" placeholder="Please describe the issue or question in detail..." required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none; resize: vertical;"></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="button" onclick="closeRaiseTicketModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="submit" id="submitTicketBtn" class="btn-search-primary" style="flex: 2; padding: 11px; font-size: 13px; font-weight: 700;">
+          Submit Support Ticket
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL 2: TICKET CONVERSATION DRAWER -->
+<div id="ticketConversationModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 560px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- Drawer Header -->
+    <div style="padding: 18px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="drawerTicketCode" style="font-family: ui-monospace, monospace; font-size: 13px; font-weight: 800; color: #0F3E4D;">TKT-2026-401</span>
+          <span id="drawerStatusBadge" style="font-size: 11px; font-weight: 700; background: #DBEAFE; color: #1E40AF; padding: 2px 8px; border-radius: var(--radius-pill);">In Progress</span>
+        </div>
+        <h4 id="drawerSubject" style="font-size: 14.5px; font-weight: 800; color: var(--color-text-main); margin: 3px 0 0 0;">
+          Ticket Subject
+        </h4>
+      </div>
+      <button type="button" onclick="closeConversationDrawer()" style="border: none; background: #F1F5F9; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: #64748B;">✕</button>
+    </div>
+
+    <!-- Messages Feed -->
+    <div id="drawerMessagesContainer" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background: #F8FAFC; min-height: 260px;">
+      <!-- Populated via AJAX -->
+    </div>
+
+    <!-- Reply Composer -->
+    <form id="drawerReplyForm" onsubmit="handleTicketReply(event)" style="padding: 16px 20px; border-top: 1px solid var(--color-border); display: flex; gap: 10px; background: #FFFFFF; align-items: center;">
+      <input type="hidden" id="currentTicketId">
+      <input type="text" id="drawerReplyInput" placeholder="Type message to support desk..." required style="flex: 1; padding: 11px 16px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none; background: #F8FAFC;">
+      <button type="submit" id="drawerReplyBtn" class="btn-search-primary" style="padding: 10px 20px; font-size: 13px; white-space: nowrap;">
+        Send Reply
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Raise Ticket Modal
+  function openRaiseTicketModal() {
+    document.getElementById('raiseTicketModal').style.display = 'flex';
+  }
+  function closeRaiseTicketModal() {
+    document.getElementById('raiseTicketModal').style.display = 'none';
+  }
+
+  function handleRaiseTicketSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitTicketBtn');
+    btn.disabled = true;
+    btn.innerText = 'Logging Ticket...';
+
+    const formData = new FormData();
+    formData.append('category', document.getElementById('ticketCategory').value);
+    formData.append('priority', document.getElementById('ticketPriority').value);
+    formData.append('subject', document.getElementById('ticketSubject').value);
+    formData.append('message', document.getElementById('ticketMessage').value);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_create_support_ticket" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Support Ticket';
+      if (data.status === 'success') {
+        closeRaiseTicketModal();
+        showTenantToast('Support ticket ' + data.ticket_code + ' logged successfully!');
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        alert(data.message || 'Error submitting ticket');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Support Ticket';
+      alert('Network error');
+    });
+  }
+
+  // Conversation Drawer
+  function openConversationDrawer(ticketId) {
+    document.getElementById('currentTicketId').value = ticketId;
+    const modal = document.getElementById('ticketConversationModal');
+    const container = document.getElementById('drawerMessagesContainer');
+    container.innerHTML = '<div style="text-align:center; padding: 30px; color:#64748B;">Loading conversation...</div>';
+    modal.style.display = 'flex';
+
+    fetch('/tenant/api/support/ticket/' + ticketId + '/messages/')
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          document.getElementById('drawerTicketCode').innerText = data.ticket_code;
+          document.getElementById('drawerSubject').innerText = data.subject;
+          document.getElementById('drawerStatusBadge').innerText = data.status_text;
+
+          container.innerHTML = '';
+          data.messages.forEach(m => {
+            const bubble = document.createElement('div');
+            if (m.is_tenant) {
+              bubble.style.cssText = 'align-self: flex-end; max-width: 82%; display: flex; flex-direction: column; align-items: flex-end;';
+              bubble.innerHTML = `
+                <div style="background: #0F3E4D; color: #FFFFFF; padding: 10px 16px; border-radius: 14px 14px 3px 14px; font-size: 13px; line-height: 1.45;">
+                  ${escapeHtml(m.message)}
+                </div>
+                <div style="font-size: 10.5px; color: #64748B; margin-top: 3px;">You &bull; ${m.created_at}</div>
+              `;
+            } else {
+              bubble.style.cssText = 'align-self: flex-start; max-width: 82%; display: flex; flex-direction: column; align-items: flex-start;';
+              bubble.innerHTML = `
+                <div style="background: #FFFFFF; border: 1px solid var(--color-border); color: var(--color-text-main); padding: 10px 16px; border-radius: 14px 14px 14px 3px; font-size: 13px; line-height: 1.45; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                  ${escapeHtml(m.message)}
+                </div>
+                <div style="font-size: 10.5px; color: #059669; font-weight: 700; margin-top: 3px;">${escapeHtml(m.sender_name)} &bull; ${m.created_at}</div>
+              `;
+            }
+            container.appendChild(bubble);
+          });
+          container.scrollTop = container.scrollHeight;
+        }
+      });
+  }
+
+  function closeConversationDrawer() {
+    document.getElementById('ticketConversationModal').style.display = 'none';
+  }
+
+  function handleTicketReply(e) {
+    e.preventDefault();
+    const ticketId = document.getElementById('currentTicketId').value;
+    const input = document.getElementById('drawerReplyInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const btn = document.getElementById('drawerReplyBtn');
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('message', text);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/support/ticket/' + ticketId + '/reply/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      if (data.status === 'success') {
+        input.value = '';
+        const container = document.getElementById('drawerMessagesContainer');
+        const bubble = document.createElement('div');
+        bubble.style.cssText = 'align-self: flex-end; max-width: 82%; display: flex; flex-direction: column; align-items: flex-end;';
+        bubble.innerHTML = `
+          <div style="background: #0F3E4D; color: #FFFFFF; padding: 10px 16px; border-radius: 14px 14px 3px 14px; font-size: 13px; line-height: 1.45;">
+            ${escapeHtml(data.message)}
+          </div>
+          <div style="font-size: 10.5px; color: #64748B; margin-top: 3px;">You &bull; ${data.created_at}</div>
+        `;
+        container.appendChild(bubble);
+        container.scrollTop = container.scrollHeight;
+        showTenantToast('Reply sent to support concierge!');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      alert('Error sending reply');
+    });
+  }
+
+  // FAQ Search & Filter
+  function filterFaqs() {
+    const q = document.getElementById('faqSearchInput').value.toLowerCase();
+    document.querySelectorAll('.faq-item').forEach(el => {
+      const text = el.innerText.toLowerCase();
+      el.style.display = text.includes(q) ? 'block' : 'none';
+    });
+  }
+
+  function filterFaqCategory(cat) {
+    document.querySelectorAll('.faq-cat-btn').forEach(btn => {
+      btn.style.background = '#F1F5F9';
+      btn.style.color = 'var(--color-text-main)';
+    });
+    event.target.style.background = 'var(--color-powder-blue)';
+    event.target.style.color = '#FFFFFF';
+
+    document.querySelectorAll('.faq-item').forEach(el => {
+      if (cat === 'ALL' || el.getAttribute('data-category').toLowerCase().includes(cat.toLowerCase())) {
+        el.style.display = 'block';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text;
+    return div.innerHTML;
+  }
+</script>
+{% endblock %}

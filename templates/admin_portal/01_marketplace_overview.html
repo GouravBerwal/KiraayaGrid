@@ -1,0 +1,448 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Marketplace overview — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/01_marketplace_overview.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Marketplace overview</h1>
+    <p class="page-subtitle">A clear view of your marketplace. Here's what needs your attention today.</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>01–06 Nov 2026</span>
+    </button>
+    <button class="btn btn-outline">
+      <span>Export report</span>
+    </button>
+  </div>
+</div>
+
+<!-- 8 KPI STAT CARDS (2 rows of 4) -->
+<div class="stats-grid-4">
+  <div class="stat-box">
+    <div class="stat-label">Total users</div>
+    <div class="stat-value">{{ total_users }}</div>
+    <div class="stat-trend positive">↑ Live registered accounts</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Total owners</div>
+    <div class="stat-value">{{ total_owners }}</div>
+    <div class="stat-trend positive">↑ Verified & listed partners</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Total properties</div>
+    <div class="stat-value">{{ total_properties }}</div>
+    <div class="stat-trend neutral">Indore, Bengaluru, Pune</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Active listings</div>
+    <div class="stat-value">{{ active_listings }}</div>
+    <div class="stat-trend neutral">Live room inventories</div>
+  </div>
+</div>
+
+<div class="stats-grid-4">
+  <div class="stat-box">
+    <div class="stat-label">Pending approvals</div>
+    <div class="stat-value">{{ pending_approvals }}</div>
+    <div class="stat-trend highlight">{{ pending_properties }} properties · {{ pending_kyc }} KYC</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Owner verification</div>
+    <div class="stat-value">{{ pending_kyc }}</div>
+    <div class="stat-trend highlight">Under review queue</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Open complaints</div>
+    <div class="stat-value">{{ open_complaints }}</div>
+    <div class="stat-trend highlight">Resolution SLA active</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Revenue · Total</div>
+    <div class="stat-value">₹{{ monthly_revenue|floatformat:0 }}</div>
+    <div class="stat-trend positive">↑ Verified payments</div>
+  </div>
+</div>
+
+<!-- MIDDLE SECTION: REVENUE OVERVIEW & PRIORITY QUEUE -->
+<div class="overview-split-grid">
+  <!-- REVENUE CARD WITH INTERACTIVE CHART -->
+  <div class="card revenue-card">
+    <div class="card-header-flex">
+      <div>
+        <h2 class="card-title">Revenue overview</h2>
+        <p class="card-subtitle" id="revenueSubtitle">Collected revenue · excluding GST (Past 6 Months)</p>
+      </div>
+      <div class="select-wrapper">
+        <select class="form-select-sm" id="timeframeSelect">
+          <option value="6months" selected>Last 6 months</option>
+          <option value="30days">Last 30 days</option>
+          <option value="fy">This financial year</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- DYNAMIC LEGEND (UPDATES ON DROPDOWN CHANGE) -->
+    <div class="chart-legend-row">
+      <span class="legend-item"><span class="legend-dot dot-primary"></span> Subscriptions · <strong id="subLegendVal">₹{{ subscription_revenue|floatformat:0 }}</strong></span>
+      <span class="legend-item"><span class="legend-dot dot-secondary"></span> Featured listings · <strong id="featLegendVal">₹{{ featured_revenue|floatformat:0 }}</strong></span>
+      <span class="legend-item"><span class="legend-dot" style="background: #10B981;"></span> Period Total · <strong id="periodTotalVal" style="color: #059669;">₹0</strong></span>
+    </div>
+
+    <!-- SCALABLE INTERACTIVE SVG CHART -->
+    <div class="chart-container" id="chartContainer" style="position: relative;">
+      <!-- Floating Interactive Tooltip -->
+      <div id="chartTooltip" class="chart-tooltip" style="display: none;"></div>
+
+      <svg id="revenueChartSvg" viewBox="0 0 700 240" class="revenue-chart-svg" preserveAspectRatio="none">
+        <!-- Grid and curves rendered dynamically by renderChart() -->
+      </svg>
+    </div>
+  </div>
+
+  <!-- PRIORITY QUEUE -->
+  <div class="card priority-card">
+    <h2 class="card-title">Your priority queue</h2>
+    <p class="card-subtitle">Keep trust at the heart of every stay.</p>
+
+    <div class="queue-list">
+      <!-- 1. Owner KYC -->
+      <a href="{% url 'admin_portal:owner_verification' %}" class="queue-item">
+        <div class="queue-icon-circle icon-blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        </div>
+        <div class="queue-meta">
+          <div class="queue-title">Owner KYC awaiting review</div>
+          <div class="queue-detail">{{ pending_kyc }} requests</div>
+        </div>
+        <div class="queue-arrow">↗</div>
+      </a>
+
+      <!-- 2. Property Verification -->
+      <a href="{% url 'admin_portal:property_verification' %}" class="queue-item">
+        <div class="queue-icon-circle icon-indigo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M8 10h.01"></path><path d="M16 10h.01"></path><path d="M8 14h.01"></path><path d="M16 14h.01"></path></svg>
+        </div>
+        <div class="queue-meta">
+          <div class="queue-title">Properties to approve</div>
+          <div class="queue-detail">{{ pending_properties }} properties</div>
+        </div>
+        <div class="queue-arrow">↗</div>
+      </a>
+
+      <!-- 3. Open Complaints -->
+      <a href="{% url 'admin_portal:reports_complaints' %}" class="queue-item">
+        <div class="queue-icon-circle icon-amber">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+        </div>
+        <div class="queue-meta">
+          <div class="queue-title">Complaints nearing SLA</div>
+          <div class="queue-detail">{{ open_complaints }} complaints</div>
+        </div>
+        <div class="queue-arrow">↗</div>
+      </a>
+
+      <!-- 4. Change Requests -->
+      <a href="{% url 'admin_portal:change_requests' %}" class="queue-item">
+        <div class="queue-icon-circle icon-teal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>
+        </div>
+        <div class="queue-meta">
+          <div class="queue-title">Changes to verify</div>
+          <div class="queue-detail">{{ pending_changes }} requests</div>
+        </div>
+        <div class="queue-arrow">↗</div>
+      </a>
+    </div>
+
+    <div class="queue-card-footer">
+      <a href="{% url 'admin_portal:owner_verification' %}" class="queue-action-link">Open review workspace →</a>
+    </div>
+  </div>
+</div>
+
+<!-- RECENT ACTIVITY TABLE (LIVE AUDIT LOGS) -->
+<div class="section-title-row" id="recent-activity-section">
+  <h2 class="section-heading">Recent activity</h2>
+  <span class="section-timestamp">Live Audit Stream</span>
+</div>
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ADMIN / ACTOR</th>
+          <th>ACTIVITY</th>
+          <th>REFERENCE</th>
+          <th>TIME · IST</th>
+          <th>RESULT</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in recent_activities %}
+        <tr>
+          <td>
+            <div class="actor-cell">
+              <div class="actor-avatar bg-blue">
+                {% if log.actor and log.actor.first_name %}
+                  {{ log.actor.first_name|first }}{{ log.actor.last_name|first }}
+                {% elif log.actor %}
+                  {{ log.actor.username|slice:":2"|upper }}
+                {% else %}
+                  SY
+                {% endif %}
+              </div>
+              <div>
+                <div class="actor-name">{% if log.actor %}{{ log.actor.get_full_name|default:log.actor.username }}{% else %}System Admin{% endif %}</div>
+                <div class="actor-role">{% if log.actor %}{{ log.actor.get_admin_sub_role_display|default:log.actor.get_role_display }}{% else %}Automated Service{% endif %}</div>
+              </div>
+            </div>
+          </td>
+          <td class="font-medium">{{ log.action_type }}</td>
+          <td class="text-subtle font-mono">{{ log.target_entity }}{% if log.target_id %}-{{ log.target_id }}{% endif %}</td>
+          <td>{{ log.created_at|date:"H:i" }} today</td>
+          <td>
+            <span class="status-pill {{ log.clean_pill }}">
+              {{ log.clean_icon }} {{ log.clean_result }}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'admin_portal:audit_logs' %}?event_id={{ log.id }}" class="table-link">View audit ↗</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 32px;">
+            No recent audit activity recorded yet. New admin actions will appear here automatically!
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-footer-bar">
+    <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} activities</span>
+    <div class="pagination-wrap" style="display: flex; align-items: center; gap: 8px;">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}#recent-activity-section" class="page-btn">← Prev</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">← Prev</span>
+      {% endif %}
+
+      <span class="page-indicator" style="font-size: 12.5px; font-weight: 600; color: #475569; padding: 0 8px;">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}#recent-activity-section" class="page-btn">Next →</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">Next →</span>
+      {% endif %}
+
+      <a href="{% url 'admin_portal:audit_logs' %}" class="page-btn active" style="margin-left: 8px;">Full archive →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Interactive SVG Revenue Chart & Tooltip Script -->
+<script>
+  (function() {
+    const rawData = '{{ revenue_chart_data_json|escapejs }}';
+    let chartData = {};
+    try {
+      chartData = JSON.parse(rawData);
+    } catch(e) {
+      console.error('Failed to parse revenue chart data:', e);
+      return;
+    }
+
+    const svg = document.getElementById('revenueChartSvg');
+    const tooltip = document.getElementById('chartTooltip');
+    const container = document.getElementById('chartContainer');
+    const select = document.getElementById('timeframeSelect');
+    const subtitle = document.getElementById('revenueSubtitle');
+    const subLegend = document.getElementById('subLegendVal');
+    const featLegend = document.getElementById('featLegendVal');
+    const totalLegend = document.getElementById('periodTotalVal');
+
+    if (!svg || !select) return;
+
+    function formatInr(val) {
+      return '₹' + Number(val).toLocaleString('en-IN');
+    }
+
+    function render(key) {
+      const data = chartData[key];
+      if (!data) return;
+
+      // Update Texts & Legends
+      if (subtitle) subtitle.textContent = `Collected revenue · excluding GST (${data.period_name})`;
+      if (subLegend) subLegend.textContent = formatInr(data.sub_total);
+      if (featLegend) featLegend.textContent = formatInr(data.feat_total);
+      if (totalLegend) totalLegend.textContent = formatInr(data.sub_total + data.feat_total);
+
+      // SVG Dimensions
+      const width = 700;
+      const height = 240;
+      const left = 45;
+      const right = 675;
+      const top = 25;
+      const bottom = 205;
+      const chartH = bottom - top;
+      const chartW = right - left;
+      const maxVal = data.max_val || 10000;
+      const n = data.labels.length;
+
+      let svgHtml = '';
+
+      // 1. Grid Lines & Y-axis labels (5 levels)
+      for (let i = 0; i < 5; i++) {
+        const y = top + (chartH / 4) * i;
+        const lineStroke = (i === 4) ? '#E2E8F0' : '#F1F5F9';
+        svgHtml += `<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="${lineStroke}" stroke-width="1" />`;
+        const yLabel = data.y_axis[i] || '';
+        svgHtml += `<text x="${left - 10}" y="${y + 4}" text-anchor="end" class="chart-axis-txt">${yLabel}</text>`;
+      }
+
+      // 2. Calculate coordinates for points
+      const subPoints = [];
+      const featPoints = [];
+
+      for (let i = 0; i < n; i++) {
+        const x = left + (i / (n - 1)) * chartW;
+        const subVal = data.subscriptions[i] || 0;
+        const featVal = data.featured[i] || 0;
+
+        const subY = bottom - (subVal / maxVal) * chartH;
+        const featY = bottom - (featVal / maxVal) * chartH;
+
+        subPoints.push({ x, y: subY, val: subVal, label: data.labels[i] });
+        featPoints.push({ x, y: featY, val: featVal, label: data.labels[i] });
+
+        // X-axis label
+        svgHtml += `<text x="${x}" y="228" text-anchor="middle" class="chart-axis-txt">${data.labels[i].split(' ')[0]}</text>`;
+      }
+
+      // 3. Smooth Curve Path Generator
+      function makeSmoothCurve(pts) {
+        if (!pts.length) return '';
+        let d = `M ${pts[0].x} ${pts[0].y}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[i];
+          const p1 = pts[i + 1];
+          const midX = p0.x + (p1.x - p0.x) / 2;
+          d += ` C ${midX} ${p0.y}, ${midX} ${p1.y}, ${p1.x} ${p1.y}`;
+        }
+        return d;
+      }
+
+      // Draw Subscriptions Line (Baltic Blue #1C5D99)
+      const subCurve = makeSmoothCurve(subPoints);
+      svgHtml += `<path d="${subCurve}" fill="none" stroke="#1C5D99" stroke-width="3" stroke-linecap="round" />`;
+
+      // Draw Featured Listings Line (Pacific Blue #639FAB)
+      const featCurve = makeSmoothCurve(featPoints);
+      svgHtml += `<path d="${featCurve}" fill="none" stroke="#639FAB" stroke-width="2.5" stroke-linecap="round" />`;
+
+      // 4. Interactive Data Circles with tap/hover events
+      subPoints.forEach((p, idx) => {
+        const featVal = featPoints[idx].val;
+        svgHtml += `
+          <circle cx="${p.x}" cy="${p.y}" r="5" fill="#1C5D99" stroke="#FFFFFF" stroke-width="2.5" class="chart-data-point"
+            data-period="${p.label}" data-sub="${p.val}" data-feat="${featVal}" data-cx="${p.x}" data-cy="${p.y}" />
+        `;
+      });
+
+      featPoints.forEach((p, idx) => {
+        const subVal = subPoints[idx].val;
+        svgHtml += `
+          <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#639FAB" stroke="#FFFFFF" stroke-width="2" class="chart-data-point"
+            data-period="${p.label}" data-sub="${subVal}" data-feat="${p.val}" data-cx="${p.x}" data-cy="${p.y}" />
+        `;
+      });
+
+      svg.innerHTML = svgHtml;
+
+      // 5. Attach Hover and Tap Listeners to Circles
+      const points = svg.querySelectorAll('.chart-data-point');
+      points.forEach(pt => {
+        function showTip(e) {
+          const period = pt.getAttribute('data-period');
+          const sub = Number(pt.getAttribute('data-sub'));
+          const feat = Number(pt.getAttribute('data-feat'));
+          const total = sub + feat;
+
+          const cx = Number(pt.getAttribute('data-cx'));
+          const cy = Number(pt.getAttribute('data-cy'));
+
+          // Map SVG coordinates to DOM container pixels
+          const rect = svg.getBoundingClientRect();
+          const scaleX = rect.width / 700;
+          const scaleY = rect.height / 240;
+
+          const tipX = cx * scaleX;
+          const tipY = cy * scaleY;
+
+          tooltip.innerHTML = `
+            <div class="chart-tooltip-header">${period}</div>
+            <div class="chart-tooltip-row">
+              <span class="chart-tooltip-sub">● Subscriptions:</span>
+              <strong>${formatInr(sub)}</strong>
+            </div>
+            <div class="chart-tooltip-row">
+              <span class="chart-tooltip-feat">● Featured Listings:</span>
+              <strong>${formatInr(feat)}</strong>
+            </div>
+            <div class="chart-tooltip-total">
+              <span>Combined Total:</span>
+              <span>${formatInr(total)}</span>
+            </div>
+          `;
+
+          tooltip.style.left = `${tipX}px`;
+          tooltip.style.top = `${tipY}px`;
+          tooltip.style.display = 'block';
+          tooltip.style.opacity = '1';
+
+          points.forEach(p => p.classList.remove('active'));
+          pt.classList.add('active');
+        }
+
+        pt.addEventListener('mouseenter', showTip);
+        pt.addEventListener('click', showTip);
+        pt.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          showTip(e);
+        });
+      });
+    }
+
+    // Initial render
+    render(select.value || '6months');
+
+    // Timeframe Change Event
+    select.addEventListener('change', function() {
+      tooltip.style.display = 'none';
+      render(this.value);
+    });
+
+    // Hide tooltip when clicking elsewhere in the chart
+    container.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+      svg.querySelectorAll('.chart-data-point').forEach(p => p.classList.remove('active'));
+    });
+  })();
+</script>
+{% endblock %}

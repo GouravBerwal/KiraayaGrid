@@ -1,0 +1,294 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Visit Request {{ visit.request_id }} — KiraayaGrid Owner Portal{% endblock %}
+{% block page_title %}Visit Request Details{% endblock %}
+{% block page_subtitle %}Manage schedule, walkthrough confirmation, and seeker details for {{ visit.request_id }}{% endblock %}
+
+{% block content %}
+<!-- TOAST MESSAGES -->
+{% if messages %}
+  <div style="margin-bottom: 20px;" id="djangoMessages">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- TOP NAVIGATION & VISIT SWITCHER -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Back Link & Request ID -->
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <a href="{% url 'owner_portal:booking_requests' %}" class="btn-secondary-light" style="padding: 7px 12px; font-size: 12.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <span>All Requests</span>
+    </a>
+    <span style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display'; font-weight: 700; font-size: 14px; color: var(--color-yale-blue);">
+      {{ visit.request_id }}
+    </span>
+    <!-- Status Badge -->
+    <span style="font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-pill);
+      {% if visit.status == 'PENDING' %}background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;
+      {% elif visit.status == 'ACCEPTED' %}background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0;
+      {% elif visit.status == 'RESCHEDULED' %}background: #EDE9FE; color: #5B21B6; border: 1px solid #DDD6FE;
+      {% elif visit.status == 'COMPLETED' %}background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0;
+      {% elif visit.status == 'CANCELLED' %}background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB;
+      {% else %}background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA;{% endif %}">
+      {{ visit.get_status_display }}
+    </span>
+  </div>
+
+  <!-- Visit Position & Next / Previous Switcher -->
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <span style="font-size: 12.5px; color: var(--color-text-muted); font-weight: 500;">
+      Request <strong style="color: var(--color-text-main);">{{ visit_position }}</strong> of <strong style="color: var(--color-text-main);">{{ total_visits }}</strong>
+    </span>
+
+    <div style="display: inline-flex; align-items: center; gap: 6px;">
+      {% if prev_visit_id %}
+        <a href="{% url 'owner_portal:booking_request_details' prev_visit_id %}" class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+          &larr; Previous
+        </a>
+      {% else %}
+        <span class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+          &larr; Previous
+        </span>
+      {% endif %}
+
+      {% if next_visit_id %}
+        <a href="{% url 'owner_portal:booking_request_details' next_visit_id %}" class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+          Next &rarr;
+        </a>
+      {% else %}
+        <span class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+          Next &rarr;
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- MAIN HEADER ROW -->
+<div class="owner-header-row" style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+      {{ visit.request_id }} &middot; {% if visit.request_type == 'BOOKING' %}Room Booking Request{% else %}Property Walkthrough Visit{% endif %}
+    </h1>
+    <p class="welcome-subheading" style="margin-top: 4px; font-size: 13.5px; color: var(--color-text-muted);">
+      Scheduled with <strong style="color: var(--color-text-main);">{{ visit.seeker_name }}</strong> for <strong style="color: var(--color-text-main);">{{ visit.property.title }}</strong> &middot; Requested {{ visit.created_at|date:"d M Y, h:i A" }}
+    </p>
+  </div>
+
+  <!-- Header Action Buttons -->
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    {% if visit.status == 'PENDING' %}
+      <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="accept">
+        <button type="submit" class="btn-primary-yale" style="background: #059669; border-color: #059669; padding: 8px 16px; font-size: 12.5px;">
+          &check; Accept Visit
+        </button>
+      </form>
+      <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="cancel">
+        <button type="submit" class="btn-secondary-light" style="color: #DC2626; padding: 8px 14px; font-size: 12.5px;">
+          Decline
+        </button>
+      </form>
+    {% elif visit.status == 'ACCEPTED' or visit.status == 'RESCHEDULED' %}
+      <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="complete">
+        <button type="submit" class="btn-secondary-light" style="color: #059669; padding: 8px 16px; font-size: 12.5px; font-weight: 600;">
+          &check; Mark as Completed
+        </button>
+      </form>
+    {% endif %}
+
+    <button type="button" onclick="openRescheduleModal()" class="btn-secondary-light" style="padding: 8px 14px; font-size: 12.5px;">
+      Reschedule
+    </button>
+    
+    <a href="https://wa.me/91{{ visit.seeker_phone|cut:'+'|cut:' '|cut:'-' }}?text=Hi%20{{ visit.seeker_name|urlencode }},%20regarding%20your%20scheduled%20visit%20{{ visit.request_id }}%20at%20{{ visit.property.title|urlencode }}." target="_blank" class="btn-secondary-light" style="color: #059669; padding: 8px 14px; font-size: 12.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      WhatsApp Seeker
+    </a>
+  </div>
+</div>
+
+<!-- 2-COLUMN LAYOUT -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
+  <!-- Left Side: Appointment Details, Notes & Reply -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- 1. Appointment Card -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 16px;">Appointment Schedule</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+        <div style="background: var(--color-bg); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase;">APPOINTMENT DATE</div>
+          <div style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+            {{ visit.scheduled_date|date:"D, d F Y" }}
+          </div>
+        </div>
+
+        <div style="background: var(--color-bg); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+          <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase;">CONFIRMED TIME SLOT</div>
+          <div style="font-size: 18px; font-weight: 700; color: var(--color-yale-blue); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+            {{ visit.scheduled_time_slot }}
+          </div>
+        </div>
+      </div>
+
+      {% if visit.notes %}
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 14px 16px; font-size: 13px; color: var(--color-text-main); line-height: 1.5; margin-bottom: 14px;">
+          <strong style="color: var(--color-text-muted); font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">SEEKER SPECIAL REQUEST</strong>
+          {{ visit.notes }}
+        </div>
+      {% endif %}
+
+      {% if visit.owner_reply %}
+        <div style="background: #F0FDF4; border: 1px solid #DCFCE7; border-radius: var(--radius-md); padding: 14px 16px; font-size: 13px; color: #166534; line-height: 1.5;">
+          <strong style="color: #059669; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px;">OWNER CONFIRMATION MESSAGE</strong>
+          {{ visit.owner_reply }}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 2. Internal Owner Notes Form -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 12px;">Internal Owner Notes</h3>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 14px 0;">
+        These notes are completely private and only visible to you and your property managers.
+      </p>
+
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_notes">
+        <textarea name="internal_notes" rows="3" placeholder="Write private walkthrough notes (e.g. verified corporate ID, ready with deposit, preferred ground floor)..." style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 13.5px; font-family: inherit; margin-bottom: 12px; outline: none;">{{ visit.notes }}</textarea>
+        <button type="submit" class="btn-primary-yale" style="padding: 8px 18px; font-size: 12.5px; font-weight: 600;">Save Private Note</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Side: Seeker Profile & Property Snapshot -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- Seeker Info -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 16px;">Visitor Profile</h3>
+
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          {{ visit.seeker_name|first|upper }}
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 15px; color: var(--color-text-main);">{{ visit.seeker_name }}</div>
+          <div style="font-size: 11.5px; color: #059669; font-weight: 600;">&check; Verified Visitor</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--color-border); padding-top: 16px; font-size: 13px;">
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">CONTACT NUMBER</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 3px;">
+            <a href="tel:{{ visit.seeker_phone }}" style="font-weight: 600; color: var(--color-text-main); text-decoration: none;">{{ visit.seeker_phone }}</a>
+            <a href="https://wa.me/91{{ visit.seeker_phone|cut:'+'|cut:' '|cut:'-' }}" target="_blank" style="font-size: 11.5px; color: #059669; font-weight: 600; text-decoration: none;">WhatsApp</a>
+          </div>
+        </div>
+
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">EMAIL ADDRESS</span>
+          <a href="mailto:{{ visit.seeker_email }}" style="font-weight: 600; color: var(--color-text-main); text-decoration: none; margin-top: 3px; display: block;">{{ visit.seeker_email|default:"Not provided" }}</a>
+        </div>
+
+        {% if matching_enquiry %}
+          <div style="border-top: 1px solid var(--color-border); padding-top: 12px; margin-top: 4px;">
+            <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">ORIGINAL ENQUIRY</span>
+            <a href="{% url 'owner_portal:enquiry_details' matching_enquiry.id %}" style="font-weight: 700; color: var(--color-yale-blue); font-size: 12.5px; text-decoration: none; display: inline-block; margin-top: 4px;">
+              View Lead #ENQ-00{{ matching_enquiry.id }} &nearr;
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Property Snapshot -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 14px;">Property Details</h3>
+
+      <div style="font-size: 14px; font-weight: 700; color: var(--color-yale-blue); margin-bottom: 4px;">
+        {{ visit.property.title }}
+      </div>
+      <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px;">
+        {{ visit.property.locality.name }}, {{ visit.property.city.name }}
+      </div>
+
+      <div style="background: var(--color-bg); padding: 12px; border-radius: var(--radius-md); font-size: 12.5px; border: 1px solid var(--color-border); margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: var(--color-text-muted);">Assigned Room:</span>
+          <strong style="color: var(--color-text-main);">{{ visit.room.name|default:"General Walkthrough" }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--color-text-muted);">Property Type:</span>
+          <strong style="color: #059669;">{{ visit.property.get_property_type_display }}</strong>
+        </div>
+      </div>
+
+      <a href="{% url 'owner_portal:manage_property' visit.property.id %}" class="btn-secondary-light" style="width: 100%; box-sizing: border-box; text-align: center; display: block; text-decoration: none; font-size: 12px; padding: 8px 12px;">
+        Manage Property &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- RESCHEDULE MODAL -->
+<div id="rescheduleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 92%; max-width: 460px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin: 0;">Reschedule Visit Appointment</h3>
+      <button type="button" onclick="closeRescheduleModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reschedule">
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">NEW VISIT DATE</label>
+        <input type="date" name="new_date" value="{{ visit.scheduled_date|date:'Y-m-d' }}" required style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;">
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">NEW TIME SLOT</label>
+        <select name="new_slot" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff; font-family: inherit;">
+          <option value="10:00 AM - 11:00 AM" {% if visit.scheduled_time_slot == '10:00 AM - 11:00 AM' %}selected{% endif %}>Morning: 10:00 AM – 11:00 AM</option>
+          <option value="11:00 AM - 12:00 PM" {% if visit.scheduled_time_slot == '11:00 AM - 12:00 PM' %}selected{% endif %}>Morning: 11:00 AM – 12:00 PM</option>
+          <option value="02:00 PM - 03:00 PM" {% if visit.scheduled_time_slot == '02:00 PM - 03:00 PM' %}selected{% endif %}>Afternoon: 02:00 PM – 03:00 PM</option>
+          <option value="04:00 PM - 05:00 PM" {% if visit.scheduled_time_slot == '04:00 PM - 05:00 PM' %}selected{% endif %}>Evening: 04:00 PM – 05:00 PM</option>
+          <option value="05:30 PM - 06:30 PM" {% if visit.scheduled_time_slot == '05:30 PM - 06:30 PM' %}selected{% endif %}>Evening: 05:30 PM – 06:30 PM</option>
+        </select>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary-light" onclick="closeRescheduleModal()" style="padding: 8px 14px; font-size: 12.5px;">Cancel</button>
+        <button type="submit" class="btn-primary-yale" style="padding: 8px 18px; font-size: 12.5px; font-weight: 600;">Confirm Reschedule</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openRescheduleModal() {
+  document.getElementById('rescheduleModal').style.display = 'flex';
+}
+function closeRescheduleModal() {
+  document.getElementById('rescheduleModal').style.display = 'none';
+}
+</script>
+{% endblock %}

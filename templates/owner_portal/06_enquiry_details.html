@@ -1,0 +1,676 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Lead #ENQ-00{{ enquiry.id }} — {{ enquiry.seeker_name }} — KiraayaGrid Owner Portal{% endblock %}
+{% block page_title %}Enquiry Details{% endblock %}
+{% block page_subtitle %}Direct seeker lead, messaging thread, walkthrough schedule, and booking preferences{% endblock %}
+
+{% block content %}
+<!-- TOAST MESSAGES -->
+{% if messages %}
+  <div style="margin-bottom: 20px;" id="djangoMessages">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- FLOATING AJAX NOTIFICATION TOAST -->
+<div id="ajaxToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #065F46; color: #FFFFFF; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.18); align-items: center; gap: 10px;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="ajaxToastMsg">Updated successfully.</span>
+</div>
+
+<!-- TOP NAVIGATION & LEAD SWITCHER ROW -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Left: Back Link & Lead ID -->
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <a href="{% url 'owner_portal:enquiries' %}" class="btn-secondary-light" style="padding: 7px 12px; font-size: 12.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <span>All Enquiries</span>
+    </a>
+    <span style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display'; font-weight: 700; font-size: 14px; color: var(--color-yale-blue);">
+      #ENQ-00{{ enquiry.id }}
+    </span>
+    <!-- Status Badge -->
+    <span id="currentStatusBadge" style="font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-pill);
+      {% if enquiry.status == 'NEW' %}background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0;
+      {% elif enquiry.status == 'CONTACTED' %}background: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE;
+      {% elif enquiry.status == 'INTERESTED' %}background: #EDE9FE; color: #5B21B6; border: 1px solid #DDD6FE;
+      {% elif enquiry.status == 'VISIT_REQUESTED' %}background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;
+      {% elif enquiry.status == 'CONVERTED' %}background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0;
+      {% else %}background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB;{% endif %}">
+      {{ enquiry.get_status_display }}
+    </span>
+  </div>
+
+  <!-- Center/Right: Lead Position & Next / Previous Lead Navigation -->
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <span style="font-size: 12.5px; color: var(--color-text-muted); font-weight: 500;">
+      Lead <strong style="color: var(--color-text-main);">{{ lead_position }}</strong> of <strong style="color: var(--color-text-main);">{{ total_leads }}</strong>
+    </span>
+
+    <div style="display: inline-flex; align-items: center; gap: 6px;">
+      {% if prev_enquiry_id %}
+        <a href="{% url 'owner_portal:enquiry_details' prev_enquiry_id %}" class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;" title="View Previous Lead">
+          &larr; Previous Lead
+        </a>
+      {% else %}
+        <span class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+          &larr; Previous Lead
+        </span>
+      {% endif %}
+
+      {% if next_enquiry_id %}
+        <a href="{% url 'owner_portal:enquiry_details' next_enquiry_id %}" class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;" title="View Next Lead">
+          Next Lead &rarr;
+        </a>
+      {% else %}
+        <span class="btn-secondary-light" style="padding: 7px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+          Next Lead &rarr;
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- MAIN HEADER INFO -->
+<div class="owner-header-row" style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin: 0; display: flex; align-items: center; gap: 10px;">
+      <span>{{ enquiry.seeker_name }}</span>
+      <span style="font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0;">
+        &check; Verified Seeker
+      </span>
+    </h1>
+    <p class="welcome-subheading" style="margin-top: 4px; font-size: 13.5px; color: var(--color-text-muted);">
+      Interested in <strong style="color: var(--color-text-main);">{{ enquiry.property.title }}</strong> &middot; {{ enquiry.interested_room_type }} &middot; Received {{ enquiry.created_at|date:"d M Y, h:i A" }}
+    </p>
+  </div>
+
+  <!-- Header Action Controls -->
+  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <!-- Update Status Dropdown -->
+    <div style="position: relative;">
+      <select id="quickStatusSelect" onchange="changeStatus(this.value)" style="padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 12.5px; font-weight: 600; background: #FFFFFF; color: var(--color-text-main); cursor: pointer;">
+        <option value="" disabled>Change Status...</option>
+        <option value="NEW" {% if enquiry.status == 'NEW' %}selected{% endif %}>Status: New</option>
+        <option value="CONTACTED" {% if enquiry.status == 'CONTACTED' %}selected{% endif %}>Status: Contacted</option>
+        <option value="INTERESTED" {% if enquiry.status == 'INTERESTED' %}selected{% endif %}>Status: Interested</option>
+        <option value="VISIT_REQUESTED" {% if enquiry.status == 'VISIT_REQUESTED' %}selected{% endif %}>Status: Visit Scheduled</option>
+        <option value="CONVERTED" {% if enquiry.status == 'CONVERTED' %}selected{% endif %}>Status: Converted / Booked</option>
+        <option value="CLOSED" {% if enquiry.status == 'CLOSED' %}selected{% endif %}>Status: Closed</option>
+      </select>
+    </div>
+
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/91{{ enquiry.seeker_phone|cut:'+'|cut:' '|cut:'-' }}?text=Hi%20{{ enquiry.seeker_name|urlencode }},%20I%20saw%20your%20enquiry%20for%20{{ enquiry.property.title|urlencode }}%20on%20KiraayaGrid." 
+       target="_blank" class="btn-secondary-light" style="padding: 8px 14px; font-size: 12.5px; text-decoration: none; color: #047857; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+      <span>WhatsApp</span>
+    </a>
+
+    <!-- Schedule Visit Button -->
+    <button type="button" onclick="openScheduleVisitModal()" class="btn-primary-yale" style="padding: 8px 16px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>Schedule Visit</span>
+    </button>
+  </div>
+</div>
+
+<!-- 2-COLUMN LAYOUT -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
+  <!-- ========================================================= -->
+  <!-- LEFT COLUMN: MESSAGE, CONVERSATION & TIMELINE -->
+  <!-- ========================================================= -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- 1. Original Seeker Enquiry Message Card -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-powder-blue-light); color: var(--color-yale-blue); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">
+            {{ enquiry.seeker_name|first|upper }}
+          </div>
+          <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">Original Enquiry Message</span>
+        </div>
+        <span style="font-size: 12px; color: var(--color-text-muted);">
+          {{ enquiry.created_at|date:"d M Y, h:i A" }}
+        </span>
+      </div>
+
+      <div style="background: var(--color-bg); padding: 16px 20px; border-radius: var(--radius-md); font-size: 14px; color: var(--color-text-main); line-height: 1.6; border-left: 3px solid var(--color-yale-blue);">
+        {% if enquiry.message %}
+          "{{ enquiry.message }}"
+        {% else %}
+          <em>"Hi Arjun, I am interested in viewing the {{ enquiry.interested_room_type }} at {{ enquiry.property.title }}. Is move-in available from {{ enquiry.preferred_move_in|date:'d M Y'|default:'this month' }}?"</em>
+        {% endif %}
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px; margin-top: 14px; flex-wrap: wrap; font-size: 12px; color: var(--color-text-muted);">
+        <div>Requested Type: <strong style="color: var(--color-text-main);">{{ enquiry.interested_room_type }}</strong></div>
+        <div>&bull;</div>
+        <div>Monthly Budget: <strong style="color: #059669;">&pound;{{ enquiry.budget|floatformat:0 }} / month</strong></div>
+        <div>&bull;</div>
+        <div>Preferred Move-in: <strong style="color: var(--color-text-main);">{{ enquiry.preferred_move_in|date:"d M Y"|default:"Immediate" }}</strong></div>
+      </div>
+    </div>
+
+    <!-- 2. Interactive Conversation Thread Feed -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-yale-blue)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin: 0;">Conversation Thread</h3>
+        </div>
+        <span style="font-size: 12px; color: var(--color-text-muted);">
+          Delivered in real-time via SMS &amp; In-app
+        </span>
+      </div>
+
+      <!-- Messages Feed Container -->
+      <div id="messagesFeed" style="display: flex; flex-direction: column; gap: 14px; max-height: 420px; overflow-y: auto; padding: 4px; margin-bottom: 20px;">
+        {% for msg in messages_list %}
+          {% if msg.sender_type == 'OWNER' %}
+            <!-- Owner Message (Right Side Yale Blue) -->
+            <div style="display: flex; justify-content: flex-end; align-items: flex-end; gap: 8px;">
+              <div style="max-width: 78%; background: var(--color-yale-blue); color: #FFFFFF; padding: 12px 16px; border-radius: 14px 14px 2px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+                <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">{{ msg.message_text }}</div>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 6px; font-size: 11px; opacity: 0.85;">
+                  <span>{{ msg.created_at|date:"d M, h:i A" }}</span>
+                  <span>&bull;</span>
+                  <span>&check;&check; Sent</span>
+                </div>
+              </div>
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-yale-blue); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;" title="Owner (You)">
+                You
+              </div>
+            </div>
+          {% elif msg.sender_type == 'SEEKER' %}
+            <!-- Seeker Message (Left Side Porcelain Grey) -->
+            <div style="display: flex; justify-content: flex-start; align-items: flex-end; gap: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">
+                {{ enquiry.seeker_name|first|upper }}
+              </div>
+              <div style="max-width: 78%; background: var(--color-bg); color: var(--color-text-main); border: 1px solid var(--color-border); padding: 12px 16px; border-radius: 14px 14px 14px 2px;">
+                <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">{{ msg.message_text }}</div>
+                <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 6px;">
+                  {{ msg.created_at|date:"d M, h:i A" }}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <!-- System Alert (Centered) -->
+            <div style="text-align: center; margin: 8px 0;">
+              <span style="font-size: 11.5px; background: #F1F5F9; color: #475569; padding: 4px 12px; border-radius: var(--radius-pill); border: 1px solid #E2E8F0;">
+                {{ msg.message_text }} &middot; {{ msg.created_at|date:"d M, h:i A" }}
+              </span>
+            </div>
+          {% endif %}
+        {% empty %}
+          <!-- Empty State -->
+          <div id="noMessagesPlaceholder" style="text-align: center; padding: 32px 16px; color: var(--color-text-muted); background: var(--color-bg); border-radius: var(--radius-md);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; opacity: 0.6;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--color-text-main); margin-bottom: 4px;">No messages sent yet</div>
+            <p style="font-size: 12.5px; margin: 0;">Send your first response below or schedule a property walkthrough visit to engage with {{ enquiry.seeker_name }}.</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- 3. Send Response Composer Form -->
+      <form id="replyForm" onsubmit="submitReply(event)" style="border-top: 1px solid var(--color-border); padding-top: 16px;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="send_reply">
+        
+        <!-- Quick Template Chips -->
+        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+          <span style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase;">Quick Canned:</span>
+          <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 3px 8px;" onclick="insertTemplate('Hi {{ enquiry.seeker_name|escapejs }}, yes! The room is available for immediate move-in. Would you like to schedule a quick walkthrough?')">
+            &check; Room Available
+          </button>
+          <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 3px 8px;" onclick="insertTemplate('Hi {{ enquiry.seeker_name|escapejs }}, we can arrange a visit for you tomorrow between 11 AM and 1 PM. Does that time work for you?')">
+            &plus; Schedule Walkthrough
+          </button>
+          <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 3px 8px;" onclick="insertTemplate('Hi {{ enquiry.seeker_name|escapejs }}, the monthly rent is &pound;{{ enquiry.budget|floatformat:0 }} including high-speed WiFi and maintenance. Security deposit is 1 month rent.')">
+            &pound; Rent &amp; Deposit Terms
+          </button>
+        </div>
+
+        <textarea id="replyTextarea" name="reply_text" rows="3" required placeholder="Type your response to {{ enquiry.seeker_name }} here..." style="width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 13.5px; font-family: inherit; margin-bottom: 12px; outline: none; transition: border-color 0.15s ease;"></textarea>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <span style="font-size: 11.5px; color: var(--color-text-muted);">
+            Sending will automatically update status to <strong style="color: var(--color-yale-blue);">Contacted</strong>
+          </span>
+          <button type="submit" id="sendReplyBtn" class="btn-primary-yale" style="padding: 9px 20px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+            <span>Send Message</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 4. Enquiry Activity Timeline -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 16px;">Enquiry Activity Timeline</h3>
+      
+      <div style="border-left: 2px solid var(--color-border); padding-left: 18px; margin-left: 6px; display: flex; flex-direction: column; gap: 16px;">
+        <!-- Discovery Milestone -->
+        <div style="position: relative;">
+          <div style="position: absolute; left: -24px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-yale-blue); border: 2px solid #FFFFFF;"></div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--color-text-main);">Enquiry Received from KiraayaGrid Discovery</div>
+          <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">
+            {{ enquiry.created_at|date:"d M Y, h:i A" }} &middot; Seeker submitted direct interest in {{ enquiry.property.title }}
+          </div>
+        </div>
+
+        <!-- Identity Verification -->
+        <div style="position: relative;">
+          <div style="position: absolute; left: -24px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: #059669; border: 2px solid #FFFFFF;"></div>
+          <div style="font-size: 13px; font-weight: 700; color: #059669;">Seeker Identity Verified</div>
+          <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">
+            Phone verification completed (+91 {{ enquiry.seeker_phone|slice:":6" }}XXXX)
+          </div>
+        </div>
+
+        <!-- Dynamic Audit Logs -->
+        {% for log in enquiry_audit_logs %}
+          <div style="position: relative;">
+            <div style="position: absolute; left: -24px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: #64748B; border: 2px solid #FFFFFF;"></div>
+            <div style="font-size: 13px; font-weight: 600; color: var(--color-text-main);">{{ log.details }}</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">
+              {{ log.created_at|date:"d M Y, h:i A" }} &middot; Action by {{ log.actor.get_full_name|default:log.actor.username }}
+            </div>
+          </div>
+        {% endfor %}
+
+        <!-- Visit Requests Milestones -->
+        {% for v in related_visits %}
+          <div style="position: relative;">
+            <div style="position: absolute; left: -24px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: #D97706; border: 2px solid #FFFFFF;"></div>
+            <div style="font-size: 13px; font-weight: 700; color: #D97706;">Walkthrough Visit: {{ v.request_id }}</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">
+              Scheduled for {{ v.scheduled_date|date:"d M Y" }} at {{ v.scheduled_time_slot }} (Status: {{ v.get_status_display }})
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- RIGHT COLUMN: SEEKER PROFILE & PROPERTY CONTEXT -->
+  <!-- ========================================================= -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- 1. Seeker Profile Card -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 16px;">Seeker Profile</h3>
+
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          {{ enquiry.seeker_name|first|upper }}
+        </div>
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--color-text-main);">{{ enquiry.seeker_name }}</div>
+          <div style="font-size: 12px; color: #059669; font-weight: 600; margin-top: 2px;">&check; Verified Tenant Seeker</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--color-border); padding-top: 16px; font-size: 13px;">
+        <!-- Phone -->
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">CONTACT NUMBER</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 3px;">
+            <a href="tel:{{ enquiry.seeker_phone }}" style="font-weight: 600; color: var(--color-text-main); text-decoration: none;">
+              {{ enquiry.seeker_phone }}
+            </a>
+            <a href="https://wa.me/91{{ enquiry.seeker_phone|cut:'+'|cut:' '|cut:'-' }}" target="_blank" style="font-size: 11.5px; color: #059669; text-decoration: none; font-weight: 600;">
+              WhatsApp &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">EMAIL ADDRESS</span>
+          <a href="mailto:{{ enquiry.seeker_email|default:'contact@kiraayagrid.in' }}" style="font-weight: 600; color: var(--color-text-main); text-decoration: none; word-break: break-all; margin-top: 3px; display: block;">
+            {{ enquiry.seeker_email|default:"Not provided" }}
+          </a>
+        </div>
+
+        <!-- Monthly Budget -->
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">MONTHLY BUDGET</span>
+          <span style="font-size: 18px; font-weight: 700; color: #059669; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display'; margin-top: 3px; display: block;">
+            &pound;{{ enquiry.budget|floatformat:0 }} <span style="font-size: 12px; font-weight: 500; color: var(--color-text-muted);">/ month</span>
+          </span>
+        </div>
+
+        <!-- Preferred Move-in -->
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">PREFERRED MOVE-IN</span>
+          <span style="font-weight: 600; color: var(--color-text-main); margin-top: 3px; display: block;">
+            {{ enquiry.preferred_move_in|date:"d F Y"|default:"Immediate Occupancy" }}
+          </span>
+        </div>
+
+        <!-- Stay Duration -->
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;">STAY PREFERENCE</span>
+          <span style="font-weight: 600; color: var(--color-text-main); margin-top: 3px; display: block;">
+            Long Term (6+ Months) &middot; Notice: 30 Days
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Interested Property Snapshot Card -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 14px;">Interested Property</h3>
+
+      <div style="display: flex; gap: 12px; margin-bottom: 14px;">
+        <div style="width: 60px; height: 60px; border-radius: var(--radius-md); background: var(--color-bg); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-border);">
+          {% if enquiry.property.photos.first %}
+            <img src="{{ enquiry.property.photos.first.photo_url }}" alt="{{ enquiry.property.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+          {% else %}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 21V9"></path></svg>
+          {% endif %}
+        </div>
+        <div>
+          <a href="{% url 'owner_portal:manage_property' enquiry.property.id %}" style="font-size: 14px; font-weight: 700; color: var(--color-yale-blue); text-decoration: none;">
+            {{ enquiry.property.title }}
+          </a>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+            {{ enquiry.property.locality.name }}, {{ enquiry.property.city.name }}
+          </div>
+          <div style="font-size: 11px; color: #059669; font-weight: 600; margin-top: 4px;">
+            {{ enquiry.property.get_property_type_display }}
+          </div>
+        </div>
+      </div>
+
+      <div style="background: var(--color-bg); padding: 12px 14px; border-radius: var(--radius-md); font-size: 12.5px; border: 1px solid var(--color-border); margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: var(--color-text-muted);">Interested Room:</span>
+          <strong style="color: var(--color-text-main);">{{ enquiry.interested_room_type }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--color-text-muted);">Starting Rent:</span>
+          <strong style="color: #059669;">&pound;{{ enquiry.property.min_rent|default:enquiry.budget|floatformat:0 }}/mo</strong>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <a href="{% url 'owner_portal:manage_property' enquiry.property.id %}" class="btn-secondary-light" style="flex: 1; text-align: center; font-size: 12px; padding: 7px 10px; text-decoration: none;">
+          Manage Property &rarr;
+        </a>
+        <a href="{% url 'owner_portal:room_bed_management' enquiry.property.id %}" class="btn-secondary-light" style="flex: 1; text-align: center; font-size: 12px; padding: 7px 10px; text-decoration: none;">
+          View Beds &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- 3. Scheduled Walkthroughs for this Seeker -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+        <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin: 0;">Walkthrough Visits</h3>
+        <span style="font-size: 11.5px; font-weight: 600; color: var(--color-yale-blue);">
+          {{ related_visits|length }} Visit{{ related_visits|length|pluralize }}
+        </span>
+      </div>
+
+      {% for v in related_visits %}
+        <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--color-yale-blue);">{{ v.request_id }}</span>
+            <span style="font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: var(--radius-pill);
+              {% if v.status == 'ACCEPTED' %}background: #DCFCE7; color: #166534;
+              {% elif v.status == 'PENDING' %}background: #FEF3C7; color: #92400E;
+              {% elif v.status == 'COMPLETED' %}background: #D1FAE5; color: #065F46;
+              {% else %}background: #F3F4F6; color: #4B5563;{% endif %}">
+              {{ v.get_status_display }}
+            </span>
+          </div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--color-text-main);">{{ v.scheduled_date|date:"D, d M Y" }}</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">Slot: {{ v.scheduled_time_slot }}</div>
+          <div style="margin-top: 8px;">
+            <a href="{% url 'owner_portal:booking_request_details' v.id %}" style="font-size: 11.5px; color: var(--color-yale-blue); font-weight: 600; text-decoration: none;">
+              Manage Visit &nearr;
+            </a>
+          </div>
+        </div>
+      {% empty %}
+        <div style="text-align: center; padding: 18px 10px; color: var(--color-text-muted); font-size: 12.5px; background: var(--color-bg); border-radius: var(--radius-md);">
+          No walkthrough scheduled yet.
+          <button type="button" onclick="openScheduleVisitModal()" class="btn-primary-yale" style="width: 100%; margin-top: 10px; font-size: 12px; padding: 7px 12px;">
+            + Schedule Walkthrough
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MODAL: SCHEDULE VISIT -->
+<!-- ========================================================= -->
+<div id="scheduleVisitModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 92%; max-width: 480px; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 17px; font-weight: 700; color: var(--color-text-main); margin: 0;">Schedule Property Walkthrough</h3>
+      <button type="button" onclick="closeScheduleVisitModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+
+    <p style="font-size: 13px; color: var(--color-text-muted); margin: 0 0 18px 0;">
+      Schedule a confirmed physical visit for <strong>{{ enquiry.seeker_name }}</strong> at <strong>{{ enquiry.property.title }}</strong>.
+    </p>
+
+    <form id="scheduleVisitForm" onsubmit="submitScheduleVisit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="schedule_visit">
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">SELECT VISIT DATE</label>
+        <input type="date" name="visit_date" id="modalVisitDate" required style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;">
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">TIME SLOT</label>
+        <select name="time_slot" id="modalTimeSlot" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff; font-family: inherit;">
+          <option value="10:00 AM - 11:00 AM">Morning: 10:00 AM – 11:00 AM</option>
+          <option value="11:00 AM - 12:00 PM" selected>Morning: 11:00 AM – 12:00 PM</option>
+          <option value="02:00 PM - 03:00 PM">Afternoon: 02:00 PM – 03:00 PM</option>
+          <option value="04:00 PM - 05:00 PM">Evening: 04:00 PM – 05:00 PM</option>
+          <option value="05:30 PM - 06:30 PM">Evening: 05:30 PM – 06:30 PM</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">INSTRUCTIONS / NOTES FOR SEEKER</label>
+        <textarea name="notes" id="modalVisitNotes" rows="2" placeholder="e.g. Please meet property manager Rahul at the reception. Phone: +91 98200 12345" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary-light" onclick="closeScheduleVisitModal()" style="padding: 8px 14px; font-size: 12.5px;">Cancel</button>
+        <button type="submit" id="btnSubmitVisit" class="btn-primary-yale" style="padding: 8px 18px; font-size: 12.5px; font-weight: 600;">Confirm &amp; Send Pass</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Quick Template Insert
+function insertTemplate(text) {
+  const ta = document.getElementById('replyTextarea');
+  ta.value = text;
+  ta.focus();
+}
+
+// Show Toast
+function showToast(msg) {
+  const t = document.getElementById('ajaxToast');
+  const txt = document.getElementById('ajaxToastMsg');
+  txt.innerText = msg;
+  t.style.display = 'flex';
+  setTimeout(() => { t.style.display = 'none'; }, 4000);
+}
+
+// Change Status via AJAX
+function changeStatus(newStatus) {
+  if (!newStatus) return;
+  const formData = new FormData();
+  formData.append('action', 'update_status');
+  formData.append('status', newStatus);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showToast(data.message);
+      const badge = document.getElementById('currentStatusBadge');
+      if (badge && data.status_display) {
+        badge.innerText = data.status_display;
+      }
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    window.location.reload();
+  });
+}
+
+// Submit Reply via AJAX
+function submitReply(e) {
+  e.preventDefault();
+  const form = document.getElementById('replyForm');
+  const ta = document.getElementById('replyTextarea');
+  const replyText = ta.value.trim();
+  if (!replyText) return;
+
+  const btn = document.getElementById('sendReplyBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'Sending...';
+
+  const formData = new FormData(form);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerHTML = '<span>Send Message</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+
+    if (data.status === 'success') {
+      showToast(data.message);
+      ta.value = '';
+
+      // Hide placeholder if exists
+      const placeholder = document.getElementById('noMessagesPlaceholder');
+      if (placeholder) placeholder.remove();
+
+      // Append bubble to feed
+      const feed = document.getElementById('messagesFeed');
+      const bubble = document.createElement('div');
+      bubble.style.cssText = 'display: flex; justify-content: flex-end; align-items: flex-end; gap: 8px;';
+      bubble.innerHTML = `
+        <div style="max-width: 78%; background: var(--color-yale-blue); color: #FFFFFF; padding: 12px 16px; border-radius: 14px 14px 2px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+          <div style="font-size: 13.5px; line-height: 1.5; white-space: pre-wrap;">${data.message_text}</div>
+          <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 6px; font-size: 11px; opacity: 0.85;">
+            <span>${data.created_at}</span>
+            <span>&bull;</span>
+            <span>&check;&check; Sent</span>
+          </div>
+        </div>
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-yale-blue); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">
+          You
+        </div>
+      `;
+      feed.appendChild(bubble);
+      feed.scrollTop = feed.scrollHeight;
+
+      // Update badge if was NEW
+      const badge = document.getElementById('currentStatusBadge');
+      if (badge && badge.innerText.includes('New')) {
+        badge.innerText = 'Contacted';
+        badge.style.background = '#DBEAFE';
+        badge.style.color = '#1E40AF';
+        badge.style.border = '1px solid #BFDBFE';
+      }
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    form.submit();
+  });
+}
+
+// Modal handling
+function openScheduleVisitModal() {
+  const modal = document.getElementById('scheduleVisitModal');
+  const dateInput = document.getElementById('modalVisitDate');
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  dateInput.value = d.toISOString().split('T')[0];
+  modal.style.display = 'flex';
+}
+
+function closeScheduleVisitModal() {
+  document.getElementById('scheduleVisitModal').style.display = 'none';
+}
+
+// Submit Schedule Visit via AJAX
+function submitScheduleVisit(e) {
+  e.preventDefault();
+  const form = document.getElementById('scheduleVisitForm');
+  const btn = document.getElementById('btnSubmitVisit');
+  btn.disabled = true;
+  btn.innerText = 'Scheduling...';
+
+  const formData = new FormData(form);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerText = 'Confirm & Send Pass';
+    closeScheduleVisitModal();
+    if (data.status === 'success') {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 1200);
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    form.submit();
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1201 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}KiraayaGrid — Find a Place That Feels Like Home{% endblock %}</title>
+
+  <!-- Google Fonts & SF Pro / System Font Pairing -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Brand Palette (KiraayaGrid / KiraayaGrid Figma) */
+      --color-powder-blue: #93B5C6;
+      --color-tea-green: #DDEDAA;
+      --color-royal-gold: #F0CF65;
+      --color-burnt-peach: #D7816A;
+      --color-rose-wine: #BD4F6C;
+      --color-deep-forest: #183B3B;
+      --color-forest-dark: #0F2525;
+      --color-cream-bg: #FDFBF4;
+      --color-cream-card: #FAF6EB;
+      --color-charcoal: #1E293B;
+      --color-muted: #64748B;
+      --color-border: rgba(0, 0, 0, 0.08);
+
+      /* Typography */
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Plus Jakarta Sans", "Helvetica Neue", sans-serif;
+      --font-serif: "Playfair Display", "New York", "Charter", Georgia, serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--color-charcoal);
+      background-color: #FFFFFF;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Apple-Grade Live Gradient Text */
+    .apple-gradient {
+      background: linear-gradient(135deg, #1C5D99 0%, #D7816A 50%, #BD4F6C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .apple-gradient-warm {
+      background: linear-gradient(135deg, #F0CF65 0%, #D7816A 50%, #BD4F6C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .apple-gradient-gold {
+      background: linear-gradient(135deg, #DDEDAA 0%, #F0CF65 60%, #D7816A 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    /* Motion Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .animate-fade-up {
+      animation: fadeInUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Apple Glass Navigation */
+    .navbar-wrapper {
+      position: absolute;
+      top: 24px;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      padding: 0 24px;
+    }
+
+    .navbar-glass {
+      width: 100%;
+      max-width: 1280px;
+      background: rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 9999px;
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .navbar-glass.scrolled,
+    .navbar-glass.navbar-solid {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+    }
+
+    .navbar-glass.scrolled .nav-brand,
+    .navbar-glass.navbar-solid .nav-brand {
+      color: var(--color-deep-forest);
+    }
+
+    .navbar-glass.scrolled .nav-links a,
+    .navbar-glass.navbar-solid .nav-links a {
+      color: var(--color-charcoal);
+    }
+
+    .navbar-glass.scrolled .nav-links a:hover,
+    .navbar-glass.navbar-solid .nav-links a:hover {
+      color: var(--color-burnt-peach);
+    }
+
+    .navbar-glass.scrolled .btn-login,
+    .navbar-glass.navbar-solid .btn-login {
+      color: var(--color-charcoal);
+    }
+
+    .navbar-glass.scrolled .btn-login:hover,
+    .navbar-glass.navbar-solid .btn-login:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* KiraayaGrid Apple-Grade Brand Logotype & Icon */
+    .kg-nav-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-family: var(--font-sans);
+      color: #FFFFFF;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .kg-nav-brand:hover {
+      transform: translateY(-1px);
+    }
+
+    .navbar-glass.scrolled .kg-nav-brand,
+    .navbar-glass.navbar-solid .kg-nav-brand {
+      color: var(--color-deep-forest);
+    }
+
+    .kg-logo-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .kg-nav-brand:hover .kg-logo-badge {
+      transform: scale(1.05);
+    }
+
+    .kg-brand-text {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      line-height: 1;
+    }
+
+    .kg-brand-accent {
+      background: linear-gradient(135deg, #DDEDAA 0%, #F0CF65 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    .navbar-glass.scrolled .kg-brand-accent,
+    .navbar-glass.navbar-solid .kg-brand-accent {
+      background: linear-gradient(135deg, #183B3B 0%, #D7816A 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      transition: all 0.2s ease;
+    }
+
+    .navbar-glass.scrolled .nav-links a {
+      color: var(--color-charcoal);
+    }
+
+    .nav-links a:hover {
+      color: var(--color-tea-green);
+    }
+
+    .navbar-glass.scrolled .nav-links a:hover {
+      color: var(--color-burnt-peach);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-login {
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFFFFF;
+      background: transparent;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 9999px;
+      transition: all 0.2s ease;
+    }
+
+    .navbar-glass.scrolled .btn-login {
+      color: var(--color-charcoal);
+    }
+
+    .btn-login:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .navbar-glass.scrolled .btn-login:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-get-started {
+      background: var(--color-tea-green);
+      color: #111827;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(221, 237, 170, 0.4);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-get-started:hover {
+      transform: scale(1.04);
+      box-shadow: 0 8px 20px rgba(221, 237, 170, 0.6);
+      background: #E8F5B8;
+    }
+
+    /* Master Footer (Figma Dark Forest Teal) */
+    .footer-section {
+      background-color: var(--color-deep-forest);
+      color: #FFFFFF;
+      padding: 96px 48px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer-container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1.4fr;
+      gap: 48px;
+      margin-bottom: 80px;
+    }
+
+    .footer-col-brand .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 26px;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #FFFFFF;
+    }
+
+    .footer-col-brand p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 260px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-social-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      transition: all 0.2s ease;
+    }
+
+    .footer-social-icon:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #FFFFFF;
+    }
+
+    .footer-col-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 20px;
+      letter-spacing: -0.2px;
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-links-list a {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      transition: all 0.2s ease;
+    }
+
+    .footer-links-list a:hover {
+      color: var(--color-tea-green);
+      transform: translateX(4px);
+      display: inline-block;
+    }
+
+    .footer-giant-display {
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      padding-top: 56px;
+      text-align: left;
+    }
+
+    .footer-giant-text {
+      font-family: var(--font-serif);
+      font-size: clamp(30px, 3.8vw, 44px);
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.95);
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+
+    .footer-bottom-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-card {
+      background: #FFFFFF;
+      border-radius: 28px;
+      width: 100%;
+      max-width: 480px;
+      padding: 36px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      position: relative;
+      border: 1px solid var(--color-border);
+      animation: modalSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalSlide {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #F1F5F9;
+      color: #64748B;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Mobile Hamburger Button (Apple Minimalist) */
+    .kg-mobile-toggle-btn {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.25s ease;
+      z-index: 101;
+    }
+    .navbar-glass.scrolled .kg-mobile-toggle-btn,
+    .navbar-glass.navbar-solid .kg-mobile-toggle-btn {
+      background: rgba(24, 59, 59, 0.06);
+      border-color: rgba(24, 59, 59, 0.12);
+    }
+    .kg-mobile-toggle-btn .hamburger-bar {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background-color: #FFFFFF;
+      border-radius: 2px;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background-color 0.2s ease;
+    }
+    .navbar-glass.scrolled .kg-mobile-toggle-btn .hamburger-bar,
+    .navbar-glass.navbar-solid .kg-mobile-toggle-btn .hamburger-bar {
+      background-color: var(--color-deep-forest);
+    }
+    .kg-mobile-toggle-btn.open .bar-1 {
+      transform: translateY(7px) rotate(45deg);
+    }
+    .kg-mobile-toggle-btn.open .bar-2 {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    .kg-mobile-toggle-btn.open .bar-3 {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* Apple Frosted Mobile Drawer Overlay */
+    .kg-mobile-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 998;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+    }
+    .kg-mobile-drawer-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .kg-mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      max-width: 380px;
+      height: 100%;
+      height: 100dvh;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      box-shadow: -15px 0 45px rgba(0, 0, 0, 0.18);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+    }
+    .kg-mobile-drawer.open {
+      transform: translateX(0);
+    }
+
+    .kg-mobile-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .kg-mobile-drawer-header .kg-nav-brand {
+      color: var(--color-deep-forest);
+    }
+    .kg-mobile-drawer-header .kg-brand-accent {
+      background: linear-gradient(135deg, #183B3B 0%, #D7816A 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .kg-mobile-drawer-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #F1F5F9;
+      border: none;
+      color: #64748B;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .kg-mobile-drawer-close:hover {
+      background: #E2E8F0;
+      color: #0F172A;
+    }
+
+    .kg-mobile-drawer-body {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      flex: 1;
+    }
+    .kg-mobile-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: #94A3B8;
+      text-transform: uppercase;
+      margin-bottom: -12px;
+    }
+    .kg-mobile-nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .kg-mobile-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: #F8FAFC;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      border-radius: 16px;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .kg-mobile-nav-link:hover,
+    .kg-mobile-nav-link:active {
+      background: #F1F5F9;
+      transform: translateX(3px);
+    }
+    .kg-mobile-nav-link.highlight {
+      background: rgba(221, 237, 170, 0.2);
+      border-color: rgba(221, 237, 170, 0.5);
+    }
+    .kg-nav-link-icon {
+      font-size: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      flex-shrink: 0;
+    }
+    .kg-nav-link-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+    }
+    .kg-nav-link-text strong {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+    .kg-nav-link-text span {
+      font-size: 12px;
+      color: #64748B;
+    }
+    .kg-nav-arrow {
+      color: #94A3B8;
+      font-size: 16px;
+    }
+    .kg-nav-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: #183B3B;
+      color: #DDEDAA;
+    }
+
+    .kg-mobile-actions-wrapper {
+      margin-top: auto;
+      padding-top: 18px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-mobile-login {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px;
+      border-radius: 9999px;
+      border: 1.5px solid #CBD5E1;
+      background: #FFFFFF;
+      color: #0F172A;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-mobile-signup {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px;
+      border-radius: 9999px;
+      background: var(--color-deep-forest);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(24, 59, 59, 0.25);
+      transition: all 0.2s ease;
+    }
+    .btn-mobile-portal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px;
+      border-radius: 9999px;
+      background: var(--color-tea-green);
+      color: #111827;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(221, 237, 170, 0.4);
+    }
+    .btn-mobile-signout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 10px;
+      border-radius: 9999px;
+      background: #FEE2E2;
+      color: #991B1B;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    /* Ultra-wide 4K (2560px+) Containment */
+    @media (min-width: 1920px) {
+      .navbar-glass { max-width: 1440px; }
+      .footer-container { max-width: 1440px; }
+      main { max-width: 1600px; margin: 0 auto; width: 100%; }
+    }
+
+    /* Tablet Landscape & Below (<= 992px) */
+    @media (max-width: 992px) {
+      .nav-links { display: none !important; }
+      .nav-actions { display: none !important; }
+      .kg-mobile-toggle-btn { display: flex !important; }
+      .footer-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 36px !important;
+      }
+      .footer-col-brand { grid-column: span 2; }
+    }
+
+    /* Tablet Portrait (<= 768px) */
+    @media (max-width: 768px) {
+      .navbar-wrapper {
+        top: 14px;
+        padding: 0 16px;
+      }
+      .navbar-glass {
+        padding: 10px 18px;
+      }
+      .kg-brand-text {
+        font-size: 18px;
+      }
+      .footer-section {
+        padding: 64px 20px 36px;
+      }
+      .footer-giant-display {
+        padding-top: 36px;
+      }
+      .footer-bottom-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+    }
+
+    /* Mobile L & M (<= 480px / 425px / 375px) */
+    @media (max-width: 480px) {
+      .navbar-wrapper {
+        top: 10px;
+        padding: 0 10px;
+      }
+      .navbar-glass {
+        padding: 8px 14px;
+      }
+      .kg-logo-badge svg {
+        width: 26px;
+        height: 26px;
+      }
+      .kg-brand-text {
+        font-size: 17px;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 28px !important;
+      }
+      .footer-col-brand { grid-column: span 1; }
+      .kg-mobile-drawer {
+        max-width: 100%;
+      }
+    }
+
+    /* Mobile S (<= 340px / 320px) */
+    @media (max-width: 340px) {
+      .navbar-glass {
+        padding: 6px 10px;
+      }
+      .kg-brand-text {
+        font-size: 15px;
+      }
+      .kg-mobile-drawer-body {
+        padding: 16px;
+      }
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- 1. Apple-Glass Header Navigation -->
+  <header class="navbar-wrapper">
+    <nav class="navbar-glass {% if request.path != '/' %}navbar-solid{% endif %}" id="mainNav">
+      <!-- Brand Logo -->
+      <a href="{% url 'public_portal:home' %}" class="kg-nav-brand">
+        <div class="kg-logo-badge">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="34" height="34" rx="10" fill="url(#kgHeaderGrad)"/>
+            <rect x="6.5" y="6.5" width="9" height="9" rx="3" fill="#DDEDAA"/>
+            <rect x="18.5" y="6.5" width="9" height="9" rx="3" fill="#93B5C6"/>
+            <rect x="6.5" y="18.5" width="9" height="9" rx="3" fill="#F0CF65"/>
+            <path d="M18.5 22C18.5 20.067 20.067 18.5 22 18.5H25C26.933 18.5 28.5 20.067 28.5 22V27.5H18.5V22Z" fill="#D7816A"/>
+            <circle cx="23.5" cy="22.5" r="1.5" fill="#FFFFFF"/>
+            <defs>
+              <linearGradient id="kgHeaderGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#183B3B"/>
+                <stop offset="1" stop-color="#0E2424"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="kg-brand-text">Kiraaya<span class="kg-brand-accent">Grid</span></span>
+      </a>
+
+      <!-- Navigation Links -->
+      <ul class="nav-links">
+        <li><a href="{% url 'public_portal:explore_stays' %}">Explore Stays</a></li>
+        <li><a href="{% url 'public_portal:locations' %}">Locations</a></li>
+        <li><a href="{% url 'public_portal:list_property' %}">List Your Property</a></li>
+        <li><a href="{% url 'public_portal:about' %}">About</a></li>
+      </ul>
+
+      <!-- Action Buttons -->
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          {% if user.is_superuser or user.role == 'ADMIN' %}
+            <a href="{% url 'admin_portal:marketplace_overview' %}" class="btn-get-started">Admin Portal ↗</a>
+          {% elif user.role == 'OWNER' %}
+            <a href="{% url 'owner_portal:dashboard' %}" class="btn-get-started">Host Dashboard ↗</a>
+          {% else %}
+            <a href="{% url 'tenant_portal:overview' %}" class="btn-get-started">My Account ↗</a>
+          {% endif %}
+          <a href="{% url 'public_portal:logout' %}" class="btn-login" style="font-size: 13px;">Sign Out</a>
+        {% else %}
+          <a href="{% url 'public_portal:login' %}" class="btn-login">Login</a>
+          <a href="{% url 'public_portal:signup' %}" class="btn-get-started">
+            Get Started
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+          </a>
+        {% endif %}
+      </div>
+      <!-- Mobile Hamburger Button -->
+      <button class="kg-mobile-toggle-btn" id="kgMobileToggleBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span class="hamburger-bar bar-1"></span>
+        <span class="hamburger-bar bar-2"></span>
+        <span class="hamburger-bar bar-3"></span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Mobile Navigation Drawer (Apple Glass) -->
+  <div class="kg-mobile-drawer-backdrop" id="kgMobileDrawerBackdrop"></div>
+  <div class="kg-mobile-drawer" id="kgMobileDrawer" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div class="kg-mobile-drawer-header">
+      <a href="{% url 'public_portal:home' %}" class="kg-nav-brand">
+        <div class="kg-logo-badge">
+          <svg width="26" height="26" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="34" height="34" rx="10" fill="#183B3B"/>
+            <rect x="6.5" y="6.5" width="9" height="9" rx="3" fill="#DDEDAA"/>
+            <rect x="18.5" y="6.5" width="9" height="9" rx="3" fill="#93B5C6"/>
+            <rect x="6.5" y="18.5" width="9" height="9" rx="3" fill="#F0CF65"/>
+            <path d="M18.5 22C18.5 20.067 20.067 18.5 22 18.5H25C26.933 18.5 28.5 20.067 28.5 22V27.5H18.5V22Z" fill="#D7816A"/>
+            <circle cx="23.5" cy="22.5" r="1.5" fill="#FFFFFF"/>
+          </svg>
+        </div>
+        <span class="kg-brand-text" style="font-size: 18px;">Kiraaya<span class="kg-brand-accent">Grid</span></span>
+      </a>
+      <button class="kg-mobile-drawer-close" id="kgMobileDrawerClose" aria-label="Close menu">✕</button>
+    </div>
+
+    <div class="kg-mobile-drawer-body">
+      <div class="kg-mobile-section-label">EXPLORE KIRAAYAGRID</div>
+      <ul class="kg-mobile-nav-list">
+        <li>
+          <a href="{% url 'public_portal:explore_stays' %}" class="kg-mobile-nav-link">
+            <span class="kg-nav-link-icon">🏠</span>
+            <div class="kg-nav-link-text">
+              <strong>Explore Stays</strong>
+              <span>Zero-brokerage verified homes & PGs</span>
+            </div>
+            <span class="kg-nav-arrow">→</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'public_portal:locations' %}" class="kg-mobile-nav-link">
+            <span class="kg-nav-link-icon">📍</span>
+            <div class="kg-nav-link-text">
+              <strong>Locations & Neighborhoods</strong>
+              <span>Bengaluru, Pune, Hyderabad & more</span>
+            </div>
+            <span class="kg-nav-arrow">→</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'public_portal:list_property' %}" class="kg-mobile-nav-link highlight">
+            <span class="kg-nav-link-icon">🔑</span>
+            <div class="kg-nav-link-text">
+              <strong>List Your Property Free</strong>
+              <span>Direct tenants, 0% landlord fees</span>
+            </div>
+            <span class="kg-nav-badge">0% Fee</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'public_portal:about' %}" class="kg-mobile-nav-link">
+            <span class="kg-nav-link-icon">✨</span>
+            <div class="kg-nav-link-text">
+              <strong>About Us & Founder</strong>
+              <span>Radical rental transparency thesis</span>
+            </div>
+            <span class="kg-nav-arrow">→</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="kg-mobile-actions-wrapper">
+        {% if user.is_authenticated %}
+          {% if user.role == 'ADMIN' %}
+            <a href="{% url 'admin_portal:marketplace_overview' %}" class="btn-mobile-portal">Admin Workspace ↗</a>
+          {% elif user.role == 'OWNER' %}
+            <a href="{% url 'owner_portal:dashboard' %}" class="btn-mobile-portal">Host Dashboard ↗</a>
+          {% else %}
+            <a href="{% url 'tenant_portal:overview' %}" class="btn-mobile-portal">Resident Portal ↗</a>
+          {% endif %}
+          <a href="{% url 'public_portal:logout' %}" class="btn-mobile-signout">Sign Out</a>
+        {% else %}
+          <a href="{% url 'public_portal:login' %}" class="btn-mobile-login">Sign In to Account</a>
+          <a href="{% url 'public_portal:signup' %}" class="btn-mobile-signup">Get Started Free →</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Main Content Block -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- 3. Master Footer (1:1 Figma Match) -->
+  <footer class="footer-section">
+    <div class="footer-container">
+      <div class="footer-grid">
+        <!-- Brand Info -->
+        <div class="footer-col-brand">
+          <a href="{% url 'public_portal:home' %}" class="kg-nav-brand" style="color: #FFFFFF; margin-bottom: 16px;">
+            <div class="kg-logo-badge">
+              <svg width="32" height="32" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="34" height="34" rx="10" fill="url(#kgFootGrad)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1"/>
+                <rect x="6.5" y="6.5" width="9" height="9" rx="3" fill="#DDEDAA"/>
+                <rect x="18.5" y="6.5" width="9" height="9" rx="3" fill="#93B5C6"/>
+                <rect x="6.5" y="18.5" width="9" height="9" rx="3" fill="#F0CF65"/>
+                <path d="M18.5 22C18.5 20.067 20.067 18.5 22 18.5H25C26.933 18.5 28.5 20.067 28.5 22V27.5H18.5V22Z" fill="#D7816A"/>
+                <circle cx="23.5" cy="22.5" r="1.5" fill="#FFFFFF"/>
+                <defs>
+                  <linearGradient id="kgFootGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#245050"/>
+                    <stop offset="1" stop-color="#122A2A"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <span class="kg-brand-text" style="font-size: 22px;">Kiraaya<span style="color: #DDEDAA;">Grid</span></span>
+          </a>
+          <p>A place for your things. A space to be yourself. India's honest, zero-brokerage rental discovery.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social-icon" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="#" class="footer-social-icon" aria-label="LinkedIn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+            </a>
+            <a href="#" class="footer-social-icon" aria-label="Twitter">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Col 1: Find your space -->
+        <div>
+          <h4 class="footer-col-title">Find your space</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'public_portal:explore_stays' %}">Explore Stays</a></li>
+            <li><a href="{% url 'public_portal:explore_stays' %}?type=PG">PG & Hostels</a></li>
+            <li><a href="{% url 'public_portal:explore_stays' %}?type=FLAT">Rooms & Flats</a></li>
+            <li><a href="{% url 'public_portal:explore_stays' %}?type=CO_LIVING">Co-living</a></li>
+            <li><a href="{% url 'public_portal:explore_stays' %}?collection=handpicked">Our Collections</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 2: Popular cities -->
+        <div>
+          <h4 class="footer-col-title">Popular cities</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'public_portal:explore_stays' %}?city=Bengaluru">Bengaluru</a></li>
+            <li><a href="{% url 'public_portal:explore_stays' %}?city=Mumbai">Mumbai</a></li>
+            <li><a href="{% url 'public_portal:explore_stays' %}?city=Pune">Pune</a></li>
+            <li><a href="{% url 'public_portal:explore_stays' %}?city=Hyderabad">Hyderabad</a></li>
+            <li><a href="{% url 'public_portal:locations' %}">All Locations ↗</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: KiraayaGrid -->
+        <div>
+          <h4 class="footer-col-title">KiraayaGrid</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'public_portal:about' %}">About Us & Founder</a></li>
+            <li><a href="{% url 'public_portal:list_property' %}">List Your Property</a></li>
+            <li><a href="{% url 'public_portal:about' %}#standards">Our Standards</a></li>
+            <li><a href="{% url 'public_portal:about' %}#press">Journal</a></li>
+            <li><a href="{% url 'public_portal:about' %}#careers">Careers</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Here to help -->
+        <div>
+          <h4 class="footer-col-title">Here to help</h4>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'public_portal:about' %}#help">Help Centre</a></li>
+            <li><a href="mailto:hello@kiraayagrid.in">hello@kiraayagrid.in</a></li>
+            <li><a href="tel:+918045678900">+91 80 4567 8900</a></li>
+            <li><a href="{% url 'public_portal:about' %}#trust">Safety & Trust</a></li>
+            <li><a href="{% url 'admin_portal:marketplace_overview' %}" style="color: var(--color-tea-green); font-weight: 600;">Staff / Admin Portal ↗</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Giant Editorial Display Typography (Figma) -->
+      <div class="footer-giant-display">
+        <h2 class="footer-giant-text">Make room for living.</h2>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <div>© 2026 KiraayaGrid Technologies Pvt. Ltd. All rights reserved. Zero Brokerage Guaranteed.</div>
+        <div style="display: flex; gap: 24px;">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Community Guidelines</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 4. Interactive Quick Auth & Demo Switcher Modal -->
+  <div class="modal-overlay" id="authModal" onclick="closeAuthModalOnBg(event)">
+    <div class="modal-card">
+      <button type="button" class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+      
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="{% url 'public_portal:home' %}" class="kg-nav-brand" style="justify-content: center; color: var(--color-deep-forest); margin-bottom: 10px;">
+          <div class="kg-logo-badge">
+            <svg width="28" height="28" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="34" height="34" rx="10" fill="url(#kgModalGrad)"/>
+              <rect x="6.5" y="6.5" width="9" height="9" rx="3" fill="#DDEDAA"/>
+              <rect x="18.5" y="6.5" width="9" height="9" rx="3" fill="#93B5C6"/>
+              <rect x="6.5" y="18.5" width="9" height="9" rx="3" fill="#F0CF65"/>
+              <path d="M18.5 22C18.5 20.067 20.067 18.5 22 18.5H25C26.933 18.5 28.5 20.067 28.5 22V27.5H18.5V22Z" fill="#D7816A"/>
+              <circle cx="23.5" cy="22.5" r="1.5" fill="#FFFFFF"/>
+              <defs>
+                <linearGradient id="kgModalGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#183B3B"/>
+                  <stop offset="1" stop-color="#0E2424"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="kg-brand-text">Kiraaya<span class="kg-brand-accent">Grid</span></span>
+        </a>
+        <h3 style="font-size: 20px; font-weight: 700; color: #0F172A;">Welcome Back</h3>
+        <p style="font-size: 13px; color: #64748B; margin-top: 4px;">Sign in to your account with your username, email, or mobile number.</p>
+      </div>
+
+      <!-- Standard Login Form -->
+      <form action="{% url 'public_portal:login' %}" method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px;">Username or Phone Number</label>
+          <input type="text" name="username" required placeholder="e.g. aarav_sharma or 9876543210" style="width: 100%; padding: 11px 14px; border: 1px solid #CBD5E1; border-radius: 12px; font-size: 14px; outline: none; font-family: var(--font-sans);" onfocus="this.style.borderColor='#183B3B'">
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px;">Password</label>
+          <input type="password" name="password" required placeholder="••••••••" style="width: 100%; padding: 11px 14px; border: 1px solid #CBD5E1; border-radius: 12px; font-size: 14px; outline: none; font-family: var(--font-sans);" onfocus="this.style.borderColor='#183B3B'">
+        </div>
+        <button type="submit" style="width: 100%; padding: 13px; background: var(--color-deep-forest); color: #FFFFFF; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.opacity='0.92'" onmouseout="this.style.opacity='1'">
+          Sign In
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 20px; font-size: 13px; color: #64748B;">
+        Don't have an account yet? <a href="{% url 'public_portal:signup' %}" style="color: var(--color-burnt-peach); font-weight: 700;">Sign up free</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Glass Navbar Scroll Effect
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('mainNav');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // Apple Mobile Drawer Toggle
+    const mobileToggleBtn = document.getElementById('kgMobileToggleBtn');
+    const mobileDrawer = document.getElementById('kgMobileDrawer');
+    const mobileBackdrop = document.getElementById('kgMobileDrawerBackdrop');
+    const mobileDrawerClose = document.getElementById('kgMobileDrawerClose');
+
+    function openMobileDrawer() {
+      if (mobileToggleBtn) mobileToggleBtn.classList.add('open');
+      if (mobileDrawer) mobileDrawer.classList.add('open');
+      if (mobileBackdrop) mobileBackdrop.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (mobileToggleBtn) mobileToggleBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMobileDrawer() {
+      if (mobileToggleBtn) mobileToggleBtn.classList.remove('open');
+      if (mobileDrawer) mobileDrawer.classList.remove('open');
+      if (mobileBackdrop) mobileBackdrop.classList.remove('active');
+      document.body.style.overflow = '';
+      if (mobileToggleBtn) mobileToggleBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    if (mobileToggleBtn) {
+      mobileToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (mobileDrawer.classList.contains('open')) {
+          closeMobileDrawer();
+        } else {
+          openMobileDrawer();
+        }
+      });
+    }
+
+    if (mobileDrawerClose) {
+      mobileDrawerClose.addEventListener('click', closeMobileDrawer);
+    }
+
+    if (mobileBackdrop) {
+      mobileBackdrop.addEventListener('click', closeMobileDrawer);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileDrawer && mobileDrawer.classList.contains('open')) {
+        closeMobileDrawer();
+      }
+    });
+
+    // Close drawer when any nav link is tapped
+    document.querySelectorAll('.kg-mobile-nav-link').forEach(link => {
+      link.addEventListener('click', closeMobileDrawer);
+    });
+
+    // Auth Modal Helpers
+    function openAuthModal(mode) {
+      document.getElementById('authModal').classList.add('active');
+    }
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.remove('active');
+    }
+    function closeAuthModalOnBg(e) {
+      if (e.target.id === 'authModal') {
+        closeAuthModal();
+      }
+    }
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,987 @@
+{% extends 'public_portal/base.html' %}
+{% load static %}
+
+{% block title %}Explore Verified Stays · Zero Brokerage Homes in Urban India · KiraayaGrid{% endblock %}
+
+{% block meta_description %}Browse 100% physically verified PGs, rooms, co-living spaces, and flats across Bengaluru, Mumbai, Pune, and Hyderabad. Zero brokerage guaranteed.{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     APPLE OFFICIAL WEBSITE DESIGN LANGUAGE — EXPLORE STAYS
+     ========================================================================== */
+
+  :root {
+    --apple-bg: #F5F5F7;
+    --apple-card-bg: #FFFFFF;
+    --apple-text-dark: #1D1D1F;
+    --apple-text-secondary: #86868B;
+    --apple-text-tertiary: #6E6E73;
+    --apple-border: rgba(0, 0, 0, 0.08);
+    --apple-border-light: rgba(0, 0, 0, 0.04);
+    --apple-emerald: #10B981;
+    --apple-deep-forest: #183B3B;
+  }
+
+  body {
+    background-color: var(--apple-bg);
+  }
+
+  /* Apple Header Section */
+  .apple-explore-hero {
+    position: relative;
+    padding: 130px 24px 32px;
+    max-width: 1320px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .apple-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    background: rgba(24, 59, 59, 0.06);
+    border: 1px solid rgba(24, 59, 59, 0.12);
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-deep-forest);
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .apple-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    animation: applePulse 2s infinite;
+  }
+
+  @keyframes applePulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .apple-main-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-size: clamp(28px, 3.5vw, 38px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--apple-text-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .apple-main-subtitle {
+    font-size: 16px;
+    color: var(--apple-text-tertiary);
+    line-height: 1.55;
+    max-width: 680px;
+    margin: 0 auto 30px;
+    font-weight: 400;
+  }
+
+  /* Apple Horizontal Category Selector Ribbon */
+  .apple-category-ribbon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .apple-cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 9999px;
+    background: #FFFFFF;
+    border: 1px solid var(--apple-border);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--apple-text-dark);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .apple-cat-pill:hover {
+    background: #FFFFFF;
+    border-color: var(--color-deep-forest);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .apple-cat-pill.active {
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 6px 20px rgba(24, 59, 59, 0.25);
+  }
+
+  .apple-cat-pill.active .pill-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+  }
+
+  .pill-count {
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: #F1F5F9;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748B;
+  }
+
+  /* Apple Frosted Glass Filter Box */
+  .apple-filter-glass-card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 24px;
+    padding: 20px 24px;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.06);
+    margin-bottom: 32px;
+  }
+
+  .apple-filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+    gap: 14px;
+    align-items: flex-end;
+  }
+
+  .apple-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .apple-field-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--apple-text-tertiary);
+  }
+
+  .apple-text-input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid #D2D2D7;
+    background: #FFFFFF;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--apple-text-dark);
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .apple-text-input:focus {
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 0 0 3px rgba(24, 59, 59, 0.12);
+  }
+
+  .apple-select-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #D2D2D7;
+    background: #FFFFFF;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--apple-text-dark);
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236E6E73' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+
+  .apple-select-input:focus {
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 0 0 3px rgba(24, 59, 59, 0.12);
+  }
+
+  .btn-apple-search {
+    padding: 12px 28px;
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(24, 59, 59, 0.2);
+  }
+
+  .btn-apple-search:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(24, 59, 59, 0.3);
+  }
+
+  .btn-apple-reset {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #EF4444;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .btn-apple-reset:hover {
+    opacity: 0.75;
+  }
+
+  /* Active Filter Chips Bar */
+  .active-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 14px;
+    margin-top: 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .filter-chip-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    background: #E2E8F0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  /* Results Meta Header */
+  .apple-results-meta {
+    max-width: 1320px;
+    margin: 0 auto 28px;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .meta-stats-count {
+    font-size: 16px;
+    color: var(--apple-text-tertiary);
+  }
+
+  .meta-stats-count strong {
+    color: var(--apple-text-dark);
+    font-weight: 800;
+  }
+
+  .meta-trust-badges {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .trust-badge-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #059669;
+  }
+
+  /* Apple Bento Grid for Stays */
+  .apple-stays-grid {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+
+  /* Single Apple Stay Card */
+  .apple-stay-card {
+    background: #FFFFFF;
+    border-radius: 26px;
+    overflow: hidden;
+    border: 1px solid var(--apple-border);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .apple-stay-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 50px -12px rgba(24, 59, 59, 0.16);
+    border-color: rgba(24, 59, 59, 0.18);
+  }
+
+  /* Card Image Frame */
+  .card-photo-frame {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    background: #E2E8F0;
+  }
+
+  .card-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .apple-stay-card:hover .card-photo-img {
+    transform: scale(1.05);
+  }
+
+  /* Floating Badges Over Image */
+  .photo-badge-verified {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 9999px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .card-heart-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #64748B;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+  }
+
+  .card-heart-btn:hover {
+    transform: scale(1.1);
+    color: #EF4444;
+  }
+
+  .photo-badge-category {
+    position: absolute;
+    bottom: 14px;
+    left: 16px;
+    background: rgba(24, 59, 59, 0.88);
+    backdrop-filter: blur(12px);
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #DDEDAA;
+    letter-spacing: 0.02em;
+  }
+
+  .photo-badge-rating {
+    position: absolute;
+    bottom: 14px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border-radius: 9999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0F172A;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Card Content Block */
+  .card-body-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+  }
+
+  .card-locality-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--apple-text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .card-stay-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--apple-text-dark);
+    margin-bottom: 14px;
+  }
+
+  .card-amenities-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .amenity-chip {
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  /* Card Bottom Pricing Row */
+  .card-price-divider {
+    border-top: 1px solid #F1F5F9;
+    padding-top: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-rent-amount {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--apple-text-dark);
+  }
+
+  .card-rent-period {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--apple-text-tertiary);
+  }
+
+  .card-brokerage-saved-tag {
+    font-size: 12px;
+    font-weight: 700;
+    color: #059669;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-card-action {
+    padding: 10px 20px;
+    border-radius: 9999px;
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-card-action:hover {
+    background: #0F172A;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Universal Max 5 Pagination Bar (Apple Style) */
+  .apple-pagination-container {
+    max-width: 1320px;
+    margin: 56px auto 96px;
+    padding: 0 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .apple-page-btn {
+    padding: 12px 24px;
+    border-radius: 9999px;
+    background: #FFFFFF;
+    border: 1px solid var(--apple-border);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .apple-page-btn:hover:not(.disabled) {
+    background: #FFFFFF;
+    border-color: var(--color-deep-forest);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .apple-page-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #F1F5F9;
+    box-shadow: none;
+  }
+
+  .apple-page-indicator {
+    padding: 10px 20px;
+    border-radius: 9999px;
+    background: #FFFFFF;
+    border: 1px solid var(--apple-border);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--apple-text-tertiary);
+  }
+
+  .apple-page-indicator strong {
+    color: var(--apple-text-dark);
+    font-weight: 800;
+  }
+
+  /* Empty State Apple Box */
+  .apple-empty-state {
+    grid-column: 1 / -1;
+    background: #FFFFFF;
+    border-radius: 32px;
+    padding: 80px 32px;
+    text-align: center;
+    border: 1px solid var(--apple-border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  /* =========================================================================
+     RESPONSIVE BREAKPOINTS (4K, Laptop L, Laptop, Tablet, Mobile L/M/S)
+     ========================================================================= */
+  @media (min-width: 1920px) {
+    .apple-explore-hero, .apple-content-wrap {
+      max-width: 1440px !important;
+      margin: 0 auto;
+    }
+    .apple-stays-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 1080px) {
+    .apple-stays-grid { grid-template-columns: repeat(2, 1fr); }
+    .apple-filter-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .apple-explore-hero {
+      padding: 105px 20px 24px;
+    }
+    .apple-content-wrap {
+      padding: 0 16px 60px;
+    }
+    .apple-stays-grid { grid-template-columns: 1fr; gap: 20px; }
+    .apple-filter-grid { grid-template-columns: 1fr; }
+    .apple-filter-drawer { padding: 20px; border-radius: 20px; }
+    .apple-main-title { font-size: clamp(26px, 5vw, 32px); }
+    .apple-results-meta { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .apple-card-body { padding: 20px 18px; }
+  }
+
+  @media (max-width: 425px) {
+    .apple-explore-hero {
+      padding: 95px 14px 20px;
+    }
+    .apple-content-wrap {
+      padding: 0 12px 48px;
+    }
+    .apple-main-title { font-size: 25px; }
+    .apple-main-sub { font-size: 14px; }
+    .apple-card-header { height: 210px; }
+    .apple-card-title { font-size: 18px; }
+    .apple-price-amount { font-size: 20px; }
+    .btn-apple-view { padding: 9px 16px; font-size: 13px; }
+    .apple-pagination { gap: 6px; }
+    .page-btn { width: 36px; height: 36px; font-size: 13px; }
+  }
+
+  @media (max-width: 340px) {
+    .apple-explore-hero {
+      padding: 85px 10px 16px;
+    }
+    .apple-content-wrap {
+      padding: 0 10px 36px;
+    }
+    .apple-card-body { padding: 16px 14px; }
+    .apple-specs-row { gap: 6px; }
+    .spec-chip { font-size: 11.5px; padding: 4px 8px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main style="overflow-x: hidden;">
+
+  <!-- Apple Explore Hero -->
+  <section class="apple-explore-hero">
+    <!-- Apple Aurora Glow -->
+    <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 850px; height: 380px; background: radial-gradient(circle, rgba(147, 181, 198, 0.22) 0%, rgba(221, 237, 170, 0.16) 40%, transparent 70%); pointer-events: none; z-index: 0;"></div>
+
+    <div style="position: relative; z-index: 1;">
+      <!-- Apple Pill Badge -->
+      <div class="apple-badge-pill">
+        <span class="apple-pulse-dot"></span>
+        Verified Urban Accommodations · 100% Zero Brokerage
+      </div>
+
+      <!-- Main Headline with Apple Gradient -->
+      <h1 class="apple-main-title">
+        Find your place. <span class="apple-gradient-warm">Designed for living.</span>
+      </h1>
+
+      <p class="apple-main-subtitle">
+        Physically inspected rooms, co-living spaces, and independent flats across India's top tech corridors. Direct homeowner connections with zero brokerage.
+      </p>
+
+      <!-- Category Filter Ribbon (Apple Product Switcher Style) -->
+      <div class="apple-category-ribbon">
+        <a href="{% url 'public_portal:explore_stays' %}" class="apple-cat-pill {% if not category_filter and not type_filter and not max_price %}active{% endif %}">
+          <span>🌟 All Stays</span>
+          <span class="pill-count">{{ category_counts.all }}</span>
+        </a>
+        <a href="{% url 'public_portal:explore_stays' %}?category=coliving{% if city_filter %}&city={{ city_filter }}{% endif %}" class="apple-cat-pill {% if category_filter == 'coliving' or type_filter == 'CO_LIVING' %}active{% endif %}">
+          <span>🏢 Co-Living Spaces</span>
+          <span class="pill-count">{{ category_counts.coliving }}</span>
+        </a>
+        <a href="{% url 'public_portal:explore_stays' %}?category=pg{% if city_filter %}&city={{ city_filter }}{% endif %}" class="apple-cat-pill {% if category_filter == 'pg' or type_filter == 'PG' %}active{% endif %}">
+          <span>🛏️ Verified PGs</span>
+          <span class="pill-count">{{ category_counts.pg }}</span>
+        </a>
+        <a href="{% url 'public_portal:explore_stays' %}?category=flat{% if city_filter %}&city={{ city_filter }}{% endif %}" class="apple-cat-pill {% if category_filter == 'flat' or type_filter == 'FLAT' %}active{% endif %}">
+          <span>🛋️ Independent Flats</span>
+          <span class="pill-count">{{ category_counts.flat }}</span>
+        </a>
+        <a href="{% url 'public_portal:explore_stays' %}?max_price=15000{% if city_filter %}&city={{ city_filter }}{% endif %}" class="apple-cat-pill {% if max_price == '15000' %}active{% endif %}">
+          <span>💰 Under ₹15,000</span>
+        </a>
+      </div>
+
+      <!-- Apple Frosted Glass Filter Box -->
+      <div class="apple-filter-glass-card">
+        <form action="{% url 'public_portal:explore_stays' %}" method="GET">
+          <div class="apple-filter-grid">
+            
+            <!-- Search Input -->
+            <div class="apple-input-group">
+              <label class="apple-field-label">Search Locality or Stay</label>
+              <input type="text" name="q" value="{{ search_q }}" placeholder="e.g. Koramangala, Indiranagar, HSR Layout" class="apple-text-input">
+            </div>
+
+            <!-- City Dropdown -->
+            <div class="apple-input-group">
+              <label class="apple-field-label">Metro City</label>
+              <select name="city" class="apple-select-input">
+                <option value="">All Metros</option>
+                {% for c in cities %}
+                  <option value="{{ c.name }}" {% if city_filter|lower == c.name|lower %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Stay Type -->
+            <div class="apple-input-group">
+              <label class="apple-field-label">Accommodation</label>
+              <select name="type" class="apple-select-input">
+                <option value="">All Types</option>
+                <option value="PG" {% if type_filter == 'PG' %}selected{% endif %}>PG</option>
+                <option value="CO_LIVING" {% if type_filter == 'CO_LIVING' %}selected{% endif %}>Co-Living</option>
+                <option value="FLAT" {% if type_filter == 'FLAT' %}selected{% endif %}>Flat</option>
+                <option value="HOSTEL" {% if type_filter == 'HOSTEL' %}selected{% endif %}>Hostel</option>
+              </select>
+            </div>
+
+            <!-- Max Rent Budget -->
+            <div class="apple-input-group">
+              <label class="apple-field-label">Budget Cap</label>
+              <select name="max_price" class="apple-select-input">
+                <option value="">Any Rent</option>
+                <option value="12000" {% if max_price == '12000' %}selected{% endif %}>Under ₹12,000</option>
+                <option value="18000" {% if max_price == '18000' %}selected{% endif %}>Under ₹18,000</option>
+                <option value="25000" {% if max_price == '25000' %}selected{% endif %}>Under ₹25,000</option>
+                <option value="35000" {% if max_price == '35000' %}selected{% endif %}>Under ₹35,000</option>
+              </select>
+            </div>
+
+            <!-- Sort By -->
+            <div class="apple-input-group">
+              <label class="apple-field-label">Sort Order</label>
+              <select name="sort" class="apple-select-input">
+                <option value="recommended" {% if sort_by == 'recommended' %}selected{% endif %}>Recommended</option>
+                <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Rent: Low to High</option>
+                <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Rent: High to Low</option>
+                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Stays</option>
+              </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 8px;">
+              <button type="submit" class="btn-apple-search">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Find Stays
+              </button>
+              {% if search_q or city_filter or type_filter or category_filter or max_price %}
+                <a href="{% url 'public_portal:explore_stays' %}" class="btn-apple-reset">Reset</a>
+              {% endif %}
+            </div>
+
+          </div>
+
+          <!-- Active Filter Pill Badges -->
+          {% if search_q or city_filter or type_filter or category_filter or max_price %}
+          <div class="active-filter-chips">
+            <span style="font-size: 12px; font-weight: 700; color: #64748B; text-transform: uppercase;">Active Filters:</span>
+            {% if search_q %}<span class="filter-chip-tag">Keyword: "{{ search_q }}"</span>{% endif %}
+            {% if city_filter %}<span class="filter-chip-tag">📍 {{ city_filter }}</span>{% endif %}
+            {% if type_filter %}<span class="filter-chip-tag">Stay: {{ type_filter }}</span>{% endif %}
+            {% if category_filter %}<span class="filter-chip-tag">Tag: {{ category_filter|title }}</span>{% endif %}
+            {% if max_price %}<span class="filter-chip-tag">Under ₹{{ max_price }}</span>{% endif %}
+            <a href="{% url 'public_portal:explore_stays' %}" style="font-size: 12px; color: #EF4444; font-weight: 700; text-decoration: none; margin-left: 8px;">✕ Clear All</a>
+          </div>
+          {% endif %}
+
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Results Count & Trust Bar -->
+  <div class="apple-results-meta">
+    <div class="meta-stats-count">
+      Showing <strong>{{ properties|length }}</strong> of <strong>{{ total_count }}</strong> verified stays (Strict 5 items per page)
+    </div>
+    <div class="meta-trust-badges">
+      <div class="trust-badge-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>100% Zero Brokerage</span>
+      </div>
+      <div class="trust-badge-item" style="color: #0284C7;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Direct Homeowner Contact</span>
+      </div>
+      <div class="trust-badge-item" style="color: #D97706;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Physical Verification</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apple Bento Stays Grid -->
+  <section class="apple-stays-grid">
+    {% for stay in properties %}
+    <article class="apple-stay-card">
+      
+      <!-- Photo Frame -->
+      <div class="card-photo-frame">
+        <img src="{{ stay.display_photo }}" alt="{{ stay.title }}" class="card-photo-img" loading="lazy">
+        
+        <!-- Top Left Verified Pill -->
+        <div class="photo-badge-verified">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+          KiraayaGrid Verified
+        </div>
+
+        <!-- Top Right Wishlist Heart -->
+        <button type="button" class="card-heart-btn" onclick="openAuthModal('login')" title="Save to Wishlist">
+          ♡
+        </button>
+
+        <!-- Bottom Left Category Pill -->
+        <div class="photo-badge-category">
+          {{ stay.display_category_label }}
+        </div>
+
+        <!-- Bottom Right Rating Score -->
+        <div class="photo-badge-rating">
+          <span style="color: #F59E0B;">★</span>
+          <span>{{ stay.rating_score }}</span>
+          <span style="color: #94A3B8; font-weight: 500;">({{ stay.reviews_count }})</span>
+        </div>
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body-content">
+        <div>
+          <!-- Locality & City -->
+          <div class="card-locality-text">
+            <span>📍</span>
+            <span>{{ stay.locality_str }}, {{ stay.city_str }}</span>
+          </div>
+
+          <!-- Stay Title -->
+          <h3 class="card-stay-title">{{ stay.title }}</h3>
+
+          <!-- Amenities Icon Chips -->
+          <div class="card-amenities-tags">
+            {% for a in stay.display_amenities %}
+              <span class="amenity-chip">{{ a }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Bottom Pricing & Action Row -->
+        <div class="card-price-divider">
+          <div>
+            <div class="card-rent-amount">
+              ₹{{ stay.display_price }}
+              <span class="card-rent-period">/ mo</span>
+            </div>
+            <div class="card-brokerage-saved-tag">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Save {{ stay.brokerage_saved }} brokerage</span>
+            </div>
+          </div>
+
+          <a href="{% url 'public_portal:stay_details' stay.id %}" class="btn-card-action">
+            <span>View Stay</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+          </a>
+        </div>
+
+      </div>
+
+    </article>
+    {% empty %}
+    <!-- Empty State Box -->
+    <div class="apple-empty-state">
+      <div style="font-size: 36px; margin-bottom: 14px;">🏡</div>
+      <h3 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 26px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">
+        No stays match your criteria
+      </h3>
+      <p style="font-size: 15px; color: #64748B; max-width: 480px; margin: 0 auto 24px;">
+        We couldn't find any verified properties matching your filters. Try adjusting your city, stay type, or clearing active search keywords.
+      </p>
+      <a href="{% url 'public_portal:explore_stays' %}" class="btn-apple-search" style="display: inline-flex; margin: 0 auto;">
+        Reset All Filters
+      </a>
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- Universal Max 5 Pagination Bar -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="apple-pagination-container">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if search_q %}&q={{ search_q }}{% endif %}{% if city_filter %}&city={{ city_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="apple-page-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Previous
+      </a>
+    {% else %}
+      <span class="apple-page-btn disabled">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Previous
+      </span>
+    {% endif %}
+
+    <div class="apple-page-indicator">
+      Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+    </div>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if search_q %}&q={{ search_q }}{% endif %}{% if city_filter %}&city={{ city_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="apple-page-btn">
+        Next
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </a>
+    {% else %}
+      <span class="apple-page-btn disabled">
+        Next
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Bottom Apple Experience Strip -->
+  <section style="background: #FFFFFF; border-top: 1px solid var(--apple-border); padding: 72px 24px; margin-top: 40px;">
+    <div style="max-width: 1240px; margin: 0 auto;">
+      <div style="text-align: center; max-width: 600px; margin: 0 auto 48px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 8px;">The KiraayaGrid Standard</div>
+        <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 32px; font-weight: 700; color: #0F172A; letter-spacing: -0.02em;">
+          Renting made as seamless as <span class="apple-gradient-warm">it always should have been.</span>
+        </h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
+        <div style="background: var(--apple-bg); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05);">
+          <div style="font-size: 28px; margin-bottom: 14px;">📸</div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">Zero Misleading Photos</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B;">
+            Our inspection team audits room dimensions, Wi-Fi speed, and amenities in person before granting verification badges.
+          </p>
+        </div>
+
+        <div style="background: var(--apple-bg); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05);">
+          <div style="font-size: 28px; margin-bottom: 14px;">💬</div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">Direct Homeowner Access</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B;">
+            Connect with owners directly without broker calls, unwanted intermediaries, or unsolicited walkthrough spam.
+          </p>
+        </div>
+
+        <div style="background: var(--apple-bg); border-radius: 20px; padding: 32px; border: 1px solid rgba(0,0,0,0.05);">
+          <div style="font-size: 28px; margin-bottom: 14px;">📜</div>
+          <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">Instant Biometric Leases</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B;">
+            Execute legally compliant digital rental agreements in 60 seconds with automated stamp duty and zero paperwork hassle.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+{% endblock %}

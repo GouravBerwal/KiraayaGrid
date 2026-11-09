@@ -1,0 +1,900 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Overview — KiraayaGrid Owner Workspace{% endblock %}
+{% block page_title %}Overview{% endblock %}
+{% block page_subtitle %}
+  {% if is_empty_state %}Empty state{% else %}Welcome to your owner workspace{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% if is_empty_state %}
+<!-- ==============================================================
+     FIGMA SCREEN 1: EMPTY STATE VIEW
+     (Automatically shown when the owner has 0 properties registered)
+     ============================================================== -->
+<div class="owner-header-row">
+  <div>
+    <h1 class="welcome-heading"><span class="dynamic-time-greeting">{{ time_greeting }}</span>, {{ owner_first_name }}.</h1>
+    <p class="welcome-subheading">Your next chapter starts with a listing.</p>
+  </div>
+  <a href="{% url 'owner_portal:add_property' %}" class="btn-primary-yale">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <span>Add New Property</span>
+  </a>
+</div>
+
+<!-- 4 EMPTY STAT CARDS -->
+<div class="owner-stats-grid">
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Total Properties</span>
+      <span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path></svg></span>
+    </div>
+    <div class="stat-val tabular-nums">00</div>
+    <div class="stat-meta">
+      <span class="stat-subtext">Ready when you are</span>
+    </div>
+  </div>
+
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Active Listings</span>
+      <span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg></span>
+    </div>
+    <div class="stat-val tabular-nums">00</div>
+    <div class="stat-meta">
+      <span class="stat-subtext">Ready when you are</span>
+    </div>
+  </div>
+
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Available Rooms/Beds</span>
+      <span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg></span>
+    </div>
+    <div class="stat-val tabular-nums">00</div>
+    <div class="stat-meta">
+      <span class="stat-subtext">Ready when you are</span>
+    </div>
+  </div>
+
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Total Enquiries</span>
+      <span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+    </div>
+    <div class="stat-val tabular-nums">00</div>
+    <div class="stat-meta">
+      <span class="stat-subtext">Ready when you are</span>
+    </div>
+  </div>
+</div>
+
+<!-- EMPTY HERO BANNER -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 56px 24px; text-align: center; margin-bottom: 24px; box-shadow: var(--shadow-card);">
+  <div style="width: 52px; height: 52px; background: var(--color-powder-blue-light); border-radius: 14px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: var(--color-yale-blue);">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path></svg>
+  </div>
+  <h2 style="font-size: 22px; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">Every great stay starts somewhere.</h2>
+  <p style="font-size: 13.5px; color: var(--color-text-muted); max-width: 540px; margin: 0 auto 24px; line-height: 1.5;">
+    Add your first property and help someone find their next home. Your enquiries, availability and property performance will live right here.
+  </p>
+  <a href="{% url 'owner_portal:add_property' %}" class="btn-primary-yale" style="padding: 10px 22px; font-size: 14px;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <span>Add your first property</span>
+  </a>
+  <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 14px;">About 5 minutes · Save and finish anytime</div>
+</div>
+
+<!-- THREE SIMPLE STEPS -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 24px;">
+  <div style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 18px;">Your first listing, in three simple steps.</div>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+    <div style="display: flex; gap: 12px; align-items: flex-start;">
+      <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+      <div>
+        <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">Tell us about your space</div>
+        <p style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">Add the address, property type, rooms and monthly rent.</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: flex-start;">
+      <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+      <div>
+        <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">Let your property shine</div>
+        <p style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">Upload clear photos and highlight the amenities seekers love.</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: flex-start;">
+      <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+      <div>
+        <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">Get verified. Go live.</div>
+        <p style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">Submit your ownership documents. We'll review them within 24 hours.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HELP BAR -->
+<div style="background: var(--color-porcelain); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <div style="width: 36px; height: 36px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: var(--color-yale-blue);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+    </div>
+    <div>
+      <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);">A little guidance goes a long way.</div>
+      <div style="font-size: 12px; color: var(--color-text-muted);">Our owner support team can help you set up your first listing.</div>
+    </div>
+  </div>
+  <a href="{% url 'owner_portal:support' %}" class="btn-secondary-light">
+    <span>Talk to owner support</span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+  </a>
+</div>
+
+{% else %}
+
+<!-- ==============================================================
+     FIGMA SCREEN 2: FILLED LIVE DASHBOARD
+     (Automatically shown when the owner has 1 or more properties)
+     ============================================================== -->
+<div class="owner-header-row">
+  <div>
+    <h1 class="welcome-heading"><span class="dynamic-time-greeting">{{ time_greeting }}</span>, {{ owner_first_name }}!</h1>
+    <p class="welcome-subheading">Here's how your properties are doing today, {{ owner_first_name }}.</p>
+  </div>
+  <a href="{% url 'owner_portal:add_property' %}" class="btn-primary-yale">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <span>Add New Property</span>
+  </a>
+</div>
+
+<!-- 4 TOP STAT CARDS (Full dynamic from database) -->
+<div class="owner-stats-grid">
+  <!-- Card 1: Total Properties -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Total Properties</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ total_properties|stringformat:"02d" }}</div>
+    <div class="stat-meta">
+      <span class="stat-pill sage">+1 this month</span>
+      <span class="stat-subtext">Across Bengaluru</span>
+    </div>
+  </div>
+
+  <!-- Card 2: Active Listings -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Active Listings</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ active_listings|stringformat:"02d" }}</div>
+    <div class="stat-meta">
+      <span class="stat-pill sage">Live & discoverable</span>
+      <span class="stat-subtext">{{ pending_listings }} awaiting verification</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Available Beds -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Available Beds</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ available_beds|stringformat:"02d" }}</div>
+    <div class="stat-meta">
+      <span class="stat-pill sage">{{ occupancy_pct }}% occupied</span>
+      <span class="stat-subtext">Across {{ live_total_beds }} live beds</span>
+    </div>
+  </div>
+
+  <!-- Card 4: Total Enquiries -->
+  <div class="owner-stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Total Enquiries</span>
+      <span class="stat-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      </span>
+    </div>
+    <div class="stat-val tabular-nums">{{ total_enquiries|stringformat:"02d" }}</div>
+    <div class="stat-meta">
+      <span class="stat-pill sage">↗ +20% vs last week</span>
+      <span class="stat-subtext">{{ week_date_range }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- PERFORMANCE CARD WITH APPLE-STYLE INTERACTIVE CHART -->
+<div class="perf-card">
+  <div class="perf-header">
+    <div class="perf-title-wrap">
+      <h3 class="apple-font">Property Performance</h3>
+      <p>A little more attention. A lot more possibility.</p>
+    </div>
+    <div class="perf-filters">
+      <select class="perf-filter-select apple-font" id="propertyChartFilter">
+        <option value="all">All live properties</option>
+        {% for p in live_properties %}
+        <option value="{{ p.id }}">{{ p.title }}</option>
+        {% endfor %}
+      </select>
+      <select class="perf-filter-select apple-font" id="periodChartFilter">
+        <option value="7">Last 7 days</option>
+        <option value="14">Last 14 days</option>
+        <option value="30">Last 30 days</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="perf-legend-row">
+    <div class="legend-item">
+      <span class="legend-dot yale"></span>
+      <span>Listing views <strong class="legend-val tabular-nums" id="legendViewsVal">1,248</strong></span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot sage"></span>
+      <span>Enquiries <strong class="legend-val tabular-nums" id="legendEnqVal">42</strong></span>
+    </div>
+    <div style="margin-left: auto; color: var(--color-text-muted); font-size: 11.5px; font-variant-numeric: tabular-nums;" id="legendDateRange">
+      {{ week_date_range }}
+    </div>
+  </div>
+
+  <!-- APPLE INTERACTIVE SVG CHART WRAPPER -->
+  <div class="apple-chart-container">
+    <div class="apple-chart-wrap" id="chartWrapper">
+      <svg viewBox="0 0 900 185" class="apple-chart-svg" id="appleSvgChart" preserveAspectRatio="none">
+        <defs>
+          <!-- Yale Blue Soft Gradient Fill -->
+          <linearGradient id="yaleGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#344966" stop-opacity="0.14" />
+            <stop offset="100%" stop-color="#344966" stop-opacity="0.00" />
+          </linearGradient>
+          <!-- Dry Sage Soft Gradient Fill -->
+          <linearGradient id="sageGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#BFCC94" stop-opacity="0.22" />
+            <stop offset="100%" stop-color="#BFCC94" stop-opacity="0.00" />
+          </linearGradient>
+        </defs>
+
+        <!-- Horizontal Guide Lines -->
+        <line x1="50" y1="28" x2="860" y2="28" stroke="#F1F5F9" stroke-width="1" />
+        <line x1="50" y1="68" x2="860" y2="68" stroke="#F1F5F9" stroke-width="1" />
+        <line x1="50" y1="108" x2="860" y2="108" stroke="#F1F5F9" stroke-width="1" />
+        <line x1="50" y1="148" x2="860" y2="148" stroke="#E2E8F0" stroke-width="1" />
+
+        <!-- Left Y-Axis Labels (Views) -->
+        <text x="42" y="32" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="end" font-weight="500">300</text>
+        <text x="42" y="72" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="end" font-weight="500">200</text>
+        <text x="42" y="112" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="end" font-weight="500">100</text>
+        <text x="42" y="152" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" text-anchor="end" font-weight="500">0</text>
+
+        <!-- Right Y-Axis Labels (Enquiries) -->
+        <text x="868" y="32" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="500">12</text>
+        <text x="868" y="72" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="500">8</text>
+        <text x="868" y="112" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="500">4</text>
+        <text x="868" y="152" fill="#94A3B8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="500">0</text>
+
+        <!-- Dynamic Area Fills -->
+        <path id="viewsAreaPath" fill="url(#yaleGradient)" d="" />
+        <path id="enqAreaPath" fill="url(#sageGradient)" d="" />
+
+        <!-- Vertical Interactive Hairline Guide -->
+        <line id="hairlineGuide" class="apple-hairline-guide" x1="0" y1="20" x2="0" y2="150" />
+
+        <!-- Dynamic Curves -->
+        <path id="viewsLinePath" fill="none" stroke="#344966" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="" />
+        <path id="enqLinePath" fill="none" stroke="#8B9D59" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="" />
+
+        <!-- SVG Node Circles Group -->
+        <g id="chartNodesGroup"></g>
+
+        <!-- X-Axis Labels Group -->
+        <g id="chartXLabelsGroup"></g>
+
+        <!-- Interactive Hit Area Columns Group -->
+        <g id="chartHitColsGroup"></g>
+      </svg>
+
+      <!-- Apple Glass Floating Tooltip / Numbers Card -->
+      <div id="appleChartTooltip" class="apple-chart-tooltip" role="tooltip" aria-hidden="true">
+        <div class="apple-tt-date" id="ttDate">Friday, 6 Nov 2026</div>
+        <div class="apple-tt-row">
+          <div class="apple-tt-label">
+            <span class="apple-tt-dot yale"></span>
+            <span>Listing Views</span>
+          </div>
+          <span class="apple-tt-val" id="ttViews">196</span>
+        </div>
+        <div class="apple-tt-row">
+          <div class="apple-tt-label">
+            <span class="apple-tt-dot sage"></span>
+            <span>Enquiries</span>
+          </div>
+          <span class="apple-tt-val" id="ttEnquiries">6</span>
+        </div>
+        <div class="apple-tt-footer">
+          <span>Conversion Rate:</span>
+          <span class="apple-tt-rate" id="ttRate">3.1%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apple-style hint for interaction -->
+    <div class="apple-chart-hint">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      <span>Click any point or line along the chart to inspect exact views and enquiry figures.</span>
+    </div>
+  </div>
+</div>
+
+<!-- MY PROPERTIES SECTION (Full dynamic loop from database) -->
+<div class="section-header-row">
+  <div>
+    <h3 class="section-title">My Properties</h3>
+    <p class="section-subtitle">Your spaces, at a glance. {{ total_properties }} properties · {{ total_beds }} beds in total.</p>
+  </div>
+  <a href="{% url 'owner_portal:my_properties' %}" class="view-all-link">
+    <span>View all properties</span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+  </a>
+</div>
+
+<div class="properties-cards-grid">
+  {% for prop in properties %}
+  <div class="property-preview-card">
+    <div class="card-img-wrap">
+      <img src="{{ prop.display_image }}" alt="{{ prop.title }}">
+    </div>
+    <div class="card-body">
+      <div class="card-tags-row">
+        {% if prop.status == 'APPROVED' %}
+        <span class="badge-verified-sage">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Verified</span>
+        </span>
+        <span class="card-live-label">Live listing</span>
+        {% elif prop.status == 'PENDING' %}
+        <span class="badge-pending-powder">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+          <span>Pending verification</span>
+        </span>
+        <span class="card-live-label">Not live yet</span>
+        {% else %}
+        <span class="badge-pending-powder">
+          <span>{{ prop.get_status_display }}</span>
+        </span>
+        <span class="card-live-label">{{ prop.get_status_display }}</span>
+        {% endif %}
+      </div>
+      <h4 class="card-property-title">{{ prop.title }}</h4>
+      <div class="card-property-locality">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>{{ prop.locality.name }}, {{ prop.city.name }}</span>
+      </div>
+
+      <div class="occupancy-bar-wrap">
+        <div class="occupancy-labels">
+          {% if prop.status == 'APPROVED' %}
+          <span>{{ prop.available_beds_calc }} beds available</span>
+          <span style="font-weight: 600;">{{ prop.occupancy_pct }}% occupied</span>
+          {% else %}
+          <span>{{ prop.available_beds_calc }} beds · awaiting approval</span>
+          <span style="font-weight: 600;">0% occupied</span>
+          {% endif %}
+        </div>
+        <div class="occupancy-progress">
+          <div class="progress-fill-sage" style="width: {{ prop.occupancy_pct }}%; {% if prop.status != 'APPROVED' %}background: #CBD5E1;{% endif %}"></div>
+        </div>
+      </div>
+
+      <div class="card-footer-row">
+        <div>
+          <span class="card-price">₹{{ prop.starting_rent }}</span>
+          <span class="card-price-unit">/ bed / mo</span>
+        </div>
+        <a href="{% url 'owner_portal:manage_property' prop.id %}" class="btn-card-manage">Manage</a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column: 1 / -1; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 32px; text-align: center; color: var(--color-text-muted);">
+    No properties found. <a href="{% url 'owner_portal:add_property' %}" style="color: var(--color-yale-blue); font-weight: 600;">Add your first property now &rarr;</a>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- TWO COLUMN ROW: RECENT ENQUIRIES & UPCOMING VISITS -->
+<div class="two-col-dashboard-grid">
+  <!-- Left: Recent Enquiries -->
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h4 class="panel-title">Recent Enquiries</h4>
+        <p class="panel-subtitle">New conversations, future residents.</p>
+      </div>
+      <a href="{% url 'owner_portal:enquiries' %}" class="view-all-link">
+        <span>View all</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+      </a>
+    </div>
+
+    <table class="enquiries-table">
+      <thead>
+        <tr>
+          <th>SEEKER</th>
+          <th>PROPERTY</th>
+          <th>DATE</th>
+          <th>STATUS</th>
+          <th style="text-align: right;">ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for enq in recent_enquiries %}
+        <tr>
+          <td>
+            <div class="table-seeker-name">{{ enq.seeker_name }}</div>
+            <div class="table-seeker-sub">{{ enq.interested_room_type|default:"Single occupancy" }}</div>
+          </td>
+          <td>{{ enq.property.title }}</td>
+          <td style="color: var(--color-text-muted);">{{ enq.created_at|date:"j M" }}</td>
+          <td>
+            {% if enq.status == 'NEW' %}
+            <span class="pill-status-new">New</span>
+            {% elif enq.status == 'VISIT_REQUESTED' %}
+            <span class="pill-status-visit">Visit booked</span>
+            {% elif enq.status == 'CONTACTED' %}
+            <span class="pill-status-visit" style="background: #EBF2FA; color: #344966;">Contacted</span>
+            {% elif enq.status == 'CONVERTED' %}
+            <span class="pill-status-new" style="background: #EDF2DE; color: #7A8950;">Converted</span>
+            {% else %}
+            <span class="pill-status-new" style="background: #F1F5F9; color: #475569;">{{ enq.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="{% url 'owner_portal:enquiry_details' enq.id %}" class="link-action">View Details &nearr;</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 24px;">
+            No enquiries received yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Right: Upcoming Visits -->
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h4 class="panel-title">Upcoming Visits</h4>
+        <p class="panel-subtitle">{% if upcoming_visits %}{{ upcoming_visits.count }} visit{{ upcoming_visits.count|pluralize }} scheduled{% else %}No visits scheduled{% endif %}</p>
+      </div>
+      <a href="{% url 'owner_portal:booking_requests' %}" class="view-all-link">
+        <span>View all</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+      </a>
+    </div>
+
+    <div class="visits-list">
+      {% for visit in upcoming_visits %}
+      <div class="visit-item-card">
+        <div class="visit-calendar-badge">
+          <span class="cal-day">{{ visit.scheduled_date|date:"d" }}</span>
+          <span class="cal-month">{{ visit.scheduled_date|date:"b"|upper }}</span>
+        </div>
+        <div class="visit-details">
+          <div class="visit-time-title">{{ visit.scheduled_time_slot|default:"11:00 AM" }}</div>
+          <div class="visit-seeker-name">{{ visit.seeker_name }}</div>
+          <div class="visit-property-name">{{ visit.property.title }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align: center; color: var(--color-text-muted); padding: 32px 16px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2" style="margin-bottom: 8px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+        <div style="font-size: 13px; font-weight: 600;">No upcoming visits scheduled</div>
+        <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">When seekers schedule visits, they will show up here.</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="visit-reminder-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+      <span>We'll remind you before each visit.</span>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM ROW: VERIFICATION ACTIVITY & QUICK ACTIONS -->
+<div class="bottom-dashboard-grid">
+  <!-- Verification Activity -->
+  <div class="panel-card">
+    <div class="panel-header">
+      <h4 class="panel-title">Verification Activity</h4>
+      <a href="{% url 'owner_portal:my_properties' %}" class="view-all-link">
+        <span>View status</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+      </a>
+    </div>
+    <div class="verif-counts-row">
+      <div class="verif-count-box">
+        <div class="verif-circle-icon pending">◔</div>
+        <div>
+          <div class="verif-num tabular-nums">{{ pending_listings|stringformat:"02d" }}</div>
+          <div class="verif-label">Pending</div>
+        </div>
+      </div>
+      <div class="verif-count-box">
+        <div class="verif-circle-icon approved">✓</div>
+        <div>
+          <div class="verif-num tabular-nums">{{ active_listings|stringformat:"02d" }}</div>
+          <div class="verif-label">Approved</div>
+        </div>
+      </div>
+      <div class="verif-count-box">
+        <div class="verif-circle-icon changes">✎</div>
+        <div>
+          <div class="verif-num tabular-nums">{{ changes_requested_listings|stringformat:"02d" }}</div>
+          <div class="verif-label">Changes Requested</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="panel-card">
+    <div class="panel-header">
+      <h4 class="panel-title">Quick Actions</h4>
+    </div>
+    <div class="quick-actions-row">
+      <a href="{% url 'owner_portal:add_property' %}" class="quick-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+        <span>Add Property</span>
+      </a>
+      <a href="{% url 'owner_portal:all_rooms' %}" class="quick-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+        <span>Add Room</span>
+      </a>
+      <a href="{% url 'owner_portal:pricing_availability' %}" class="quick-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+        <span>Update Availability</span>
+      </a>
+      <a href="{% url 'owner_portal:pricing_availability' %}" class="quick-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        <span>Edit Pricing</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     INTERACTIVE APPLE-STYLE SVG CHART JAVASCRIPT
+     ============================================================== -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // 1. Instant local device hour sync for greeting
+  const curHour = new Date().getHours();
+  let clientGreeting = 'Good evening';
+  if (curHour >= 5 && curHour < 12) {
+    clientGreeting = 'Good morning';
+  } else if (curHour >= 12 && curHour < 17) {
+    clientGreeting = 'Good afternoon';
+  } else if (curHour >= 17 && curHour < 22) {
+    clientGreeting = 'Good evening';
+  } else {
+    clientGreeting = 'Welcome back';
+  }
+  document.querySelectorAll('.dynamic-time-greeting').forEach(el => {
+    el.textContent = clientGreeting;
+  });
+
+  // 2. Chart Dataset and Controls
+  const chartDatasets = {{ chart_datasets_json|safe }};
+  
+  const propSelect = document.getElementById('propertyChartFilter');
+  const periodSelect = document.getElementById('periodChartFilter');
+  
+  const legendViewsVal = document.getElementById('legendViewsVal');
+  const legendEnqVal = document.getElementById('legendEnqVal');
+  const legendDateRange = document.getElementById('legendDateRange');
+  
+  const viewsLinePath = document.getElementById('viewsLinePath');
+  const viewsAreaPath = document.getElementById('viewsAreaPath');
+  const enqLinePath = document.getElementById('enqLinePath');
+  const enqAreaPath = document.getElementById('enqAreaPath');
+  
+  const chartNodesGroup = document.getElementById('chartNodesGroup');
+  const chartXLabelsGroup = document.getElementById('chartXLabelsGroup');
+  const chartHitColsGroup = document.getElementById('chartHitColsGroup');
+  const hairlineGuide = document.getElementById('hairlineGuide');
+  
+  const tooltip = document.getElementById('appleChartTooltip');
+  const ttDate = document.getElementById('ttDate');
+  const ttViews = document.getElementById('ttViews');
+  const ttEnquiries = document.getElementById('ttEnquiries');
+  const ttRate = document.getElementById('ttRate');
+  const chartWrapper = document.getElementById('chartWrapper');
+
+  let currentProp = 'all';
+  let currentPeriod = '7';
+  let currentViewsPoints = [];
+  let currentEnqPoints = [];
+  let currentData = null;
+
+  // Catmull-Rom to Cubic Bezier path string generator for Apple smooth curves
+  function getSplinePath(points) {
+    if (!points || points.length === 0) return '';
+    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+    
+    let path = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = i > 0 ? points[i - 1] : points[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = i < points.length - 2 ? points[i + 2] : p2;
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+    return path;
+  }
+
+  function renderChart(propKey, periodKey) {
+    currentProp = propKey || currentProp;
+    currentPeriod = periodKey || currentPeriod;
+
+    const propObj = chartDatasets[currentProp] || chartDatasets['all'];
+    if (!propObj) return;
+
+    const data = propObj[currentPeriod] || propObj['7'];
+    if (!data) return;
+
+    currentData = data;
+    legendDateRange.innerText = data.range || '{{ week_date_range }}';
+    legendViewsVal.innerText = data.views_total.toLocaleString();
+    legendEnqVal.innerText = data.enquiries_total.toLocaleString();
+
+    const xStart = 90;
+    const xEnd = 840;
+    const count = data.days.length;
+    const stepX = (xEnd - xStart) / (count - 1);
+
+    const yBaseline = 148;
+    const yTop = 28;
+    const yHeight = yBaseline - yTop;
+
+    // Fixed / responsive scale
+    const maxViews = 300;
+    const maxEnquiries = 12;
+
+    currentViewsPoints = [];
+    currentEnqPoints = [];
+
+    for (let i = 0; i < count; i++) {
+      const x = xStart + i * stepX;
+      const vVal = data.views[i];
+      const eVal = data.enquiries[i];
+
+      const vy = yBaseline - (vVal / maxViews) * yHeight;
+      const ey = yBaseline - (eVal / maxEnquiries) * yHeight;
+
+      currentViewsPoints.push({ x, y: vy, val: vVal });
+      currentEnqPoints.push({ x, y: ey, val: eVal });
+    }
+
+    // Generate smooth line paths
+    const vPathD = getSplinePath(currentViewsPoints);
+    const ePathD = getSplinePath(currentEnqPoints);
+
+    viewsLinePath.setAttribute('d', vPathD);
+    enqLinePath.setAttribute('d', ePathD);
+
+    // Generate area fills
+    if (currentViewsPoints.length > 0) {
+      const vAreaD = `${vPathD} L ${currentViewsPoints[currentViewsPoints.length - 1].x} ${yBaseline} L ${currentViewsPoints[0].x} ${yBaseline} Z`;
+      viewsAreaPath.setAttribute('d', vAreaD);
+
+      const eAreaD = `${ePathD} L ${currentEnqPoints[currentEnqPoints.length - 1].x} ${yBaseline} L ${currentEnqPoints[0].x} ${yBaseline} Z`;
+      enqAreaPath.setAttribute('d', eAreaD);
+    }
+
+    // Render X Labels (adjust label density for 7, 14, 30 days)
+    chartXLabelsGroup.innerHTML = '';
+    const labelStep = count > 14 ? 5 : (count > 7 ? 2 : 1);
+
+    for (let i = 0; i < count; i++) {
+      if (i % labelStep === 0 || i === count - 1) {
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', currentViewsPoints[i].x);
+        txt.setAttribute('y', 170);
+        txt.setAttribute('fill', '#94A3B8');
+        txt.setAttribute('font-size', '10.5');
+        txt.setAttribute('font-family', '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif');
+        txt.setAttribute('text-anchor', 'middle');
+        txt.textContent = data.days[i];
+        chartXLabelsGroup.appendChild(txt);
+      }
+    }
+
+    // Render interactive nodes and hit columns
+    chartNodesGroup.innerHTML = '';
+    chartHitColsGroup.innerHTML = '';
+
+    const colWidth = stepX;
+
+    for (let i = 0; i < count; i++) {
+      const x = currentViewsPoints[i].x;
+      const vy = currentViewsPoints[i].y;
+      const ey = currentEnqPoints[i].y;
+
+      // Hit column
+      const hitRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      hitRect.setAttribute('class', 'apple-column-hit');
+      hitRect.setAttribute('x', x - colWidth / 2);
+      hitRect.setAttribute('y', 10);
+      hitRect.setAttribute('width', colWidth);
+      hitRect.setAttribute('height', 150);
+      hitRect.setAttribute('data-idx', i);
+      chartHitColsGroup.appendChild(hitRect);
+
+      // Views Node (Yale Blue)
+      const vCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      vCircle.setAttribute('class', 'apple-chart-node views-node');
+      vCircle.setAttribute('cx', x);
+      vCircle.setAttribute('cy', vy);
+      vCircle.setAttribute('r', count > 14 ? '3' : '4');
+      vCircle.setAttribute('fill', '#FFFFFF');
+      vCircle.setAttribute('stroke', '#344966');
+      vCircle.setAttribute('stroke-width', '2.5');
+      vCircle.setAttribute('data-idx', i);
+      vCircle.setAttribute('id', `vnode-${i}`);
+      chartNodesGroup.appendChild(vCircle);
+
+      // Enquiries Node (Dry Sage)
+      const eCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      eCircle.setAttribute('class', 'apple-chart-node enq-node');
+      eCircle.setAttribute('cx', x);
+      eCircle.setAttribute('cy', ey);
+      eCircle.setAttribute('r', count > 14 ? '3' : '4');
+      eCircle.setAttribute('fill', '#FFFFFF');
+      eCircle.setAttribute('stroke', '#8B9D59');
+      eCircle.setAttribute('stroke-width', '2.5');
+      eCircle.setAttribute('data-idx', i);
+      eCircle.setAttribute('id', `enode-${i}`);
+      chartNodesGroup.appendChild(eCircle);
+
+      // Node and column click trigger
+      const clickHandler = (e) => {
+        e.stopPropagation();
+        showTooltipAtIndex(i);
+      };
+      hitRect.addEventListener('click', clickHandler);
+      vCircle.addEventListener('click', clickHandler);
+      eCircle.addEventListener('click', clickHandler);
+    }
+  }
+
+  function showTooltipAtIndex(idx) {
+    if (!currentData || !currentViewsPoints[idx]) return;
+
+    const xCoord = currentViewsPoints[idx].x;
+    const vy = currentViewsPoints[idx].y;
+    const ey = currentEnqPoints[idx].y;
+    const topY = Math.min(vy, ey);
+
+    // Hairline guide
+    hairlineGuide.setAttribute('x1', xCoord);
+    hairlineGuide.setAttribute('x2', xCoord);
+    hairlineGuide.classList.add('active');
+
+    // Highlight node circles
+    document.querySelectorAll('.apple-chart-node').forEach(node => node.classList.remove('active'));
+    const vn = document.getElementById(`vnode-${idx}`);
+    const en = document.getElementById(`enode-${idx}`);
+    if (vn) vn.classList.add('active');
+    if (en) en.classList.add('active');
+
+    // Tooltip data
+    ttDate.innerText = currentData.days_full[idx] || currentData.days[idx];
+    ttViews.innerText = currentData.views[idx];
+    ttEnquiries.innerText = currentData.enquiries[idx];
+    ttRate.innerText = currentData.rates[idx] || '0%';
+
+    // Update legend numbers to show selected point values
+    legendViewsVal.innerText = currentData.views[idx];
+    legendEnqVal.innerText = currentData.enquiries[idx];
+
+    // Precision percentage positioning based on SVG coordinate system (0 to 900 X, 0 to 185 Y)
+    const pctX = (xCoord / 900) * 100;
+    const pctY = (topY / 185) * 100;
+
+    tooltip.style.left = `${pctX}%`;
+    tooltip.style.top = `${pctY}%`;
+    tooltip.classList.add('visible');
+    tooltip.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideTooltip() {
+    hairlineGuide.classList.remove('active');
+    document.querySelectorAll('.apple-chart-node').forEach(node => node.classList.remove('active'));
+    tooltip.classList.remove('visible');
+    tooltip.setAttribute('aria-hidden', 'true');
+
+    if (currentData) {
+      legendViewsVal.innerText = currentData.views_total.toLocaleString();
+      legendEnqVal.innerText = currentData.enquiries_total.toLocaleString();
+    }
+  }
+
+  // Click anywhere on line/chart curves to reveal exact numbers
+  chartWrapper.addEventListener('click', function(e) {
+    if (e.target.closest('#propertyChartFilter') || e.target.closest('#periodChartFilter')) return;
+    const svg = document.getElementById('appleSvgChart');
+    if (!svg || !currentViewsPoints.length) return;
+
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const svgPt = pt.matrixTransform(ctm.inverse());
+
+    if (svgPt.x >= 70 && svgPt.x <= 860 && svgPt.y >= 5 && svgPt.y <= 175) {
+      let closestIdx = 0;
+      let minDist = 999999;
+      for (let i = 0; i < currentViewsPoints.length; i++) {
+        const d = Math.abs(currentViewsPoints[i].x - svgPt.x);
+        if (d < minDist) {
+          minDist = d;
+          closestIdx = i;
+        }
+      }
+      showTooltipAtIndex(closestIdx);
+    }
+  });
+
+  // Dropdown Change Listeners
+  if (propSelect) {
+    propSelect.addEventListener('change', function() {
+      hideTooltip();
+      renderChart(this.value, periodSelect ? periodSelect.value : '7');
+    });
+  }
+
+  if (periodSelect) {
+    periodSelect.addEventListener('change', function() {
+      hideTooltip();
+      renderChart(propSelect ? propSelect.value : 'all', this.value);
+    });
+  }
+
+  // Outside click closes tooltip
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#chartWrapper') && !e.target.closest('#propertyChartFilter') && !e.target.closest('#periodChartFilter')) {
+      hideTooltip();
+    }
+  });
+
+  // Initial Chart Render (Default: all properties, 7 days)
+  renderChart('all', '7');
+});
+</script>
+
+{% endif %}
+{% endblock %}

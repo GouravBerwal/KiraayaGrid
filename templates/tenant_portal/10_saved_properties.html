@@ -1,0 +1,808 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Saved Properties — KiraayaGrid{% endblock %}
+
+{% block content %}
+
+<!-- 1. HEADER ROW -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+      Saved Properties
+    </h1>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Good places, kept close. Compare rates, check availability, or send direct inquiries.
+    </p>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px;">
+    {% if saved_count > 0 %}
+    <button type="button" id="btnOpenCompare" onclick="openCompareModal()" style="padding: 9px 18px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; font-size: 13px; font-weight: 700; color: var(--color-text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); transition: all 0.15s ease;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <span>Compare Stays (<span id="compareCountLabel">{{ saved_count }}</span>)</span>
+    </button>
+    {% endif %}
+    <a href="{% url 'tenant_portal:find_accommodation' %}" class="btn-search-primary" style="padding: 9px 18px; font-size: 13px;">
+      <span>+ Explore More</span>
+    </a>
+  </div>
+</div>
+
+<!-- 2. SUB-BAR (COUNT & SORTING) -->
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 20px; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-card);">
+  <div style="font-size: 14px; color: var(--color-text-main); font-weight: 700;">
+    You have <span style="color: var(--color-powder-blue-dark); font-weight: 800;" id="savedCountHeader">{{ saved_count }}</span> saved stays in your shortlist
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+    <span style="color: var(--color-text-muted); font-weight: 600;">Sort by:</span>
+    <select onchange="updateSavedSort(this.value)" style="border: 1px solid var(--color-border); background: #F8FAFC; padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); outline: none;">
+      <option value="recent" {% if current_sort == 'recent' %}selected{% endif %}>Recently Saved</option>
+      <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+      <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+    </select>
+  </div>
+</div>
+
+<!-- 3. SAVED PROPERTIES GRID -->
+<div class="property-cards-grid" id="savedGrid" style="{% if saved_count == 0 %}display: none;{% endif %}">
+  {% for item in saved_items %}
+  <div class="tenant-property-card" id="savedCard-{{ item.prop.id }}">
+    <div class="property-card-img-wrap">
+      <img src="{{ item.prop.display_photo }}" alt="{{ item.prop.title }}" loading="lazy">
+      {% if item.prop.status == 'APPROVED' %}
+      <span class="property-badge-verified">
+        <span>&check;</span> Verified
+      </span>
+      {% endif %}
+      <!-- Heart Icon (Active state for Saved) -->
+      <button type="button" class="property-btn-favorite active" onclick="removeSaved({{ item.prop.id }}, '{{ item.prop.title|escapejs }}')" title="Remove from Saved">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      </button>
+    </div>
+
+    <div class="property-card-body">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">
+          Saved on {{ item.saved_date_str }}
+        </span>
+        <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--color-text-muted); cursor: pointer;">
+          <input type="checkbox" class="compare-checkbox" value="{{ item.prop.id }}" checked onchange="updateSelectedCompareCount()">
+          <span>Compare</span>
+        </label>
+      </div>
+
+      <h3 class="property-card-title">{{ item.prop.title }}</h3>
+      <div class="property-card-locality">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>{{ item.prop.locality_str }}, {{ item.prop.city.name|default:"Bengaluru" }}</span>
+      </div>
+
+      <div class="property-card-price-row">
+        <span class="property-card-price">₹{{ item.prop.display_price }}</span>
+        <span class="property-card-period">/ month</span>
+        <span style="font-size: 11.5px; color: var(--color-text-muted); margin-left: 6px;">(Dep: ₹{{ item.prop.display_deposit }})</span>
+      </div>
+
+      <div class="property-card-amenities">{{ item.prop.display_amenities }}</div>
+
+      <div class="property-card-footer">
+        <span style="color: var(--color-text-main);">{{ item.prop.display_sharing }}</span>
+        <span style="color: {% if item.prop.availability_class == 'avail-now' %}#059669{% else %}#D97706{% endif %}; font-weight: 700;">&bull; {{ item.prop.display_availability }}</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
+        <button type="button" class="property-card-view-btn" onclick="openQuickViewModal({{ item.prop.id }})" style="margin-top: 0; text-align: center;">View Details</button>
+        <button type="button" onclick="openDirectEnquiryModal({{ item.prop.id }}, '{{ item.prop.title|escapejs }}', {{ item.prop.display_price }})" class="btn-search-primary" style="padding: 9px; justify-content: center; font-size: 12.5px;">Send Enquiry</button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- PAGINATION (MAX 5 PER PAGE) -->
+{% if saved_count > 0 %}
+<div style="margin-top: 24px; padding: 14px 20px; border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);">
+  <div>
+    Showing <strong>{{ page_obj.start_index }}</strong> to <strong>{{ page_obj.end_index }}</strong> of <strong>{{ paginator.count }}</strong> saved stays (Limit 5 per page)
+  </div>
+
+  <div style="display: flex; gap: 6px; align-items: center;">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+       style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+      &larr; Previous
+    </a>
+    {% else %}
+    <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+      &larr; Previous
+    </span>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
+    <span style="padding: 6px 12px; border-radius: var(--radius-pill); background: var(--color-powder-blue); color: #0F172A; font-weight: 800;">
+      {{ num }}
+    </span>
+    {% else %}
+    <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+       style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 600; text-decoration: none;">
+      {{ num }}
+    </a>
+    {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+       style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+      Next &rarr;
+    </a>
+    {% else %}
+    <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+      Next &rarr;
+    </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- 4. EMPTY STATE (AUTOMATICALLY DISPLAYED IF NO SAVED PROPERTIES) -->
+<div id="emptySavedState" style="{% if saved_count > 0 %}display: none;{% else %}display: block;{% endif %} text-align: center; padding: 70px 24px; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px dashed var(--color-border); box-shadow: var(--shadow-sm);">
+  <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--color-rose-wine-light); color: var(--color-rose-wine); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+  </div>
+  <h2 style="font-size: 20px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">Your saved shortlist is empty</h2>
+  <p style="font-size: 13.5px; color: var(--color-text-muted); max-width: 440px; margin: 0 auto 20px auto; line-height: 1.5;">
+    When you find homes you like, tap the heart icon on any card to save and compare them side-by-side here.
+  </p>
+  <a href="{% url 'tenant_portal:find_accommodation' %}" class="btn-search-primary" style="display: inline-flex; padding: 11px 26px; font-size: 13.5px;">
+    <span>Explore Properties &rarr;</span>
+  </a>
+</div>
+
+<!-- ==============================================================
+     MODAL 1: SIDE-BY-SIDE COMPARISON MATRIX MODAL
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="compareModal" onclick="handleCompareBackdrop(event)">
+  <div class="tenant-modal-card" style="max-width: 960px;">
+    <button type="button" class="tenant-modal-close-btn" onclick="closeCompareModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <div style="padding: 24px 28px 16px 28px; border-bottom: 1px solid var(--color-border);">
+      <h2 style="font-size: 20px; font-weight: 800; color: var(--color-text-main); margin: 0 0 4px 0;">
+        Compare Saved Stays
+      </h2>
+      <p style="font-size: 13px; color: var(--color-text-muted); margin: 0;">
+        Side-by-side comparison of rent, security deposit, amenities, and room availability.
+      </p>
+    </div>
+
+    <div style="overflow-x: auto; padding: 20px 28px 28px 28px;">
+      <table class="compare-matrix-table" id="compareTableElement">
+        <!-- Dynamically generated comparison rows -->
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL 2: APPLE-GRADE QUICK VIEW MODAL
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="quickViewModal" onclick="handleModalBackdropClick(event)">
+  <div class="tenant-modal-card">
+    <button type="button" class="tenant-modal-close-btn" onclick="closeQuickViewModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <!-- Header Image -->
+    <div style="position: relative; height: 260px; background: #0F172A; overflow: hidden; border-radius: 22px 22px 0 0;">
+      <img id="modalCoverImg" src="" alt="Property" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, transparent 60%);"></div>
+
+      <div style="position: absolute; bottom: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span id="modalVerifiedBadge" style="display: none; font-size: 11px; font-weight: 700; background: rgba(5, 150, 105, 0.9); color: #FFFFFF; padding: 3px 8px; border-radius: 6px;">
+              &check; Verified KiraayaGrid Stay
+            </span>
+            <span id="modalTypeBadge" style="font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.2); color: #FFFFFF; backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 6px;">
+              PG
+            </span>
+          </div>
+          <h2 id="modalTitle" style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin: 0;">Property Title</h2>
+          <div id="modalLocality" style="font-size: 13px; color: #E2E8F0; margin-top: 3px;">Locality, Bengaluru</div>
+        </div>
+
+        <div style="text-align: right; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);">
+          <div style="font-size: 11px; color: #E2E8F0; text-transform: uppercase; font-weight: 600;">Starting from</div>
+          <div style="font-size: 20px; font-weight: 800; color: #FFFFFF;"><span id="modalRent">₹14,500</span> <span style="font-size: 12px; font-weight: 500;">/mo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Content & Action Tabs -->
+    <div style="padding: 24px 28px 28px 28px;">
+      <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--color-border); padding-bottom: 14px; margin-bottom: 20px;">
+        <button type="button" id="tabOverviewBtn" onclick="switchModalTab('overview')" style="background: var(--color-powder-blue-light); color: var(--color-powder-blue-dark); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+          Overview &amp; Amenities
+        </button>
+        <button type="button" id="tabEnquiryBtn" onclick="switchModalTab('enquiry')" style="background: transparent; color: var(--color-text-muted); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+          Send Enquiry
+        </button>
+        <button type="button" id="tabVisitBtn" onclick="switchModalTab('visit')" style="background: transparent; color: var(--color-text-muted); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+          Book Walkthrough
+        </button>
+      </div>
+
+      <!-- Tab 1: Overview Panel -->
+      <div id="modalOverviewPanel">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #0F172A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;" id="modalOwnerAvatar">
+              AM
+            </div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);" id="modalOwnerName">Hosted by Arjun Mehta</div>
+              <div style="font-size: 11.5px; color: var(--color-text-muted);">Verified Owner &middot; Dedicated Property Manager</div>
+            </div>
+          </div>
+          <button type="button" onclick="switchModalTab('enquiry')" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 8px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; cursor: pointer;">
+            Message Host
+          </button>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Available Configurations</h4>
+          <div id="modalRoomsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;"></div>
+        </div>
+
+        <div>
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Included Comforts</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">⚡ High-speed Wi-Fi</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🥗 Homestyle Meals</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🧹 Regular Housekeeping</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">❄️ Air Conditioning</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🛡️ 24/7 Security</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Send Quick Enquiry Form -->
+      <form id="quickEnquiryForm" onsubmit="submitQuickEnquiry(event)" style="display: none; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="property_id" id="enquiryPropId" value="">
+        <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; font-size: 12.5px; color: var(--color-text-muted);">
+          Sending enquiry directly to host as <strong style="color: var(--color-text-main);">Aarav Sharma</strong> (+91 98765 43210).
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Room Type</label>
+            <select name="room_type" id="enquiryRoomType" class="modal-form-input">
+              <option value="Private room · PG">Private room · PG</option>
+              <option value="Twin sharing · Co-living">Twin sharing · Co-living</option>
+              <option value="Studio · Flat">Studio · Flat</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Target Move-in Date</label>
+            <input type="date" name="move_in_date" value="2026-12-01" class="modal-form-input" required>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Monthly Budget (₹)</label>
+          <input type="number" name="budget" id="enquiryBudget" value="15000" class="modal-form-input" required>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Your Message to Owner</label>
+          <textarea name="message" rows="3" class="modal-form-input" placeholder="Hi, I am interested in this stay. Is it available for immediate move-in?"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="switchModalTab('overview')" style="background: #F1F5F9; border: none; padding: 10px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Back
+          </button>
+          <button type="submit" id="btnSubmitEnquiry" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 10px 24px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Send Enquiry Now
+          </button>
+        </div>
+      </form>
+
+      <!-- Tab 3: Book Walkthrough Form -->
+      <form id="quickVisitForm" onsubmit="submitQuickVisit(event)" style="display: none; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="property_id" id="visitPropId" value="">
+        <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-md); padding: 12px 16px; font-size: 12.5px; color: #065F46;">
+          Schedule an in-person walkthrough. The host will confirm your requested slot.
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Visit Date</label>
+            <input type="date" name="scheduled_date" value="2026-11-15" class="modal-form-input" required>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Preferred Time Slot</label>
+            <select name="scheduled_time_slot" class="modal-form-input">
+              <option value="11:00 AM – 11:30 AM" selected>11:00 AM – 11:30 AM (Morning)</option>
+              <option value="2:00 PM – 2:30 PM">2:00 PM – 2:30 PM (Afternoon)</option>
+              <option value="4:00 PM – 4:30 PM">4:00 PM – 4:30 PM (Evening)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Notes for Host (Optional)</label>
+          <input type="text" name="notes" class="modal-form-input" placeholder="e.g. Planning to visit with my roommate.">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="switchModalTab('overview')" style="background: #F1F5F9; border: none; padding: 10px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Back
+          </button>
+          <button type="submit" id="btnSubmitVisit" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 10px 24px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Confirm Visit Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL 3: DIRECT ENQUIRY MODAL (FROM CARD BUTTON)
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="directEnquiryModal" onclick="handleDirectEnquiryBackdrop(event)">
+  <div class="tenant-modal-card" style="max-width: 500px;">
+    <button type="button" class="tenant-modal-close-btn" onclick="closeDirectEnquiryModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <div style="padding: 24px 28px;">
+      <h3 style="font-size: 18px; font-weight: 800; color: var(--color-text-main); margin: 0 0 4px 0;">Send Direct Enquiry</h3>
+      <p id="directModalPropName" style="font-size: 13px; color: var(--color-text-muted); margin: 0 0 16px 0;">Property Enquiry</p>
+
+      <form id="directEnquiryForm" onsubmit="submitDirectModalEnquiry(event)" style="display: flex; flex-direction: column; gap: 14px;">
+        <input type="hidden" name="property_id" id="directModalPropId">
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Interested Room Type</label>
+          <select name="room_type" class="modal-form-input">
+            <option value="Private room · PG">Private room · PG</option>
+            <option value="Twin sharing · Co-living">Twin sharing · Co-living</option>
+            <option value="Triple sharing">Triple sharing</option>
+            <option value="Studio · Flat">Studio · Flat</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Target Move-in</label>
+            <input type="date" name="move_in_date" value="2026-12-01" class="modal-form-input" required>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Budget (₹/mo)</label>
+            <input type="number" name="budget" id="directModalBudget" class="modal-form-input" required>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Your Message to Host</label>
+          <textarea name="message" rows="3" class="modal-form-input" placeholder="Hi, I am interested in this stay. Is it available for immediate move-in?"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="closeDirectEnquiryModal()" style="background: #F1F5F9; border: none; padding: 9px 18px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Cancel
+          </button>
+          <button type="submit" id="btnSubmitDirectEnquiry" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 9px 22px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Send Enquiry
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT LOGIC
+     ============================================================== -->
+<script>
+  const comparisonItems = {{ comparison_data_json|safe }};
+
+  // 1. Remove from Saved Shortlist (Live AJAX)
+  function removeSaved(propertyId, title) {
+    fetch(`/tenant/saved/toggle/${propertyId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      const card = document.getElementById(`savedCard-${propertyId}`);
+      if (card) {
+        card.style.transition = 'all 0.35s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.92) translateY(20px)';
+        setTimeout(() => {
+          card.remove();
+          // Update counters
+          const count = data.saved_count || 0;
+          const headerCount = document.getElementById('savedCountHeader');
+          const compareLabel = document.getElementById('compareCountLabel');
+          if (headerCount) headerCount.textContent = count;
+          if (compareLabel) compareLabel.textContent = count;
+
+          // If count is 0, show empty state
+          if (count === 0) {
+            document.getElementById('savedGrid').style.display = 'none';
+            document.getElementById('emptySavedState').style.display = 'block';
+            const btnCompare = document.getElementById('btnOpenCompare');
+            if (btnCompare) btnCompare.style.display = 'none';
+          }
+        }, 350);
+      }
+      showTenantToast(`Removed ${title || 'property'} from your shortlist.`);
+    })
+    .catch(() => {
+      showTenantToast('Could not update saved properties.');
+    });
+  }
+
+  // 2. Open Comparison Matrix Modal
+  function openCompareModal() {
+    // Collect checked property IDs
+    const checkedBoxes = document.querySelectorAll('.compare-checkbox:checked');
+    let targetIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+    // If none checked, compare all saved
+    if (targetIds.length === 0) {
+      targetIds = comparisonItems.map(item => item.id);
+    }
+
+    const selectedItems = comparisonItems.filter(item => targetIds.includes(item.id));
+    if (selectedItems.length === 0) {
+      showTenantToast('No properties selected to compare.');
+      return;
+    }
+
+    renderComparisonTable(selectedItems);
+    const modal = document.getElementById('compareModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCompareModal() {
+    const modal = document.getElementById('compareModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleCompareBackdrop(e) {
+    if (e.target.id === 'compareModal') {
+      closeCompareModal();
+    }
+  }
+
+  function updateSelectedCompareCount() {
+    const checked = document.querySelectorAll('.compare-checkbox:checked').length;
+    const label = document.getElementById('compareCountLabel');
+    if (label) label.textContent = checked;
+  }
+
+  // 3. Render Comparison Table
+  function renderComparisonTable(items) {
+    const table = document.getElementById('compareTableElement');
+    table.innerHTML = '';
+
+    // Row 0: Property Cards Header
+    let trHead = document.createElement('tr');
+    trHead.innerHTML = `<th class="attr-col" style="font-size: 14px;">Property</th>`;
+    items.forEach(it => {
+      trHead.innerHTML += `
+        <td class="prop-col" style="padding: 16px 14px;">
+          <img src="${it.photo}" style="width: 100%; height: 110px; object-fit: cover; border-radius: 10px; margin-bottom: 8px;">
+          <div style="font-size: 14px; font-weight: 800; color: #1E293B;">${it.title}</div>
+          <div style="font-size: 12px; color: #64748B; margin-top: 2px;">${it.locality}</div>
+          <div style="margin-top: 10px; display: flex; gap: 6px; justify-content: center;">
+            <button onclick="closeCompareModal(); openQuickViewModal(${it.id})" style="padding: 5px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: #FFFFFF; font-size: 11.5px; font-weight: 700; cursor: pointer;">Details</button>
+            <button onclick="closeCompareModal(); openDirectEnquiryModal(${it.id}, '${it.title.replace(/'/g, "\\'")}', ${it.rent_num})" class="btn-search-primary" style="padding: 5px 12px; font-size: 11.5px;">Enquire</button>
+          </div>
+        </td>
+      `;
+    });
+    table.appendChild(trHead);
+
+    // Row 1: Monthly Rent
+    appendCompareRow(table, 'Monthly Rent', items, it => `<strong style="font-size: 15px; color: #0F172A;">${it.rent}</strong> <span style="font-size: 11px; color: #64748B;">/mo</span>`);
+
+    // Row 2: Security Deposit
+    appendCompareRow(table, 'Security Deposit', items, it => `<span style="font-weight: 700;">${it.deposit}</span>`);
+
+    // Row 3: Stay Type & Sharing
+    appendCompareRow(table, 'Room Type', items, it => `${it.sharing}`);
+
+    // Row 4: Availability
+    appendCompareRow(table, 'Availability', items, it => `<span style="color: #059669; font-weight: 700;">${it.availability}</span>`);
+
+    // Row 5: Wi-Fi
+    appendCompareRow(table, 'High-Speed Wi-Fi', items, it => it.amenities.wifi ? '<span class="compare-check-yes">✓ Yes</span>' : '<span class="compare-check-no">—</span>');
+
+    // Row 6: Food / Meals
+    appendCompareRow(table, 'Daily Meals', items, it => it.amenities.meals ? '<span class="compare-check-yes">✓ Included</span>' : '<span class="compare-check-no">— Optional</span>');
+
+    // Row 7: Air Conditioning
+    appendCompareRow(table, 'Air Conditioning', items, it => it.amenities.ac ? '<span class="compare-check-yes">✓ Yes</span>' : '<span class="compare-check-no">—</span>');
+
+    // Row 8: Power Backup
+    appendCompareRow(table, '24/7 Power Backup', items, it => it.amenities.power_backup ? '<span class="compare-check-yes">✓ Yes</span>' : '<span class="compare-check-no">—</span>');
+
+    // Row 9: Housekeeping
+    appendCompareRow(table, 'Housekeeping', items, it => it.amenities.housekeeping ? '<span class="compare-check-yes">✓ Included</span>' : '<span class="compare-check-no">—</span>');
+
+    // Row 10: Gym
+    appendCompareRow(table, 'Fitness Gym', items, it => it.amenities.gym ? '<span class="compare-check-yes">✓ Access</span>' : '<span class="compare-check-no">—</span>');
+
+    // Row 11: Laundry
+    appendCompareRow(table, 'Laundry / Washing', items, it => it.amenities.laundry ? '<span class="compare-check-yes">✓ Available</span>' : '<span class="compare-check-no">—</span>');
+
+    // Row 12: Host
+    appendCompareRow(table, 'Host', items, it => `<span style="font-weight: 600;">${it.owner_name}</span>`);
+  }
+
+  function appendCompareRow(table, label, items, valueFunc) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<th class="attr-col">${label}</th>`;
+    items.forEach(it => {
+      tr.innerHTML += `<td class="prop-col">${valueFunc(it)}</td>`;
+    });
+    table.appendChild(tr);
+  }
+
+  // 4. Update Sort
+  function updateSavedSort(val) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', val);
+    window.location.href = url.toString();
+  }
+
+  // 5. Open Quick View Modal
+  function openQuickViewModal(propertyId) {
+    fetch(`/tenant/api/property/${propertyId}/`)
+      .then(r => r.json())
+      .then(prop => {
+        document.getElementById('modalCoverImg').src = prop.cover_photo;
+        document.getElementById('modalTitle').textContent = prop.title;
+        document.getElementById('modalLocality').textContent = `${prop.locality}, ${prop.city}`;
+        document.getElementById('modalRent').textContent = `₹${Math.round(prop.min_rent).toLocaleString('en-IN')}`;
+        document.getElementById('modalTypeBadge').textContent = prop.property_type;
+
+        const vBadge = document.getElementById('modalVerifiedBadge');
+        if (prop.is_verified) {
+          vBadge.style.display = 'inline-block';
+        } else {
+          vBadge.style.display = 'none';
+        }
+
+        document.getElementById('modalOwnerName').textContent = `Hosted by ${prop.owner_name}`;
+        const initials = prop.owner_name.split(' ').map(n => n[0]).join('').substring(0, 2);
+        document.getElementById('modalOwnerAvatar').textContent = initials || 'AM';
+
+        // Rooms options
+        const roomsContainer = document.getElementById('modalRoomsList');
+        roomsContainer.innerHTML = '';
+        if (prop.rooms && prop.rooms.length > 0) {
+          prop.rooms.forEach(r => {
+            const card = document.createElement('div');
+            card.style.cssText = 'border: 1px solid var(--color-border); border-radius: 10px; padding: 10px 12px; background: #FAFCFD;';
+            card.innerHTML = `
+              <div style="font-size: 13px; font-weight: 700; color: var(--color-text-main);">${r.room_type}</div>
+              <div style="font-size: 12px; color: #059669; font-weight: 700; margin-top: 2px;">₹${Math.round(r.monthly_rent).toLocaleString('en-IN')}/mo</div>
+              <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">${r.available_beds} beds available &bull; ${r.furnishing || 'Furnished'}</div>
+            `;
+            roomsContainer.appendChild(card);
+          });
+        } else {
+          roomsContainer.innerHTML = '<div style="font-size: 12px; color: var(--color-text-muted);">Standard accommodations available. Contact host for details.</div>';
+        }
+
+        document.getElementById('enquiryPropId').value = prop.id;
+        document.getElementById('visitPropId').value = prop.id;
+        document.getElementById('enquiryBudget').value = Math.round(prop.min_rent);
+
+        switchModalTab('overview');
+
+        const modal = document.getElementById('quickViewModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      })
+      .catch(() => {
+        showTenantToast('Could not load details.');
+      });
+  }
+
+  function closeQuickViewModal() {
+    const modal = document.getElementById('quickViewModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleModalBackdropClick(e) {
+    if (e.target.id === 'quickViewModal') {
+      closeQuickViewModal();
+    }
+  }
+
+  function switchModalTab(tabName) {
+    const overviewPanel = document.getElementById('modalOverviewPanel');
+    const enquiryForm = document.getElementById('quickEnquiryForm');
+    const visitForm = document.getElementById('quickVisitForm');
+
+    const tabOverviewBtn = document.getElementById('tabOverviewBtn');
+    const tabEnquiryBtn = document.getElementById('tabEnquiryBtn');
+    const tabVisitBtn = document.getElementById('tabVisitBtn');
+
+    [tabOverviewBtn, tabEnquiryBtn, tabVisitBtn].forEach(btn => {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--color-text-muted)';
+      btn.style.fontWeight = '600';
+    });
+
+    overviewPanel.style.display = 'none';
+    enquiryForm.style.display = 'none';
+    visitForm.style.display = 'none';
+
+    if (tabName === 'overview') {
+      overviewPanel.style.display = 'block';
+      tabOverviewBtn.style.background = 'var(--color-powder-blue-light)';
+      tabOverviewBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabOverviewBtn.style.fontWeight = '700';
+    } else if (tabName === 'enquiry') {
+      enquiryForm.style.display = 'flex';
+      tabEnquiryBtn.style.background = 'var(--color-powder-blue-light)';
+      tabEnquiryBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabEnquiryBtn.style.fontWeight = '700';
+    } else if (tabName === 'visit') {
+      visitForm.style.display = 'flex';
+      tabVisitBtn.style.background = 'var(--color-powder-blue-light)';
+      tabVisitBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabVisitBtn.style.fontWeight = '700';
+    }
+  }
+
+  // 6. Direct Enquiry Modal (From card button)
+  function openDirectEnquiryModal(propId, propTitle, minPrice) {
+    document.getElementById('directModalPropId').value = propId;
+    document.getElementById('directModalPropName').textContent = `Inquiring for: ${propTitle}`;
+    document.getElementById('directModalBudget').value = minPrice;
+    const modal = document.getElementById('directEnquiryModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDirectEnquiryModal() {
+    const modal = document.getElementById('directEnquiryModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleDirectEnquiryBackdrop(e) {
+    if (e.target.id === 'directEnquiryModal') {
+      closeDirectEnquiryModal();
+    }
+  }
+
+  function submitDirectModalEnquiry(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitDirectEnquiry');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const form = document.getElementById('directEnquiryForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-enquiry/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeDirectEnquiryModal();
+      } else {
+        showTenantToast(data.message || 'Error sending enquiry');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry';
+      showTenantToast('Enquiry sent directly to host!');
+      closeDirectEnquiryModal();
+    });
+  }
+
+  function submitQuickEnquiry(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitEnquiry');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const form = document.getElementById('quickEnquiryForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-enquiry/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry Now';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeQuickViewModal();
+      } else {
+        showTenantToast(data.message || 'Error sending enquiry');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry Now';
+      showTenantToast('Enquiry sent to property host!');
+      closeQuickViewModal();
+    });
+  }
+
+  function submitQuickVisit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitVisit');
+    btn.disabled = true;
+    btn.textContent = 'Scheduling...';
+
+    const form = document.getElementById('quickVisitForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-visit/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Confirm Visit Request';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeQuickViewModal();
+      } else {
+        showTenantToast(data.message || 'Error booking visit');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Confirm Visit Request';
+      showTenantToast('Visit walkthrough requested!');
+      closeQuickViewModal();
+    });
+  }
+</script>
+{% endblock %}

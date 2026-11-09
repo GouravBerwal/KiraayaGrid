@@ -1,0 +1,1268 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Amenities management — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Amenities management{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/09_amenities_management.css' %}?v=3.0">
+  <style>
+    /* ==============================================================
+       SCREEN 09: CRITICAL INLINE STYLES FOR ZERO-CACHE ISSUES
+       ============================================================== */
+    .amenity-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      padding-bottom: 4px !important;
+    }
+
+    .amenity-search-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      padding: 8px 12px !important;
+      flex: 1 !important;
+      min-width: 240px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .amenity-search-wrap:focus-within {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .amenity-search-icon {
+      color: #64748B !important;
+      flex-shrink: 0 !important;
+    }
+
+    .amenity-search-input {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      width: 100% !important;
+      font-size: 13px !important;
+      color: #0F172A !important;
+      font-weight: 500 !important;
+    }
+
+    .amenity-filter-select {
+      width: auto !important;
+      min-width: 130px !important;
+      padding: 8px 28px 8px 11px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+    }
+
+    .amenity-filter-select:focus {
+      outline: none !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .amenity-filter-btn {
+      padding: 8px 16px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 9px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      cursor: pointer !important;
+    }
+
+    /* Category avatar colors */
+    .cat-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12.5px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .cat-blue { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+    .cat-indigo { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; }
+    .cat-teal { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+    .cat-amber { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+    .cat-purple { background: #FAF5FF; color: #7E22CE; border: 1px solid #E9D5FF; }
+
+    /* Verification pills */
+    .verif-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .verif-declared { background: #F1F5F9; color: #475569; }
+    .verif-photo { background: #FEF3C7; color: #92400E; }
+    .verif-invoice { background: #DBEAFE; color: #1E40AF; }
+    .verif-menu { background: #FCE7F3; color: #9D174D; }
+    .verif-inspection { background: #E0E7FF; color: #3730A3; }
+
+    /* Table interactions */
+    .amenity-table-row {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .amenity-table-row:hover {
+      background: #F8FAFC !important;
+    }
+
+    /* Modal Backdrop & Content */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open {
+      display: flex !important;
+    }
+    .modal-content-box {
+      background: #FFFFFF;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: modalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    @keyframes modalScale {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #64748B;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .modal-close-btn:hover {
+      color: #0F172A;
+      background: #F1F5F9;
+    }
+    .modal-body {
+      padding: 22px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-footer {
+      padding: 14px 22px;
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #F8FAFC;
+      flex-shrink: 0;
+    }
+
+    /* Switch Component */
+    .switch-ui {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .switch-ui input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #CBD5E1;
+      transition: .25s ease;
+      border-radius: 22px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .25s ease;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    input:checked + .slider {
+      background-color: #1C5D99;
+    }
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+
+    /* Mini Stat Cells in Modal */
+    .stats-tri-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .mini-stat-cell {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 9px;
+      padding: 10px 12px;
+    }
+    .mini-stat-lbl {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+    .mini-stat-val {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+
+    /* Behavior toggle rows */
+    .toggle-control-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .toggle-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+    .toggle-item-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .toggle-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 2px;
+    }
+    .toggle-sub {
+      font-size: 11.5px;
+      color: #64748B;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #1E293B;
+      color: #FFFFFF;
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s ease;
+    }
+    .toast.success { background: #065F46; border-left: 4px solid #34D399; }
+    .toast.error { background: #991B1B; border-left: 4px solid #F87171; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .stats-tri-row {
+        grid-template-columns: 1fr;
+      }
+      .two-col-inputs {
+        grid-template-columns: 1fr !important;
+      }
+      .amenity-filter-toolbar {
+        flex-wrap: wrap !important;
+      }
+      .amenity-search-wrap {
+        min-width: 100% !important;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     PAGE HEADER
+     ============================================================== -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Amenities management</h1>
+    <p class="page-subtitle">Keep facility definitions consistent across owner submissions, search filters and property pages.</p>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn btn-outline" onclick="openCategoriesModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      Manage categories
+    </button>
+    <button type="button" class="btn btn-primary" onclick="openAddAmenityModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Add amenity
+    </button>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOP 4 KPI STAT BOXES (DYNAMIC FROM DATABASE)
+     ============================================================== -->
+<div class="stats-grid-4">
+  <div class="stat-box">
+    <div class="card-header-flex mb-10">
+      <span class="stat-label">Connectivity</span>
+      <span class="icon-stat-blue">📶</span>
+    </div>
+    <div class="stat-value font-18">{{ kpi_stats.connectivity_count }} facilities</div>
+    <div class="stat-trend neutral">Active category · Wi-Fi & LAN</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="card-header-flex mb-10">
+      <span class="stat-label">Essentials</span>
+      <span class="icon-stat-blue">🛏</span>
+    </div>
+    <div class="stat-value font-18">{{ kpi_stats.essentials_count }} facilities</div>
+    <div class="stat-trend neutral">Active category · Power & Water</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="card-header-flex mb-10">
+      <span class="stat-label">Safety</span>
+      <span class="icon-stat-blue">🛡</span>
+    </div>
+    <div class="stat-value font-18">{{ kpi_stats.safety_count }} facilities</div>
+    <div class="stat-trend neutral">Active category · CCTV & Access</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="card-header-flex mb-10">
+      <span class="stat-label">Services</span>
+      <span class="icon-stat-blue">🛎</span>
+    </div>
+    <div class="stat-value font-18">{{ kpi_stats.services_count }} facilities</div>
+    <div class="stat-trend neutral">Active category · Food & Cleaning</div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     NAV TAB STRIP (DYNAMIC COUNTS & ACTIVE HIGHLIGHT)
+     ============================================================== -->
+<div class="nav-tab-strip">
+  <a href="?tab=ALL{% if search_q %}&q={{ search_q }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if property_type_filter %}&property_type={{ property_type_filter }}{% endif %}{% if verification_filter %}&verification={{ verification_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="tab-btn {% if tab == 'ALL' %}active{% endif %}">
+    All amenities · {{ tab_counts.all }}
+  </a>
+  <a href="?tab=CONNECTIVITY{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'CONNECTIVITY' %}active{% endif %}">
+    Connectivity · {{ tab_counts.connectivity }}
+  </a>
+  <a href="?tab=ESSENTIALS{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'ESSENTIALS' %}active{% endif %}">
+    Essentials · {{ tab_counts.essentials }}
+  </a>
+  <a href="?tab=SAFETY{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'SAFETY' %}active{% endif %}">
+    Safety · {{ tab_counts.safety }}
+  </a>
+  <a href="?tab=SERVICES{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'SERVICES' %}active{% endif %}">
+    Services · {{ tab_counts.services }}
+  </a>
+  <a href="?tab=LIFESTYLE{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'LIFESTYLE' %}active{% endif %}">
+    Lifestyle · {{ tab_counts.lifestyle }}
+  </a>
+  <a href="?tab=ARCHIVED{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'ARCHIVED' or tab == 'INACTIVE' %}active{% endif %}">
+    Archived · {{ tab_counts.archived }}
+  </a>
+</div>
+
+<!-- ==============================================================
+     SINGLE-LINE FILTER TOOLBAR (USER PREFERENCE)
+     ============================================================== -->
+<form method="GET" action="" class="amenity-filter-toolbar">
+  <input type="hidden" name="tab" value="{{ tab }}">
+
+  <!-- SEARCH INPUT -->
+  <div class="amenity-search-wrap">
+    <span class="amenity-search-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </span>
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Search amenities (e.g. Wi-Fi, CCTV, Geyser, Parking...)" class="amenity-search-input">
+  </div>
+
+  <!-- CATEGORY FILTER -->
+  <select name="category" class="amenity-filter-select">
+    <option value="ALL">All categories ▾</option>
+    <option value="CONNECTIVITY" {% if category_filter == 'CONNECTIVITY' %}selected{% endif %}>Connectivity</option>
+    <option value="ESSENTIALS" {% if category_filter == 'ESSENTIALS' %}selected{% endif %}>Essentials</option>
+    <option value="SAFETY" {% if category_filter == 'SAFETY' %}selected{% endif %}>Safety</option>
+    <option value="SERVICES" {% if category_filter == 'SERVICES' %}selected{% endif %}>Services</option>
+    <option value="LIFESTYLE" {% if category_filter == 'LIFESTYLE' %}selected{% endif %}>Lifestyle</option>
+  </select>
+
+  <!-- PROPERTY TYPE FILTER -->
+  <select name="property_type" class="amenity-filter-select">
+    <option value="ALL">All property types ▾</option>
+    <option value="PG" {% if property_type_filter == 'PG' %}selected{% endif %}>PG</option>
+    <option value="Co-living" {% if property_type_filter == 'Co-living' %}selected{% endif %}>Co-living</option>
+    <option value="Apartment" {% if property_type_filter == 'Apartment' %}selected{% endif %}>Apartment</option>
+    <option value="Flat" {% if property_type_filter == 'Flat' %}selected{% endif %}>Flat</option>
+    <option value="Hostel" {% if property_type_filter == 'Hostel' %}selected{% endif %}>Hostel</option>
+  </select>
+
+  <!-- VERIFICATION REQUIREMENT FILTER -->
+  <select name="verification" class="amenity-filter-select">
+    <option value="ALL">All verifications ▾</option>
+    <option value="OWNER_DECLARED" {% if verification_filter == 'OWNER_DECLARED' %}selected{% endif %}>Owner declared</option>
+    <option value="PHOTO_REQUIRED" {% if verification_filter == 'PHOTO_REQUIRED' %}selected{% endif %}>Photo required</option>
+    <option value="INVOICE_REQUIRED" {% if verification_filter == 'INVOICE_REQUIRED' %}selected{% endif %}>Invoice required</option>
+    <option value="MENU_REQUIRED" {% if verification_filter == 'MENU_REQUIRED' %}selected{% endif %}>Menu required</option>
+    <option value="PHYSICAL_INSPECTION" {% if verification_filter == 'PHYSICAL_INSPECTION' %}selected{% endif %}>Physical inspection</option>
+  </select>
+
+  <!-- STATUS FILTER -->
+  <select name="status" class="amenity-filter-select">
+    <option value="ALL">All statuses ▾</option>
+    <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active</option>
+    <option value="INACTIVE" {% if status_filter == 'INACTIVE' %}selected{% endif %}>Inactive / Archived</option>
+  </select>
+
+  <!-- SUBMIT FILTER BUTTON -->
+  <button type="submit" class="btn btn-primary amenity-filter-btn">
+    Filter
+  </button>
+
+  <!-- RESET BUTTON -->
+  {% if search_q or category_filter or property_type_filter or verification_filter or status_filter %}
+    <a href="?tab={{ tab }}" class="btn btn-outline amenity-filter-btn" style="color: #64748B;">✕ Reset</a>
+  {% endif %}
+
+  <!-- EXPORT CSV BUTTON -->
+  <a href="{% url 'admin_portal:amenity_export_csv' %}?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}" class="btn btn-outline amenity-filter-btn" title="Export CSV" style="margin-left: auto;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    Export CSV
+  </a>
+</form>
+
+<!-- ==============================================================
+     AMENITIES DATA TABLE
+     ============================================================== -->
+<div class="table-card mb-24">
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>AMENITY</th>
+          <th>CATEGORY & APPLICABLE TYPES</th>
+          <th>USED IN</th>
+          <th>VERIFICATION</th>
+          <th>STATUS</th>
+          <th style="text-align: right;">ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in amenities %}
+          <tr class="amenity-table-row" id="amenityRow_{{ a.id }}" onclick="openConfigureModal({{ a.id }})">
+            <!-- AMENITY NAME & CODE -->
+            <td>
+              <div class="actor-cell">
+                <div class="cat-avatar {{ a.category_badge_class }}" id="avatarCell_{{ a.id }}">
+                  {{ a.avatar_initial }}
+                </div>
+                <div>
+                  <div class="actor-name font-bold" id="nameCell_{{ a.id }}" style="font-size: 13.5px; color: #0F172A;">{{ a.name }}</div>
+                  <div class="text-subtle font-mono" style="font-size: 11.5px; color: #64748B;">{{ a.code }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- CATEGORY & PROPERTY TYPES -->
+            <td>
+              <div style="font-weight: 600; color: #1E293B;" id="catCell_{{ a.id }}">{{ a.get_category_display }}</div>
+              <div class="text-subtle" style="font-size: 12px; color: #64748B;" id="typesCell_{{ a.id }}">{{ a.applicable_property_types }}</div>
+            </td>
+
+            <!-- USED IN LISTINGS -->
+            <td class="font-bold" style="color: #0F172A;">
+              {{ a.formatted_used_in_listings }} listings
+            </td>
+
+            <!-- VERIFICATION REQUIREMENT -->
+            <td>
+              {% if a.verification_type == 'OWNER_DECLARED' %}
+                <span class="verif-pill verif-declared" id="verifCell_{{ a.id }}">✓ Owner declared</span>
+              {% elif a.verification_type == 'PHOTO_REQUIRED' %}
+                <span class="verif-pill verif-photo" id="verifCell_{{ a.id }}">📷 Photo required</span>
+              {% elif a.verification_type == 'INVOICE_REQUIRED' %}
+                <span class="verif-pill verif-invoice" id="verifCell_{{ a.id }}">📄 Invoice required</span>
+              {% elif a.verification_type == 'MENU_REQUIRED' %}
+                <span class="verif-pill verif-menu" id="verifCell_{{ a.id }}">🍽 Menu required</span>
+              {% else %}
+                <span class="verif-pill verif-inspection" id="verifCell_{{ a.id }}">🔍 Physical inspection</span>
+              {% endif %}
+            </td>
+
+            <!-- STATUS WITH QUICK TOGGLE -->
+            <td onclick="event.stopPropagation();">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label class="switch-ui" title="Toggle active status">
+                  <input type="checkbox" id="tableSwitch_{{ a.id }}" {% if a.is_active %}checked{% endif %} onchange="toggleAmenityStatus(event, {{ a.id }})">
+                  <span class="slider round"></span>
+                </label>
+                <span class="status-pill {% if a.is_active %}success{% else %}neutral{% endif %}" id="statusBadge_{{ a.id }}" style="font-size: 11.5px;">
+                  {% if a.is_active %}✓ Active{% else %}✕ Inactive{% endif %}
+                </span>
+              </div>
+            </td>
+
+            <!-- ACTION BUTTONS -->
+            <td style="text-align: right;" onclick="event.stopPropagation();">
+              <button type="button" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; border-radius: 7px;" onclick="openConfigureModal({{ a.id }})">
+                Configure ↓
+              </button>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 48px 20px;">
+              <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
+              <div style="font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">No amenities found</div>
+              <div style="font-size: 13px; color: #64748B; margin-bottom: 16px;">Try adjusting your search criteria or filter tags.</div>
+              <a href="?tab=ALL" class="btn btn-primary" style="padding: 7px 16px; font-size: 12.5px;">Reset all filters</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLE FOOTER & PAGINATION -->
+  <div class="table-footer-bar">
+    <span>
+      Showing {{ page_obj.start_index|default:0 }}–{{ page_obj.end_index|default:0 }} of {{ total_results }} amenities
+      {% if search_q %} · filtered by "{{ search_q }}"{% endif %}
+    </span>
+    <div class="pagination-wrap" style="display: flex; align-items: center; gap: 8px;">
+      {% if page_obj.has_previous %}
+        <a href="?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if property_type_filter %}&property_type={{ property_type_filter }}{% endif %}{% if verification_filter %}&verification={{ verification_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}&page={{ page_obj.previous_page_number }}" class="page-btn">← Prev</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">← Prev</span>
+      {% endif %}
+
+      <span class="page-indicator" style="font-size: 12.5px; font-weight: 600; color: #475569; padding: 0 8px;">
+        Page {{ page_obj.number|default:1 }} of {{ page_obj.paginator.num_pages|default:1 }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if property_type_filter %}&property_type={{ property_type_filter }}{% endif %}{% if verification_filter %}&verification={{ verification_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}&page={{ page_obj.next_page_number }}" class="page-btn">Next →</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">Next →</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL 1: CONFIGURE AMENITY POPUP (APPLE-GRADE CENTERED MODAL)
+     ============================================================== -->
+<div class="modal-backdrop" id="configureAmenityModal" onclick="if(event.target === this) closeConfigureModal();">
+  <div class="modal-content-box" style="max-width: 680px;">
+    <!-- MODAL HEADER -->
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="cat-avatar cat-blue" id="modalAmenityAvatar" style="width: 38px; height: 38px; font-size: 14px;">W</div>
+        <div>
+          <h3 class="modal-title" id="modalAmenityTitle">Configure Wi-Fi</h3>
+          <div style="font-size: 12px; color: #64748B;" id="modalAmenitySubtitle">AMN-001 · Connectivity</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="status-pill success" id="modalAmenityStatusBadge">✓ Active</span>
+        <button type="button" class="modal-close-btn" onclick="closeConfigureModal()">✕</button>
+      </div>
+    </div>
+
+    <!-- MODAL BODY -->
+    <div class="modal-body">
+      <!-- LOADING STATE -->
+      <div id="modalAmenityLoading" style="display: none; padding: 40px; text-align: center; color: #64748B;">
+        <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
+        <div>Loading amenity settings...</div>
+      </div>
+
+      <!-- MAIN CONTENT FORM -->
+      <form id="modalAmenityForm" onsubmit="event.preventDefault(); saveAmenityFromModal();">
+        <input type="hidden" id="modalAmenityId">
+
+        <!-- 2-COL CONFIGURATION INPUTS -->
+        <div class="two-col-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Display Name</label>
+            <input type="text" class="form-input" id="modalAmenityName" style="border-radius: 8px;" required>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Category</label>
+            <select class="form-select" id="modalAmenityCategory" style="border-radius: 8px;" required>
+              <option value="CONNECTIVITY">Connectivity</option>
+              <option value="ESSENTIALS">Essentials</option>
+              <option value="SAFETY">Safety</option>
+              <option value="SERVICES">Services</option>
+              <option value="LIFESTYLE">Lifestyle</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="two-col-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Applicable Property Types</label>
+            <input type="text" class="form-input" id="modalAmenityTypes" placeholder="e.g. PG · Co-living · Apartment" style="border-radius: 8px;">
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Verification Mode</label>
+            <select class="form-select" id="modalAmenityVerification" style="border-radius: 8px;">
+              <option value="OWNER_DECLARED">Owner declared</option>
+              <option value="PHOTO_REQUIRED">Photo required</option>
+              <option value="INVOICE_REQUIRED">Invoice / Bill required</option>
+              <option value="MENU_REQUIRED">Menu card required</option>
+              <option value="PHYSICAL_INSPECTION">Physical field inspection</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- MINI STATS TRI-ROW -->
+        <div class="stats-tri-row">
+          <div class="mini-stat-cell">
+            <span class="mini-stat-lbl">Used in listings</span>
+            <span class="mini-stat-val" id="modalAmenityUsed">10,284 listings</span>
+          </div>
+          <div class="mini-stat-cell">
+            <span class="mini-stat-lbl">Icon Identifier</span>
+            <span class="mini-stat-val" id="modalAmenityIcon">wifi · Outline</span>
+          </div>
+          <div class="mini-stat-cell">
+            <span class="mini-stat-lbl">Sort order</span>
+            <input type="number" class="form-input" id="modalAmenitySort" style="padding: 2px 6px; font-size: 13px; font-weight: 700; height: 26px; border-radius: 6px;" value="1">
+          </div>
+        </div>
+
+        <!-- FACILITY BEHAVIOR SECTION -->
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px; margin-bottom: 14px;">
+          <div style="font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 2px;">Facility behaviour</div>
+          <div style="font-size: 11.5px; color: #64748B; margin-bottom: 14px;">Controls visibility in owner dashboard and tenant filters.</div>
+
+          <div class="toggle-control-list">
+            <div class="toggle-item-row">
+              <div>
+                <div class="toggle-title">Available to property owners</div>
+                <div class="toggle-sub">Owners can select this facility when onboarding new property listings.</div>
+              </div>
+              <label class="switch-ui"><input type="checkbox" id="modalToggleOwners" checked><span class="slider round"></span></label>
+            </div>
+
+            <div class="toggle-item-row">
+              <div>
+                <div class="toggle-title">Show as search filter</div>
+                <div class="toggle-sub">Help tenants discover properties offering this facility on search.</div>
+              </div>
+              <label class="switch-ui"><input type="checkbox" id="modalToggleFilter" checked><span class="slider round"></span></label>
+            </div>
+
+            <div class="toggle-item-row">
+              <div>
+                <div class="toggle-title">Require supporting evidence</div>
+                <div class="toggle-sub">Owners must upload a photo or proof before this amenity is verified.</div>
+              </div>
+              <label class="switch-ui"><input type="checkbox" id="modalToggleEvidence"><span class="slider round"></span></label>
+            </div>
+
+            <div class="toggle-item-row">
+              <div>
+                <div class="toggle-title">Platform Status (Active)</div>
+                <div class="toggle-sub">When disabled, this amenity is archived and hidden from public search.</div>
+              </div>
+              <label class="switch-ui"><input type="checkbox" id="modalToggleActive" checked><span class="slider round"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS IN MODAL FOOTER -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px;">
+          <button type="button" class="btn btn-outline" id="modalArchiveBtn" onclick="toggleArchiveFromModal()" style="color: #DC2626; border-color: #FECACA;">
+            Archive amenity
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-outline" onclick="closeConfigureModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="modalSaveBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Save amenity
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL 2: ADD NEW AMENITY MODAL
+     ============================================================== -->
+<div class="modal-backdrop" id="addAmenityModal" onclick="if(event.target === this) closeAddAmenityModal();">
+  <div class="modal-content-box" style="max-width: 600px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: #EFF6FF; color: #1C5D99; display: flex; align-items: center; justify-content: center; font-weight: 700;">+</div>
+        <div>
+          <h3 class="modal-title">Add New Amenity</h3>
+          <div style="font-size: 12px; color: #64748B;">Define a new facility for owner onboarding and search discovery.</div>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeAddAmenityModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="addAmenityForm" onsubmit="event.preventDefault(); submitAddAmenity();">
+        <div class="two-col-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Amenity Name *</label>
+            <input type="text" class="form-input" id="addAmenityName" placeholder="e.g. Electric Vehicle Charger" required style="border-radius: 8px;">
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Category *</label>
+            <select class="form-select" id="addAmenityCategory" style="border-radius: 8px;" required>
+              <option value="CONNECTIVITY">Connectivity</option>
+              <option value="ESSENTIALS" selected>Essentials</option>
+              <option value="SAFETY">Safety</option>
+              <option value="SERVICES">Services</option>
+              <option value="LIFESTYLE">Lifestyle</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="two-col-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Code (Optional)</label>
+            <input type="text" class="form-input" id="addAmenityCode" placeholder="Auto-generated e.g. AMN-043" style="border-radius: 8px;">
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Verification Mode</label>
+            <select class="form-select" id="addAmenityVerification" style="border-radius: 8px;">
+              <option value="OWNER_DECLARED">Owner declared</option>
+              <option value="PHOTO_REQUIRED" selected>Photo required</option>
+              <option value="INVOICE_REQUIRED">Invoice / Bill required</option>
+              <option value="MENU_REQUIRED">Menu card required</option>
+              <option value="PHYSICAL_INSPECTION">Physical field inspection</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Applicable Property Types</label>
+          <input type="text" class="form-input" id="addAmenityTypes" value="All property types" style="border-radius: 8px;">
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Icon Name / Identifier</label>
+          <select class="form-select" id="addAmenityIcon" style="border-radius: 8px;">
+            <option value="zap">⚡ Power / Electricity (zap)</option>
+            <option value="wifi">📶 Connectivity (wifi)</option>
+            <option value="shield">🛡 Safety & Security (shield)</option>
+            <option value="video">📹 CCTV Surveillance (video)</option>
+            <option value="coffee">☕ Meals & Food (coffee)</option>
+            <option value="tool">🔧 Maintenance (tool)</option>
+            <option value="activity">💪 Fitness / Gym (activity)</option>
+            <option value="droplet">💧 Water Supply (droplet)</option>
+            <option value="box">📦 Essentials / Box (box)</option>
+            <option value="check-circle">✓ Generic Check (check-circle)</option>
+          </select>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="closeAddAmenityModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="addAmenitySubmitBtn">Create Amenity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL 3: MANAGE CATEGORIES OVERVIEW MODAL
+     ============================================================== -->
+<div class="modal-backdrop" id="manageCategoriesModal" onclick="if(event.target === this) closeCategoriesModal();">
+  <div class="modal-content-box" style="max-width: 650px;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Standard Facility Categories</h3>
+        <div style="font-size: 12px; color: #64748B;">Platform categorization taxonomy and verification standards.</div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeCategoriesModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- CATEGORY 1 -->
+        <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="cat-avatar cat-blue">📶</div>
+            <div>
+              <div style="font-weight: 700; color: #0F172A; font-size: 13.5px;">Connectivity</div>
+              <div style="font-size: 12px; color: #64748B;">Wi-Fi, High-speed LAN, DTH, Study desks</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; font-size: 13px; color: #1D4ED8;">{{ tab_counts.connectivity }} facilities</div>
+            <span class="status-pill success" style="font-size: 11px;">100% active</span>
+          </div>
+        </div>
+
+        <!-- CATEGORY 2 -->
+        <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="cat-avatar cat-indigo">🛏</div>
+            <div>
+              <div style="font-weight: 700; color: #0F172A; font-size: 13.5px;">Essentials</div>
+              <div style="font-size: 12px; color: #64748B;">Power backup, RO water, Geyser, Fridge, Washing machine</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; font-size: 13px; color: #4338CA;">{{ tab_counts.essentials }} facilities</div>
+            <span class="status-pill success" style="font-size: 11px;">Core tier</span>
+          </div>
+        </div>
+
+        <!-- CATEGORY 3 -->
+        <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="cat-avatar cat-teal">🛡</div>
+            <div>
+              <div style="font-weight: 700; color: #0F172A; font-size: 13.5px;">Safety & Security</div>
+              <div style="font-size: 12px; color: #64748B;">CCTV, Biometric, Security guard, Warden, Fire alarms</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; font-size: 13px; color: #047857;">{{ tab_counts.safety }} facilities</div>
+            <span class="status-pill success" style="font-size: 11px;">Mandatory proof</span>
+          </div>
+        </div>
+
+        <!-- CATEGORY 4 -->
+        <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="cat-avatar cat-amber">🛎</div>
+            <div>
+              <div style="font-weight: 700; color: #0F172A; font-size: 13.5px;">Services</div>
+              <div style="font-size: 12px; color: #64748B;">Housekeeping, Meals, Laundry, Maintenance, Garbage</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; font-size: 13px; color: #B45309;">{{ tab_counts.services }} facilities</div>
+            <span class="status-pill success" style="font-size: 11px;">Operational</span>
+          </div>
+        </div>
+
+        <!-- CATEGORY 5 -->
+        <div style="padding: 12px 14px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 9px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="cat-avatar cat-purple">✨</div>
+            <div>
+              <div style="font-weight: 700; color: #0F172A; font-size: 13.5px;">Lifestyle & Wellness</div>
+              <div style="font-size: 12px; color: #64748B;">Gym, Recreation room, Terrace lounge, Reading zone</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; font-size: 13px; color: #7E22CE;">{{ tab_counts.lifestyle }} facilities</div>
+            <span class="status-pill neutral" style="font-size: 11px;">Premium tier</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+        <button type="button" class="btn btn-primary" onclick="closeCategoriesModal()">Got it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOAST NOTIFICATIONS CONTAINER
+     ============================================================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT LOGIC
+     ============================================================== -->
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    toast.innerHTML = `<span style="font-weight:700;">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  // --- CONFIGURE AMENITY MODAL ---
+  function openConfigureModal(amenityId) {
+    const modal = document.getElementById('configureAmenityModal');
+    modal.classList.add('open');
+    document.getElementById('modalAmenityLoading').style.display = 'block';
+    document.getElementById('modalAmenityForm').style.display = 'none';
+
+    fetch(`{% url 'admin_portal:amenity_get' %}?id=${amenityId}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('modalAmenityLoading').style.display = 'none';
+        if (data.status === 'success') {
+          document.getElementById('modalAmenityForm').style.display = 'block';
+          const a = data.amenity;
+          document.getElementById('modalAmenityId').value = a.id;
+          document.getElementById('modalAmenityName').value = a.name;
+          document.getElementById('modalAmenityTitle').innerText = `Configure ${a.name}`;
+          document.getElementById('modalAmenitySubtitle').innerText = `${a.code} · ${a.category_display}`;
+          document.getElementById('modalAmenityCategory').value = a.category;
+          document.getElementById('modalAmenityTypes').value = a.applicable_property_types;
+          document.getElementById('modalAmenityVerification').value = a.verification_type;
+          document.getElementById('modalAmenityUsed').innerText = `${Number(a.used_in_listings).toLocaleString()} listings`;
+          document.getElementById('modalAmenityIcon').innerText = `${a.icon_name} · Outline`;
+          document.getElementById('modalAmenitySort').value = a.sort_order;
+
+          // Avatar
+          const words = a.name.split(' ');
+          const initial = words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : a.name.substring(0, 2).toUpperCase();
+          const avatar = document.getElementById('modalAmenityAvatar');
+          avatar.innerText = initial;
+          avatar.className = `cat-avatar ${getCategoryBadgeClass(a.category)}`;
+
+          // Status Badge
+          const statusBadge = document.getElementById('modalAmenityStatusBadge');
+          if (a.is_active) {
+            statusBadge.className = 'status-pill success';
+            statusBadge.innerText = '✓ Active';
+            document.getElementById('modalArchiveBtn').innerText = 'Archive amenity';
+            document.getElementById('modalArchiveBtn').style.color = '#DC2626';
+          } else {
+            statusBadge.className = 'status-pill neutral';
+            statusBadge.innerText = '✕ Archived';
+            document.getElementById('modalArchiveBtn').innerText = 'Restore / Activate';
+            document.getElementById('modalArchiveBtn').style.color = '#059669';
+          }
+
+          // Toggles
+          document.getElementById('modalToggleOwners').checked = a.available_to_owners;
+          document.getElementById('modalToggleFilter').checked = a.show_as_filter;
+          document.getElementById('modalToggleEvidence').checked = a.require_evidence;
+          document.getElementById('modalToggleActive').checked = a.is_active;
+        } else {
+          showToast(data.message || 'Error fetching amenity details', 'error');
+          closeConfigureModal();
+        }
+      })
+      .catch(err => {
+        document.getElementById('modalAmenityLoading').style.display = 'none';
+        showToast('Network error loading amenity details', 'error');
+        closeConfigureModal();
+      });
+  }
+
+  function closeConfigureModal() {
+    document.getElementById('configureAmenityModal').classList.remove('open');
+  }
+
+  function getCategoryBadgeClass(category) {
+    switch (category) {
+      case 'CONNECTIVITY': return 'cat-blue';
+      case 'ESSENTIALS': return 'cat-indigo';
+      case 'SAFETY': return 'cat-teal';
+      case 'SERVICES': return 'cat-amber';
+      case 'LIFESTYLE': return 'cat-purple';
+      default: return 'cat-blue';
+    }
+  }
+
+  function saveAmenityFromModal() {
+    const id = document.getElementById('modalAmenityId').value;
+    const name = document.getElementById('modalAmenityName').value;
+    const category = document.getElementById('modalAmenityCategory').value;
+    const applicable_property_types = document.getElementById('modalAmenityTypes').value;
+    const verification_type = document.getElementById('modalAmenityVerification').value;
+    const sort_order = document.getElementById('modalAmenitySort').value;
+    const available_to_owners = document.getElementById('modalToggleOwners').checked;
+    const show_as_filter = document.getElementById('modalToggleFilter').checked;
+    const require_evidence = document.getElementById('modalToggleEvidence').checked;
+    const is_active = document.getElementById('modalToggleActive').checked;
+
+    const btn = document.getElementById('modalSaveBtn');
+    const origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = 'Saving...';
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('applicable_property_types', applicable_property_types);
+    formData.append('verification_type', verification_type);
+    formData.append('sort_order', sort_order);
+    formData.append('available_to_owners', available_to_owners);
+    formData.append('show_as_filter', show_as_filter);
+    formData.append('require_evidence', require_evidence);
+    formData.append('is_active', is_active);
+
+    fetch(`{% url 'admin_portal:amenity_save' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          // Update row in table immediately
+          const a = data.amenity;
+          const nameEl = document.getElementById(`nameCell_${a.id}`);
+          if (nameEl) nameEl.innerText = a.name;
+          const catEl = document.getElementById(`catCell_${a.id}`);
+          if (catEl) catEl.innerText = a.category_display;
+          const typesEl = document.getElementById(`typesCell_${a.id}`);
+          if (typesEl) typesEl.innerText = a.applicable_property_types;
+          
+          const avatarEl = document.getElementById(`avatarCell_${a.id}`);
+          if (avatarEl) {
+            avatarEl.className = `cat-avatar ${getCategoryBadgeClass(a.category)}`;
+            const words = a.name.split(' ');
+            avatarEl.innerText = words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : a.name.substring(0, 2).toUpperCase();
+          }
+
+          const switchEl = document.getElementById(`tableSwitch_${a.id}`);
+          if (switchEl) switchEl.checked = a.is_active;
+
+          const badgeEl = document.getElementById(`statusBadge_${a.id}`);
+          if (badgeEl) {
+            badgeEl.className = `status-pill ${a.is_active ? 'success' : 'neutral'}`;
+            badgeEl.innerText = a.is_active ? '✓ Active' : '✕ Inactive';
+          }
+
+          closeConfigureModal();
+        } else {
+          showToast(data.message || 'Failed to save amenity', 'error');
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+        showToast('Network error saving amenity', 'error');
+      });
+  }
+
+  function toggleArchiveFromModal() {
+    const activeToggle = document.getElementById('modalToggleActive');
+    activeToggle.checked = !activeToggle.checked;
+    saveAmenityFromModal();
+  }
+
+  // --- QUICK TOGGLE STATUS IN TABLE ROW ---
+  function toggleAmenityStatus(event, amenityId) {
+    event.stopPropagation();
+    const switchEl = document.getElementById(`tableSwitch_${amenityId}`);
+    const badgeEl = document.getElementById(`statusBadge_${amenityId}`);
+
+    const formData = new FormData();
+    formData.append('id', amenityId);
+
+    fetch(`{% url 'admin_portal:amenity_toggle_status' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          if (switchEl) switchEl.checked = data.is_active;
+          if (badgeEl) {
+            badgeEl.className = `status-pill ${data.is_active ? 'success' : 'neutral'}`;
+            badgeEl.innerText = data.is_active ? '✓ Active' : '✕ Inactive';
+          }
+        } else {
+          showToast(data.message || 'Failed to update status', 'error');
+          if (switchEl) switchEl.checked = !switchEl.checked;
+        }
+      })
+      .catch(err => {
+        showToast('Network error toggling status', 'error');
+        if (switchEl) switchEl.checked = !switchEl.checked;
+      });
+  }
+
+  // --- ADD AMENITY MODAL ---
+  function openAddAmenityModal() {
+    document.getElementById('addAmenityModal').classList.add('open');
+    document.getElementById('addAmenityName').focus();
+  }
+
+  function closeAddAmenityModal() {
+    document.getElementById('addAmenityModal').classList.remove('open');
+  }
+
+  function submitAddAmenity() {
+    const name = document.getElementById('addAmenityName').value.trim();
+    const category = document.getElementById('addAmenityCategory').value;
+    const code = document.getElementById('addAmenityCode').value.trim();
+    const verification = document.getElementById('addAmenityVerification').value;
+    const types = document.getElementById('addAmenityTypes').value.trim();
+    const icon = document.getElementById('addAmenityIcon').value;
+
+    const btn = document.getElementById('addAmenitySubmitBtn');
+    btn.disabled = true;
+    btn.innerHTML = 'Creating...';
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('code', code);
+    formData.append('verification_type', verification);
+    formData.append('applicable_property_types', types);
+    formData.append('icon_name', icon);
+
+    fetch(`{% url 'admin_portal:amenity_add' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = 'Create Amenity';
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          closeAddAmenityModal();
+          setTimeout(() => {
+            window.location.reload();
+          }, 600);
+        } else {
+          showToast(data.message || 'Failed to create amenity', 'error');
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = 'Create Amenity';
+        showToast('Network error creating amenity', 'error');
+      });
+  }
+
+  // --- CATEGORIES MODAL ---
+  function openCategoriesModal() {
+    document.getElementById('manageCategoriesModal').classList.add('open');
+  }
+
+  function closeCategoriesModal() {
+    document.getElementById('manageCategoriesModal').classList.remove('open');
+  }
+
+  // ESC key to close all modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeConfigureModal();
+      closeAddAmenityModal();
+      closeCategoriesModal();
+    }
+  });
+</script>
+{% endblock %}

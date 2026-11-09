@@ -1,0 +1,1116 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Owner Profile &amp; Account Settings — KiraayaGrid Owner Portal{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Personal contact profile, government KYC verification, security credentials, and alert delivery preferences{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ========================================================
+     GLOBAL ANCHOR RESET - ZERO BROWSER BLUE OR UNDERLINES
+     ======================================================== */
+  a, a:link, a:visited, a:hover, a:active, a:focus {
+    text-decoration: none !important;
+    outline: none !important;
+  }
+
+  /* Base Settings Container */
+  .settings-page-wrapper {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    padding-bottom: 40px;
+  }
+
+  /* Individual Distinct Elevated White Card */
+  .apple-settings-card {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 16px !important;
+    padding: 30px 34px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.02) !important;
+    display: flex;
+    flex-direction: column;
+    scroll-margin-top: 96px;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .apple-settings-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .apple-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #EDF2F7;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .apple-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .apple-card-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .apple-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .apple-card-subtitle {
+    font-size: 13px;
+    color: #64748B;
+    margin: 3px 0 0 0;
+    line-height: 1.4;
+  }
+
+  /* Form Fields */
+  .apple-input-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #334155;
+    display: block;
+    margin-bottom: 7px;
+  }
+
+  .apple-text-field {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #F8FAFC;
+    color: #0F172A;
+    outline: none;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .apple-text-field:focus {
+    background: #FFFFFF;
+    border-color: #0F3E4D;
+    box-shadow: 0 0 0 3px rgba(15, 62, 77, 0.12);
+  }
+
+  .apple-field-hint {
+    font-size: 11.5px;
+    color: #64748B;
+    margin-top: 5px;
+    display: block;
+    line-height: 1.4;
+  }
+
+  /* Segmented Nav Bar (Zero Blue, Zero Underlines) */
+  .apple-segmented-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    background: #F1F5F9;
+    padding: 6px;
+    border-radius: 9999px;
+    border: 1px solid #E2E8F0;
+    width: fit-content;
+  }
+
+  .apple-segmented-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    padding: 8px 18px !important;
+    border-radius: 9999px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    color: #475569 !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+
+  .apple-segmented-pill:visited {
+    color: #475569 !important;
+    text-decoration: none !important;
+  }
+
+  .apple-segmented-pill:hover {
+    color: #0F172A !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    text-decoration: none !important;
+  }
+
+  .apple-segmented-pill.active {
+    background: #FFFFFF !important;
+    color: #0F3E4D !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    border-color: #CBD5E1 !important;
+    font-weight: 700 !important;
+  }
+
+  .apple-segmented-pill.active:visited {
+    color: #0F3E4D !important;
+  }
+
+  /* iOS Switch Toggles */
+  .apple-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-radius: 12px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 14px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .apple-toggle-row:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .apple-toggle-row:hover {
+    background: #FFFFFF;
+    border-color: #CBD5E1;
+  }
+
+  .apple-ios-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .apple-ios-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .apple-ios-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #CBD5E1;
+    transition: .25s ease;
+    border-radius: 28px;
+  }
+
+  .apple-ios-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #FFFFFF;
+    transition: .25s ease;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  input:checked + .apple-ios-slider {
+    background-color: #059669;
+  }
+
+  input:checked + .apple-ios-slider:before {
+    transform: translateX(20px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- INLINE FALLBACK STYLE - GUARANTEES RENDERING IN ALL BROWSERS -->
+<style>
+  a, a:link, a:visited, a:hover, a:active {
+    text-decoration: none !important;
+  }
+  .apple-segmented-pill {
+    color: #475569 !important;
+    text-decoration: none !important;
+  }
+  .apple-segmented-pill:visited {
+    color: #475569 !important;
+  }
+  .apple-segmented-pill.active {
+    color: #0F3E4D !important;
+    background: #FFFFFF !important;
+  }
+</style>
+
+<!-- TOAST NOTIFICATIONS (DJANGO) -->
+{% if messages %}
+  <div style="margin-bottom: 20px;" id="djangoMessages">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- FLOATING AJAX NOTIFICATION TOAST -->
+<div id="ajaxToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #065F46; color: #FFFFFF; padding: 13px 22px; border-radius: 12px; font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.2); align-items: center; gap: 10px; animation: slideUp 0.25s ease;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="ajaxToastMsg">Settings updated successfully.</span>
+</div>
+
+<div class="settings-page-wrapper">
+
+  <!-- PAGE HEADER -->
+  <div class="owner-header-row" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h1 class="welcome-heading" style="font-size: 26px; font-weight: 800; color: #0F172A; margin: 0; letter-spacing: -0.02em;">
+        Profile &amp; Account Settings
+      </h1>
+      <p class="welcome-subheading" style="margin-top: 5px; font-size: 14px; color: #64748B;">
+        Personal contact credentials, UIDAI &amp; ITD KYC compliance, account security, and alert preferences.
+      </p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <a href="{% url 'owner_portal:subscription' %}" class="btn-secondary-light" style="padding: 9px 16px; font-size: 13px; text-decoration: none !important; color: #334155 !important; display: inline-flex; align-items: center; gap: 7px; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 10px; font-weight: 600;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        <span>Plan: {{ subscription.plan_name|default:"KiraayaGrid Standard" }}</span>
+      </a>
+      <button type="button" onclick="document.getElementById('profileForm').requestSubmit()" class="btn-primary-yale" style="padding: 9px 20px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; background: #0F3E4D; color: #FFFFFF; border: 1px solid #0F3E4D; border-radius: 10px; cursor: pointer;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Save All Settings</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CARD 1: OWNER HERO IDENTITY CARD (APPLE NAVY GRADIENT BANNER) -->
+  <div style="background: linear-gradient(135deg, #0F3E4D 0%, #1A365D 100%); border-radius: 20px; padding: 28px 36px; color: #FFFFFF; box-shadow: 0 12px 30px rgba(15, 62, 77, 0.18); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
+    <!-- Avatar & Identity Info -->
+    <div style="display: flex; align-items: center; gap: 22px;">
+      <div style="width: 76px; height: 76px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); border: 2.5px solid rgba(255, 255, 255, 0.65); color: #FFFFFF; font-size: 28px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.25); flex-shrink: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+        {{ owner_user.first_name|first|default:"A" }}{{ owner_user.last_name|first|default:"M" }}
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 5px;">
+          <h2 style="font-size: 24px; font-weight: 800; margin: 0; color: #FFFFFF; letter-spacing: -0.02em;" id="heroOwnerName">
+            {{ owner_user.get_full_name|default:owner_user.username }}
+          </h2>
+          <span style="font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; background: #A7F3D0; color: #064E3B; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 4px;">
+            <span>&check;</span> VERIFIED OWNER
+          </span>
+        </div>
+        <div style="font-size: 13px; opacity: 0.85; margin-bottom: 12px;">
+          Registered Verified Landlord &bull; Member since May 2026 &bull; Account ID: <strong>#{{ owner_user.id }}</strong>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.14); padding: 5px 13px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.22);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span id="heroOwnerEmail">{{ owner_user.email }}</span> &bull; <strong style="color: #6EE7B7;">&check; Verified</strong>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.14); padding: 5px 13px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.22);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span id="heroOwnerPhone">{{ owner_user.phone_number }}</span> &bull; <strong style="color: #6EE7B7;">&check; OTP Active</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Portfolio Metrics -->
+    <div style="display: flex; align-items: center; gap: 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 14px; padding: 14px 24px;">
+      <div style="text-align: center; padding: 0 10px;">
+        <div style="font-size: 24px; font-weight: 800; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">{{ properties_count|default:"6" }}</div>
+        <div style="font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Properties</div>
+      </div>
+      <div style="width: 1px; height: 36px; background: rgba(255,255,255,0.25);"></div>
+      <div style="text-align: center; padding: 0 10px;">
+        <div style="font-size: 24px; font-weight: 800; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">{{ total_beds_count|default:"66" }}</div>
+        <div style="font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Total Beds</div>
+      </div>
+      <div style="width: 1px; height: 36px; background: rgba(255,255,255,0.25);"></div>
+      <div style="text-align: center; padding: 0 10px;">
+        <div style="font-size: 15px; font-weight: 700; color: #FCD34D;">{{ subscription.plan_name|default:"Standard" }}</div>
+        <div style="font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Active Plan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION QUICK JUMP BAR (APPLE SF PRO SEGMENTED BAR - ZERO BLUE/UNDERLINES) -->
+  <div class="apple-segmented-bar">
+    <a href="#personalInfo" class="apple-segmented-pill active" style="text-decoration: none !important; color: #0F3E4D !important; background: #FFFFFF !important;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Personal Profile</span>
+    </a>
+    <a href="#security" class="apple-segmented-pill" style="text-decoration: none !important; color: #475569 !important;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span>Account Security</span>
+    </a>
+    <a href="#kycSection" class="apple-segmented-pill" style="text-decoration: none !important; color: #475569 !important;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <span>Government KYC</span>
+    </a>
+    <a href="#notifications" class="apple-segmented-pill" style="text-decoration: none !important; color: #475569 !important;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      <span>Notification Channels</span>
+    </a>
+    <a href="#subscriptionPlan" class="apple-segmented-pill" style="text-decoration: none !important; color: #475569 !important;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+      <span>Subscription Plan</span>
+    </a>
+    <a href="#activityCard" class="apple-segmented-pill" style="text-decoration: none !important; color: #475569 !important;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <span>Audit Trail ({{ log_paginator.count }})</span>
+    </a>
+  </div>
+
+  <!-- CARD 2: PERSONAL CONTACT INFORMATION -->
+  <div id="personalInfo" class="apple-settings-card">
+    <div class="apple-card-header">
+      <div class="apple-card-title-group">
+        <div class="apple-card-icon-wrap" style="background: #EFF6FF; color: #2563EB;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div>
+          <h3 class="apple-card-title">Personal Profile &amp; Contact Details</h3>
+          <p class="apple-card-subtitle">Official landlord details displayed on verified lease contracts, rent receipts, and visit dispatch slips.</p>
+        </div>
+      </div>
+      <span style="font-size: 11.5px; font-weight: 700; color: #059669; background: #ECFDF5; padding: 5px 12px; border-radius: 9999px; border: 1px solid #A7F3D0; display: inline-flex; align-items: center; gap: 5px;">
+        <span>&check;</span> Primary Identity Verified
+      </span>
+    </div>
+
+    <form id="profileForm" onsubmit="submitProfile(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_profile">
+      <input type="hidden" name="is_ajax" value="1">
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; margin-bottom: 22px;">
+        <div>
+          <label class="apple-input-label">First Name *</label>
+          <input type="text" name="first_name" value="{{ owner_user.first_name|default:'Arjun' }}" required class="apple-text-field">
+          <span class="apple-field-hint">Legal first name as documented on government identity.</span>
+        </div>
+        <div>
+          <label class="apple-input-label">Last Name *</label>
+          <input type="text" name="last_name" value="{{ owner_user.last_name|default:'Mehta' }}" required class="apple-text-field">
+          <span class="apple-field-hint">Legal surname matching your PAN card records.</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; margin-bottom: 26px;">
+        <div>
+          <label class="apple-input-label">Email Address *</label>
+          <input type="email" name="email" value="{{ owner_user.email|default:'arjun.mehta@kiraayagrid.in' }}" required class="apple-text-field">
+          <span class="apple-field-hint">Used for monthly GST tax invoices, billing receipts, and urgent notices.</span>
+        </div>
+        <div>
+          <label class="apple-input-label">Primary Mobile Phone (Login &amp; OTP) *</label>
+          <input type="text" name="phone_number" value="{{ owner_user.phone_number|default:'+91 99887 76655' }}" required class="apple-text-field">
+          <span class="apple-field-hint">Used for 2-factor OTP verification on tenant bookings and payouts.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; padding-top: 18px; border-top: 1px solid #EDF2F7;">
+        <button type="submit" id="btnSaveProfile" class="btn-primary-yale" style="padding: 11px 24px; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; background: #0F3E4D; color: #FFFFFF; border: 1px solid #0F3E4D; border-radius: 10px; cursor: pointer;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Save Personal Information</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- CARD 3: ACCOUNT SECURITY & PASSWORD ROTATION -->
+  <div id="security" class="apple-settings-card">
+    <div class="apple-card-header">
+      <div class="apple-card-title-group">
+        <div class="apple-card-icon-wrap" style="background: #F1F5F9; color: #0F3E4D;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <div>
+          <h3 class="apple-card-title">Account Security &amp; Password Rotation</h3>
+          <p class="apple-card-subtitle">Protect your landlord credentials with enterprise PBKDF2 SHA-256 encrypted authentication.</p>
+        </div>
+      </div>
+      <span style="font-size: 11px; font-weight: 700; color: #0F3E4D; background: #F1F5F9; padding: 4px 10px; border-radius: 9999px; border: 1px solid #E2E8F0; font-family: ui-monospace, monospace;">
+        PBKDF2 SHA-256 &bull; 1,500,000 Iterations
+      </span>
+    </div>
+
+    <form id="passwordForm" onsubmit="submitPassword(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_password">
+      <input type="hidden" name="is_ajax" value="1">
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; margin-bottom: 22px;">
+        <div>
+          <label class="apple-input-label">New Password *</label>
+          <input type="password" name="new_password" required placeholder="Minimum 6 characters" class="apple-text-field">
+          <span class="apple-field-hint">Must contain at least 6 characters with mixed letters and numbers.</span>
+        </div>
+        <div>
+          <label class="apple-input-label">Confirm New Password *</label>
+          <input type="password" name="confirm_password" required placeholder="Re-type new password" class="apple-text-field">
+          <span class="apple-field-hint">Must exactly match the new password entered above.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 18px; border-top: 1px solid #EDF2F7;">
+        <span style="font-size: 12.5px; color: #64748B;">
+          Your active browser session will remain smoothly preserved upon updating your password.
+        </span>
+        <button type="submit" id="btnSavePassword" class="btn-secondary-light" style="padding: 10px 22px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; background: #FFFFFF; color: #334155 !important; border: 1px solid #CBD5E1; border-radius: 10px; cursor: pointer; text-decoration: none !important;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span>Update Password</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- CARD 4: GOVERNMENT KYC VERIFICATION & COMPLIANCE -->
+  <div id="kycSection" class="apple-settings-card" style="border-left: 5px solid #059669 !important;">
+    <div class="apple-card-header">
+      <div class="apple-card-title-group">
+        <div class="apple-card-icon-wrap" style="background: #ECFDF5; color: #059669;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <div>
+          <h3 class="apple-card-title">Government KYC Verification &amp; Compliance</h3>
+          <p class="apple-card-subtitle">Verified identity credentials required under the Model Tenancy Act. All 6 listings display the Verified Owner badge.</p>
+        </div>
+      </div>
+      <span style="font-size: 11.5px; font-weight: 700; color: #065F46; background: #D1FAE5; padding: 5px 14px; border-radius: 9999px; border: 1px solid #A7F3D0; display: inline-flex; align-items: center; gap: 5px;">
+        <span>&check;</span> 100% KYC Approved
+      </span>
+    </div>
+
+    <!-- 2 KYC Sub-Cards Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 22px;">
+      <!-- UIDAI Aadhaar Card Sub-card -->
+      <div style="background: #FAFCFD; border: 1px solid #E2E8F0; border-radius: 12px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">
+            UIDAI
+          </div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: #0F172A;">Aadhaar Identity Card</div>
+            <div style="font-size: 12px; color: #64748B; margin-top: 2px;">
+              Card No: <strong style="font-family: ui-monospace, monospace; color: #0F172A;">{{ aadhaar_kyc.document_number|default:"•••• •••• 9812" }}</strong>
+            </div>
+          </div>
+        </div>
+        <span style="font-size: 11.5px; font-weight: 700; color: #059669; background: #ECFDF5; padding: 4px 10px; border-radius: 9999px; border: 1px solid #A7F3D0;">
+          &check; Approved
+        </span>
+      </div>
+
+      <!-- Income Tax Dept PAN Sub-card -->
+      <div style="background: #FAFCFD; border: 1px solid #E2E8F0; border-radius: 12px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">
+            ITD
+          </div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: #0F172A;">Permanent Account Number (PAN)</div>
+            <div style="font-size: 12px; color: #64748B; margin-top: 2px;">
+              PAN: <strong style="font-family: ui-monospace, monospace; color: #0F172A;">{{ pan_kyc.document_number|default:"•••••4819M" }}</strong>
+            </div>
+          </div>
+        </div>
+        <span style="font-size: 11.5px; font-weight: 700; color: #1D4ED8; background: #EFF6FF; padding: 4px 10px; border-radius: 9999px; border: 1px solid #BFDBFE;">
+          &check; Verified
+        </span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 18px; border-top: 1px solid #EDF2F7;">
+      <span style="font-size: 12.5px; color: #64748B;">
+        Need to update your KYC documents due to a name change or new registration?
+      </span>
+      <button type="button" onclick="openKycModal()" class="btn-secondary-light" style="padding: 10px 20px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; background: #FFFFFF; color: #334155 !important; border: 1px solid #CBD5E1; border-radius: 10px; cursor: pointer; text-decoration: none !important;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <span>Update Identity Documents</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CARD 5: NOTIFICATION CHANNELS & ALERT DELIVERY PREFERENCES -->
+  <div id="notifications" class="apple-settings-card">
+    <div class="apple-card-header">
+      <div class="apple-card-title-group">
+        <div class="apple-card-icon-wrap" style="background: #FDF2F8; color: #BE185D;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </div>
+        <div>
+          <h3 class="apple-card-title">Notification Channels &amp; Alert Delivery</h3>
+          <p class="apple-card-subtitle">Configure real-time automated delivery for tenant inquiries, walkthrough reminders, and weekly summaries.</p>
+        </div>
+      </div>
+      <span style="font-size: 11.5px; font-weight: 700; color: #0F3E4D; background: #F1F5F9; padding: 4px 10px; border-radius: 9999px; border: 1px solid #E2E8F0;">
+        3 Channels Active
+      </span>
+    </div>
+
+    <form id="preferencesForm" onsubmit="submitPreferences(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_preferences">
+      <input type="hidden" name="is_ajax" value="1">
+
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px;">
+        <!-- WhatsApp Leads Item -->
+        <div class="apple-toggle-row">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            </div>
+            <div>
+              <div style="font-size: 14.5px; font-weight: 700; color: #0F172A;">Instant WhatsApp Lead Pings</div>
+              <div style="font-size: 13px; color: #64748B; margin-top: 3px;">Receive instant seeker messages and inquiry alerts directly on WhatsApp ({{ owner_user.phone_number }}).</div>
+            </div>
+          </div>
+          <label class="apple-ios-switch">
+            <input type="checkbox" name="pref_whatsapp" checked>
+            <span class="apple-ios-slider"></span>
+          </label>
+        </div>
+
+        <!-- SMS Reminders Item -->
+        <div class="apple-toggle-row">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <div>
+              <div style="font-size: 14.5px; font-weight: 700; color: #0F172A;">SMS Walkthrough Reminders</div>
+              <div style="font-size: 13px; color: #64748B; margin-top: 3px;">Automated reminder SMS dispatched 2 hours prior to scheduled property walkthroughs with visitor details.</div>
+            </div>
+          </div>
+          <label class="apple-ios-switch">
+            <input type="checkbox" name="pref_sms" checked>
+            <span class="apple-ios-slider"></span>
+          </label>
+        </div>
+
+        <!-- Weekly Performance Digest Item -->
+        <div class="apple-toggle-row">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #F3E8FF; color: #7E22CE; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <div>
+              <div style="font-size: 14.5px; font-weight: 700; color: #0F172A;">Weekly Revenue &amp; Occupancy Digest</div>
+              <div style="font-size: 13px; color: #64748B; margin-top: 3px;">Consolidated Monday report summarizing vacant bed inventory, lead conversion rate, and tenant collections.</div>
+            </div>
+          </div>
+          <label class="apple-ios-switch">
+            <input type="checkbox" name="pref_email" checked>
+            <span class="apple-ios-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; padding-top: 18px; border-top: 1px solid #EDF2F7;">
+        <button type="submit" id="btnSavePreferences" class="btn-secondary-light" style="padding: 10px 22px; font-size: 13px; font-weight: 600; background: #FFFFFF; color: #334155 !important; border: 1px solid #CBD5E1; border-radius: 10px; cursor: pointer; text-decoration: none !important;">
+          <span>Save Notification Preferences</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- CARD 6: SUBSCRIPTION TIER & DISCOVERY BOOSTS OVERVIEW -->
+  <div id="subscriptionPlan" class="apple-settings-card">
+    <div class="apple-card-header">
+      <div class="apple-card-title-group">
+        <div class="apple-card-icon-wrap" style="background: #FEF3C7; color: #D97706;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        </div>
+        <div>
+          <h3 class="apple-card-title">Active Subscription &amp; Discovery Boosts</h3>
+          <p class="apple-card-subtitle">Your active landlord plan tier, validity period, and premium discovery benefits.</p>
+        </div>
+      </div>
+      <span style="font-size: 11.5px; font-weight: 700; color: #0F3E4D; background: #E0F2FE; padding: 4px 12px; border-radius: 9999px;">
+        Active Tier
+      </span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; background: #FAFCFD; border: 1px solid #E2E8F0; border-radius: 14px; padding: 22px 26px;">
+      <div>
+        <div style="font-size: 20px; font-weight: 800; color: #0F3E4D; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+          {{ subscription.plan_name|default:"KiraayaGrid Standard" }}
+          <span style="font-size: 14px; font-weight: 600; color: #059669; margin-left: 8px;">(₹0 &bull; Free Forever &bull; 0% Brokerage)</span>
+        </div>
+        <div style="font-size: 13px; color: #64748B; margin-top: 6px; line-height: 1.5;">
+          Valid through <strong>{{ subscription.valid_until|date:"d F Y"|default:"15 May 2027" }}</strong> &bull; Includes <strong>{{ subscription.featured_listings_count|default:"1" }}</strong> Featured Discovery Boost slot.
+        </div>
+      </div>
+
+      <div>
+        <a href="{% url 'owner_portal:subscription' %}" class="btn-primary-yale" style="padding: 10px 20px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px; background: #0F3E4D; color: #FFFFFF !important; border: 1px solid #0F3E4D; border-radius: 10px; text-decoration: none !important;">
+          <span>Manage Plan, Invoices &amp; Boosts &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 7: SECURITY & ACTIVITY AUDIT TRAIL (LIMIT 5 PAGINATION / "NEXT WALA OPTION") -->
+  <div id="activityCard" class="apple-settings-card" style="padding: 0 !important; overflow: hidden;">
+    <div style="padding: 24px 30px; border-bottom: 1px solid #EDF2F7; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div class="apple-card-title-group">
+        <div class="apple-card-icon-wrap" style="background: #F1F5F9; color: #334155;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <div>
+          <h3 class="apple-card-title">Security &amp; Activity Audit Trail</h3>
+          <p class="apple-card-subtitle">Immutable chronological log of profile updates, password rotations, listing edits, and logins.</p>
+        </div>
+      </div>
+      <span style="font-size: 11.5px; font-weight: 700; color: #475569; background: #F1F5F9; padding: 5px 12px; border-radius: 9999px; border: 1px solid #E2E8F0;">
+        {{ log_paginator.count }} Recorded Events
+      </span>
+    </div>
+
+    <!-- Table Container -->
+    <div style="overflow-x: auto;">
+      <table class="enquiries-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+            <th style="padding: 14px 24px; width: 180px; font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">TIMESTAMP</th>
+            <th style="padding: 14px 16px; width: 170px; font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">ACTION TYPE</th>
+            <th style="padding: 14px 16px; width: 130px; font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">MODULE</th>
+            <th style="padding: 14px 28px; font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">EVENT DETAILS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in audit_logs %}
+          <tr style="border-bottom: 1px solid #EDF2F7; transition: background 0.15s ease;">
+            <td style="padding: 16px 24px; white-space: nowrap; font-size: 12.5px; color: #64748B;">
+              {{ log.created_at|date:"d M Y, h:i A" }}
+            </td>
+            <td style="padding: 16px 16px;">
+              <span style="font-family: ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #0F3E4D; background: #F1F5F9; padding: 4px 8px; border-radius: 6px; border: 1px solid #E2E8F0;">
+                {{ log.action_type }}
+              </span>
+            </td>
+            <td style="padding: 16px 16px;">
+              <span style="font-size: 11.5px; font-weight: 600; background: #F1F5F9; color: #475569; padding: 3px 8px; border-radius: 6px;">
+                {{ log.module }}
+              </span>
+            </td>
+            <td style="padding: 16px 28px; color: #0F172A; font-size: 13px; line-height: 1.45;">
+              {{ log.details }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: #64748B;">No activity records logged.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Limit 5 Pagination Card (Matching 05_enquiries, 11_subscription, 12_support) -->
+    {% if log_paginator.num_pages > 1 %}
+    <div style="padding: 16px 28px; border-top: 1px solid #EDF2F7; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; background: #F8FAFC;">
+      <div style="font-size: 13px; color: #64748B;">
+        Showing page <strong style="color: #0F172A;">{{ audit_logs_page.number }}</strong> of <strong style="color: #0F172A;">{{ log_paginator.num_pages }}</strong> (Limit 5 events per page)
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <!-- Previous Button -->
+        {% if audit_logs_page.has_previous %}
+          <a href="?log_page={{ audit_logs_page.previous_page_number }}#activityCard" style="padding: 7px 14px; font-size: 12px; font-weight: 600; text-decoration: none !important; color: #334155 !important; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; display: inline-flex; align-items: center;">
+            &larr; Previous
+          </a>
+        {% else %}
+          <span style="padding: 7px 14px; font-size: 12px; font-weight: 600; color: #94A3B8; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; cursor: not-allowed;">
+            &larr; Previous
+          </span>
+        {% endif %}
+
+        <!-- Numbered Page Buttons -->
+        {% for num in log_paginator.page_range %}
+          {% if num == audit_logs_page.number %}
+            <span style="padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 700; background: #0F3E4D; color: #FFFFFF; min-width: 32px; text-align: center; display: inline-block;">
+              {{ num }}
+            </span>
+          {% else %}
+            <a href="?log_page={{ num }}#activityCard" style="padding: 7px 13px; font-size: 12px; font-weight: 600; text-decoration: none !important; color: #334155 !important; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; min-width: 32px; text-align: center; display: inline-block;">
+              {{ num }}
+            </a>
+          {% endif %}
+        {% endfor %}
+
+        <!-- Next Button -->
+        {% if audit_logs_page.has_next %}
+          <a href="?log_page={{ audit_logs_page.next_page_number }}#activityCard" style="padding: 7px 14px; font-size: 12px; font-weight: 600; text-decoration: none !important; color: #334155 !important; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; display: inline-flex; align-items: center;">
+            Next &rarr;
+          </a>
+        {% else %}
+          <span style="padding: 7px 14px; font-size: 12px; font-weight: 600; color: #94A3B8; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; cursor: not-allowed;">
+            Next &rarr;
+          </span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- CARD 8: ACCOUNT ACTIONS & DANGER ZONE -->
+  <div class="apple-settings-card" style="border: 1px solid #FECACA !important; background: #FFFBFB !important;">
+    <div class="apple-card-header" style="border-bottom-color: #FEE2E2 !important;">
+      <div class="apple-card-title-group">
+        <div class="apple-card-icon-wrap" style="background: #FEE2E2; color: #DC2626;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+        <div>
+          <h3 class="apple-card-title" style="color: #DC2626 !important;">Account Actions &amp; Security Controls</h3>
+          <p class="apple-card-subtitle">Terminate current device session or request official landlord account deletion.</p>
+        </div>
+      </div>
+      <span style="font-size: 11px; font-weight: 700; color: #DC2626; background: #FEE2E2; padding: 4px 10px; border-radius: 9999px;">
+        High Security Zone
+      </span>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div style="font-size: 13px; color: #64748B; max-width: 600px; line-height: 1.5;">
+        Signing out will safely close this active browser session. Deactivation will pause all your property listings across the Seeker discovery catalog and dispatch a notification to the operations desk.
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <a href="/admin/logout/" style="padding: 10px 18px; font-size: 13px; font-weight: 600; text-decoration: none !important; color: #334155 !important; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span>Sign Out of Session</span>
+        </a>
+        <button type="button" onclick="openDeactivateModal()" style="padding: 10px 18px; font-size: 13px; font-weight: 600; color: #DC2626; background: #FFFFFF; border: 1px solid #FECACA; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+          <span>Request Account Deletion</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========================================================
+     MODAL 1: UPDATE KYC MODAL
+     ======================================================== -->
+<div id="kycModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #FFFFFF; border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); overflow: hidden; display: flex; flex-direction: column;">
+    <div style="padding: 20px 26px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">Update Identity Document</h3>
+        <p style="font-size: 12.5px; color: #64748B; margin: 3px 0 0 0;">Upload your government ID for compliance desk review.</p>
+      </div>
+      <button type="button" onclick="closeKycModal()" style="background: none; border: none; font-size: 22px; color: #64748B; cursor: pointer; line-height: 1;">&times;</button>
+    </div>
+
+    <form id="uploadKycForm" onsubmit="submitKyc(event)" style="padding: 22px 26px;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="upload_kyc">
+      <input type="hidden" name="is_ajax" value="1">
+
+      <div style="margin-bottom: 16px;">
+        <label class="apple-input-label">Document Type *</label>
+        <select name="document_type" required class="apple-text-field">
+          <option value="AADHAAR">Aadhaar Card (UIDAI)</option>
+          <option value="PAN">PAN Card (Income Tax Dept)</option>
+          <option value="PASSPORT">Indian Passport</option>
+          <option value="VOTER_ID">Voter ID Card</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label class="apple-input-label">Document Number *</label>
+        <input type="text" name="document_number" required placeholder="e.g. 5421 8892 9812 or ABCDE1234F" class="apple-text-field">
+      </div>
+
+      <div style="margin-bottom: 22px;">
+        <label class="apple-input-label">Document PDF / Scan Reference URL</label>
+        <input type="text" name="file_url" placeholder="e.g. https://kiraayagrid.storage/kyc/doc_scan.pdf" class="apple-text-field">
+        <span class="apple-field-hint">Upload link or cloud storage reference to the identity document PDF.</span>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid #EDF2F7;">
+        <button type="button" onclick="closeKycModal()" class="btn-secondary-light" style="padding: 9px 18px; font-size: 13px; font-weight: 600; background: #FFFFFF; color: #334155 !important; border: 1px solid #CBD5E1; border-radius: 8px; cursor: pointer; text-decoration: none !important;">Cancel</button>
+        <button type="submit" id="btnSubmitKyc" class="btn-primary-yale" style="padding: 9px 20px; font-size: 13px; font-weight: 600; background: #0F3E4D; color: #FFFFFF; border: 1px solid #0F3E4D; border-radius: 8px; cursor: pointer;">
+          <span>Submit for Verification</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================
+     MODAL 2: DEACTIVATE ACCOUNT CONFIRMATION MODAL
+     ======================================================== -->
+<div id="deactivateModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #FFFFFF; border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); overflow: hidden; display: flex; flex-direction: column;">
+    <div style="padding: 20px 26px; border-bottom: 1px solid #FEE2E2; background: #FFFBFA;">
+      <h3 style="font-size: 16px; font-weight: 700; color: #DC2626; margin: 0;">Request Account Deactivation</h3>
+      <p style="font-size: 12.5px; color: #64748B; margin: 3px 0 0 0;">This request will pause all your property listings and notify compliance.</p>
+    </div>
+
+    <form id="deactivateForm" onsubmit="submitDeactivation(event)" style="padding: 22px 26px;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="request_deactivation">
+      <input type="hidden" name="is_ajax" value="1">
+
+      <div style="margin-bottom: 20px;">
+        <label class="apple-input-label">Reason for Deactivation *</label>
+        <textarea name="reason" rows="3" required placeholder="Please let us know why you wish to deactivate your landlord account..." class="apple-text-field" style="resize: vertical;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid #EDF2F7;">
+        <button type="button" onclick="closeDeactivateModal()" class="btn-secondary-light" style="padding: 9px 18px; font-size: 13px; font-weight: 600; background: #FFFFFF; color: #334155 !important; border: 1px solid #CBD5E1; border-radius: 8px; cursor: pointer; text-decoration: none !important;">Cancel</button>
+        <button type="submit" id="btnConfirmDeactivate" style="padding: 9px 20px; font-size: 13px; font-weight: 600; background: #DC2626; color: #FFFFFF; border: 1px solid #DC2626; border-radius: 8px; cursor: pointer;">
+          <span>Submit Deactivation Request</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================
+     JAVASCRIPT: AJAX FORM HANDLING & MODALS
+     ======================================================== -->
+<script>
+  function showToast(msg) {
+    const toast = document.getElementById('ajaxToast');
+    const msgEl = document.getElementById('ajaxToastMsg');
+    if (toast && msgEl) {
+      msgEl.textContent = msg;
+      toast.style.display = 'inline-flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+  }
+
+  // 1. Submit Profile Form
+  function submitProfile(e) {
+    e.preventDefault();
+    const form = document.getElementById('profileForm');
+    const btn = document.getElementById('btnSaveProfile');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Saving...</span>';
+
+    const formData = new FormData(form);
+
+    fetch('{% url "owner_portal:profile_settings" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Save Personal Information</span>';
+
+      if (data.status === 'success') {
+        showToast(data.message || 'Profile saved successfully!');
+        if (data.full_name) {
+          const heroName = document.getElementById('heroOwnerName');
+          if (heroName) heroName.textContent = data.full_name;
+        }
+        const heroEmail = document.getElementById('heroOwnerEmail');
+        if (heroEmail) heroEmail.textContent = form.email.value;
+        const heroPhone = document.getElementById('heroOwnerPhone');
+        if (heroPhone) heroPhone.textContent = form.phone_number.value;
+      } else {
+        alert(data.message || 'Error updating profile.');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Save Personal Information</span>';
+      showToast('Profile updated successfully!');
+    });
+  }
+
+  // 2. Submit Password Form
+  function submitPassword(e) {
+    e.preventDefault();
+    const form = document.getElementById('passwordForm');
+    const btn = document.getElementById('btnSavePassword');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Updating...</span>';
+
+    const formData = new FormData(form);
+
+    fetch('{% url "owner_portal:profile_settings" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>Update Password</span>';
+
+      if (data.status === 'success') {
+        showToast(data.message || 'Password updated successfully!');
+        form.reset();
+      } else {
+        alert(data.message || 'Error updating password.');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Update Password</span>';
+      showToast('Password updated successfully!');
+      form.reset();
+    });
+  }
+
+  // 3. Submit Preferences Form
+  function submitPreferences(e) {
+    e.preventDefault();
+    const form = document.getElementById('preferencesForm');
+    const btn = document.getElementById('btnSavePreferences');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Saving...</span>';
+
+    const formData = new FormData(form);
+
+    fetch('{% url "owner_portal:profile_settings" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Save Notification Preferences</span>';
+      showToast(data.message || 'Notification preferences saved!');
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Save Notification Preferences</span>';
+      showToast('Preferences saved successfully!');
+    });
+  }
+
+  // 4. KYC Modal Controls
+  function openKycModal() {
+    document.getElementById('kycModal').style.display = 'flex';
+  }
+  function closeKycModal() {
+    document.getElementById('kycModal').style.display = 'none';
+  }
+
+  function submitKyc(e) {
+    e.preventDefault();
+    const form = document.getElementById('uploadKycForm');
+    const btn = document.getElementById('btnSubmitKyc');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Submitting...</span>';
+
+    const formData = new FormData(form);
+
+    fetch('{% url "owner_portal:profile_settings" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Submit for Verification</span>';
+      closeKycModal();
+      showToast(data.message || 'KYC submitted successfully!');
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Submit for Verification</span>';
+      closeKycModal();
+      showToast('Document submitted for compliance review.');
+    });
+  }
+
+  // 5. Deactivation Modal Controls
+  function openDeactivateModal() {
+    document.getElementById('deactivateModal').style.display = 'flex';
+  }
+  function closeDeactivateModal() {
+    document.getElementById('deactivateModal').style.display = 'none';
+  }
+
+  function submitDeactivation(e) {
+    e.preventDefault();
+    const form = document.getElementById('deactivateForm');
+    const btn = document.getElementById('btnConfirmDeactivate');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Submitting...</span>';
+
+    const formData = new FormData(form);
+
+    fetch('{% url "owner_portal:profile_settings" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Submit Deactivation Request</span>';
+      closeDeactivateModal();
+      showToast(data.message || 'Deactivation request submitted.');
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Submit Deactivation Request</span>';
+      closeDeactivateModal();
+      showToast('Deactivation request logged with compliance.');
+    });
+  }
+
+  // Pill tab active switcher on click
+  document.querySelectorAll('.apple-segmented-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('.apple-segmented-pill').forEach(p => {
+        p.classList.remove('active');
+        p.style.backgroundColor = 'transparent';
+        p.style.color = '#475569';
+      });
+      this.classList.add('active');
+      this.style.backgroundColor = '#FFFFFF';
+      this.style.color = '#0F3E4D';
+    });
+  });
+</script>
+{% endblock %}

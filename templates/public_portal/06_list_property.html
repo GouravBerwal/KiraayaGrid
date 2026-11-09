@@ -1,0 +1,772 @@
+{% extends 'public_portal/base.html' %}
+{% load static %}
+
+{% block title %}List Your Property Free · Zero Brokerage Landlord Platform · KiraayaGrid{% endblock %}
+
+{% block meta_description %}List your PG, room, or flat on KiraayaGrid with 0% brokerage. Get 100% KYC-verified tenants, automated monthly rent payouts, and direct resident messaging.{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     APPLE OFFICIAL WEBSITE DESIGN LANGUAGE — LIST YOUR PROPERTY
+     ========================================================================== */
+
+  :root {
+    --apple-bg: #F5F5F7;
+    --apple-card-bg: #FFFFFF;
+    --apple-text-dark: #1D1D1F;
+    --apple-text-secondary: #86868B;
+    --apple-text-tertiary: #6E6E73;
+    --apple-border: rgba(0, 0, 0, 0.08);
+    --apple-border-light: rgba(0, 0, 0, 0.04);
+    --apple-emerald: #10B981;
+    --apple-deep-forest: #183B3B;
+  }
+
+  body {
+    background-color: var(--apple-bg);
+  }
+
+  /* Apple Hero */
+  .apple-host-hero {
+    position: relative;
+    padding: 130px 24px 72px;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+
+  .apple-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    background: rgba(24, 59, 59, 0.06);
+    border: 1px solid rgba(24, 59, 59, 0.12);
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-deep-forest);
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .apple-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    animation: applePulse 2s infinite;
+  }
+
+  @keyframes applePulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .apple-host-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-size: clamp(28px, 3.5vw, 38px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--apple-text-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+
+  .apple-host-subtitle {
+    font-size: 16px;
+    color: var(--apple-text-tertiary);
+    line-height: 1.55;
+    max-width: 540px;
+    margin-bottom: 30px;
+  }
+
+  /* Host Hero Glass Card */
+  .apple-host-preview-card {
+    background: #FFFFFF;
+    border-radius: 32px;
+    padding: 32px;
+    border: 1px solid var(--apple-border);
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08);
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .apple-host-preview-card:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Bento KPI Strip */
+  .apple-host-bento-strip {
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    padding: 48px 24px;
+    margin-bottom: 80px;
+  }
+
+  .host-bento-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    text-align: center;
+  }
+
+  .host-bento-num {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: clamp(26px, 3.2vw, 36px);
+    font-weight: 800;
+    color: #DDEDAA;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .host-bento-lbl {
+    font-size: 14px;
+    color: #93B5C6;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  /* Apple Calculator Card */
+  .apple-calc-container {
+    max-width: 1240px;
+    margin: 0 auto 96px;
+    padding: 0 24px;
+  }
+
+  .apple-calc-card {
+    background: #FFFFFF;
+    border-radius: 32px;
+    border: 1px solid var(--apple-border);
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.06);
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .calc-type-btn {
+    padding: 13px;
+    border-radius: 14px;
+    border: 1px solid #CBD5E1;
+    background: #F8FAFC;
+    color: #334155;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .calc-type-btn.active {
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 4px 12px rgba(24, 59, 59, 0.2);
+  }
+
+  /* Comparison Matrix */
+  .apple-matrix-section {
+    max-width: 1140px;
+    margin: 0 auto 96px;
+    padding: 0 24px;
+  }
+
+  .matrix-table-wrap {
+    background: #FFFFFF;
+    border-radius: 28px;
+    border: 1px solid var(--apple-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  .matrix-table-wrap table {
+    min-width: 620px;
+  }
+
+  /* Testimonials */
+  .apple-testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+
+  .testimonial-bento-card {
+    background: #FFFFFF;
+    border: 1px solid var(--apple-border);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* =========================================================================
+     RESPONSIVE BREAKPOINTS (4K, Laptop L, Laptop, Tablet, Mobile L/M/S)
+     ========================================================================= */
+  @media (min-width: 1920px) {
+    .apple-host-hero, .calc-section-wrap, .matrix-section-wrap {
+      max-width: 1440px !important;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .apple-calc-card { grid-template-columns: 1fr; }
+    .host-bento-inner { grid-template-columns: repeat(2, 1fr); }
+    .apple-testimonials-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .apple-host-hero { padding: 105px 20px 32px; }
+    .calc-section-wrap, .matrix-section-wrap { padding: 0 16px; margin-bottom: 64px; }
+    .apple-calc-card { padding: 28px 20px; border-radius: 24px; }
+    .host-bento-inner { grid-template-columns: 1fr; }
+    .apple-host-title { font-size: clamp(26px, 5.5vw, 34px); }
+    .calc-income-amount { font-size: 32px; }
+    .calc-result-box { padding: 24px 20px; border-radius: 20px; }
+  }
+
+  @media (max-width: 425px) {
+    .apple-host-hero { padding: 95px 14px 24px; }
+    .calc-section-wrap, .matrix-section-wrap { padding: 0 12px; margin-bottom: 48px; }
+    .apple-calc-card { padding: 22px 16px; border-radius: 20px; }
+    .apple-host-title { font-size: 24px; }
+    .apple-host-sub { font-size: 14px; }
+    .calc-income-amount { font-size: 28px; }
+    .calc-cta-btn { padding: 13px; font-size: 14px; }
+  }
+
+  @media (max-width: 340px) {
+    .apple-host-hero { padding: 85px 10px 20px; }
+    .calc-section-wrap, .matrix-section-wrap { padding: 0 10px; }
+    .apple-calc-card { padding: 18px 12px; }
+    .calc-income-amount { font-size: 25px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main style="overflow-x: hidden;">
+
+  <!-- Apple Host Hero Section -->
+  <section class="apple-host-hero">
+    <!-- Aurora background glow -->
+    <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 850px; height: 420px; background: radial-gradient(circle, rgba(147, 181, 198, 0.22) 0%, rgba(221, 237, 170, 0.16) 40%, transparent 70%); pointer-events: none; z-index: 0;"></div>
+
+    <div style="position: relative; z-index: 1; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center;">
+      <!-- Hero Left: Text & CTA -->
+      <div>
+        <div class="apple-badge-pill">
+          <span class="apple-pulse-dot"></span>
+          Host Onboarding · Zero Brokerage Platform
+        </div>
+
+        <h1 class="apple-host-title">
+          Turn empty rooms into <span class="apple-gradient-warm">guaranteed monthly income.</span>
+        </h1>
+
+        <p class="apple-host-subtitle">
+          Connect directly with thousands of pre-screened software engineers, corporate professionals, and university scholars. Free to list, automated digital rent payouts, and zero brokerage forever.
+        </p>
+
+        <!-- CTA Action Buttons -->
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 32px;">
+          {% if is_owner %}
+            <a href="{% url 'owner_portal:add_property' %}" class="btn-get-started" style="padding: 16px 36px; font-size: 16px; border-radius: 9999px;">
+              Open Landlord Studio ↗
+            </a>
+          {% else %}
+            <button type="button" onclick="triggerHostAction()" class="btn-get-started" style="padding: 16px 36px; font-size: 16px; border-radius: 9999px;">
+              List Your Property Free ↗
+            </button>
+          {% endif %}
+          <a href="#yield-calculator" class="btn-apple-share" style="padding: 15px 28px; font-size: 15px; text-decoration: none;">
+            Calculate Your Rent ↓
+          </a>
+        </div>
+
+        <!-- Trust Badges -->
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; color: var(--apple-text-tertiary); font-weight: 600;">
+          <div style="display: flex; align-items: center; gap: 6px; color: #059669;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>₹0 Brokerage fee</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; color: #0284C7;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Direct resident chat</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; color: #D97706;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>100% Aadhaar KYC</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Right: Apple Glass Preview Card -->
+      <div>
+        <div class="apple-host-preview-card">
+          <!-- Card Header -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F5F9; padding-bottom: 18px; margin-bottom: 20px;">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--apple-text-tertiary);">Host Revenue Snapshot</div>
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 20px; font-weight: 700; color: #0F172A; margin-top: 2px;">Maple Wood Heights · Koramangala</div>
+            </div>
+            <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #047857; font-size: 12px; font-weight: 700; border-radius: 9999px;">
+              ● 100% Occupied
+            </span>
+          </div>
+
+          <!-- KPI Mini Grid -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 12px 14px;">
+              <div style="font-size: 11px; color: #64748B; font-weight: 600;">Monthly Rent</div>
+              <div style="font-size: 19px; font-weight: 800; color: #0F172A; margin-top: 2px;">₹1,84,000</div>
+              <div style="font-size: 11px; color: #10B981; font-weight: 700; margin-top: 2px;">↑ Auto-credited</div>
+            </div>
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 12px 14px;">
+              <div style="font-size: 11px; color: #64748B; font-weight: 600;">Active Tenants</div>
+              <div style="font-size: 19px; font-weight: 800; color: #0F172A; margin-top: 2px;">12 / 12</div>
+              <div style="font-size: 11px; color: #64748B; margin-top: 2px;">All KYC verified</div>
+            </div>
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 12px 14px;">
+              <div style="font-size: 11px; color: #64748B; font-weight: 600;">Brokerage Saved</div>
+              <div style="font-size: 19px; font-weight: 800; color: #059669; margin-top: 2px;">₹1,84,000</div>
+              <div style="font-size: 11px; color: #047857; font-weight: 700; margin-top: 2px;">Zero fee paid</div>
+            </div>
+          </div>
+
+          <!-- Inquiries Snippet -->
+          <div style="background: var(--apple-bg); border-radius: 16px; padding: 16px; margin-bottom: 18px;">
+            <div style="font-size: 12px; font-weight: 700; color: #183B3B; margin-bottom: 10px; display: flex; justify-content: space-between;">
+              <span>Recent Verified Walkthrough Requests</span>
+              <span style="color: #10B981;">3 new today</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #CBD5E1;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: #93B5C6; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">AS</div>
+              <div style="flex: 1;">
+                <div style="font-size: 13px; font-weight: 700; color: #0F172A;">Ananya Sharma · Google India</div>
+                <div style="font-size: 12px; color: #64748B;">Requested walkthrough for Studio 302 · Tomorrow 5:30 PM</div>
+              </div>
+              <span style="font-size: 12px; background: #E0F2FE; color: #0369A1; padding: 3px 8px; border-radius: 6px; font-weight: 600;">Confirmed</span>
+            </div>
+          </div>
+
+          <!-- Guarantee Footnote -->
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #475569;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #DDEDAA; display: flex; align-items: center; justify-content: center; color: #183B3B; font-weight: bold; font-size: 12px;">✓</div>
+            <div>KiraayaGrid digital lease agreement with legal e-stamp & tenant biometric verification.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bento Stats Strip -->
+  <section class="apple-host-bento-strip">
+    <div class="host-bento-inner">
+      {% for s in stats %}
+      <div style="border-right: 1px solid rgba(255,255,255,0.12); padding: 0 16px;">
+        <div class="host-bento-num">{{ s.num }}</div>
+        <div class="host-bento-lbl">{{ s.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Interactive Rental Yield Calculator Section -->
+  <section id="yield-calculator" class="apple-calc-container">
+    <div style="text-align: center; max-width: 720px; margin: 0 auto 52px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 8px;">Instant Return Estimator</div>
+      <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: clamp(24px, 2.8vw, 32px); font-weight: 700; color: var(--apple-text-dark); letter-spacing: -0.02em;">
+        How much can your property <span class="apple-gradient-warm">earn on KiraayaGrid?</span>
+      </h2>
+      <p style="font-size: 16px; color: var(--apple-text-tertiary); margin-top: 10px;">
+        Adjust the city, property configuration, and room count to see live projected income and brokerage savings.
+      </p>
+    </div>
+
+    <!-- Calculator Card -->
+    <div class="apple-calc-card">
+      <!-- Controls -->
+      <div>
+        <!-- City Selection -->
+        <div style="margin-bottom: 24px;">
+          <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 8px;">Select City</label>
+          <select id="calcCity" onchange="calculateRent()" class="apple-select-input" style="padding: 13px 16px; font-size: 14px; width: 100%;">
+            <option value="16000" selected>Bengaluru (Koramangala / HSR / Indiranagar)</option>
+            <option value="22000">Mumbai (Bandra / Powai / Andheri)</option>
+            <option value="12500">Pune (Koregaon Park / Viman Nagar / Hinjawadi)</option>
+            <option value="11500">Hyderabad (Gachibowli / Madhapur / Hitec City)</option>
+            <option value="14000">Delhi NCR (Gurugram Cyber City / Noida)</option>
+            <option value="9500">Indore (Vijay Nagar / Super Corridor)</option>
+          </select>
+        </div>
+
+        <!-- Property Type -->
+        <div style="margin-bottom: 24px;">
+          <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 8px;">Property Type</label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button type="button" class="calc-type-btn active" data-multiplier="1.0" onclick="selectType(this)">PG / Co-Living</button>
+            <button type="button" class="calc-type-btn" data-multiplier="1.35" onclick="selectType(this)">Private Flat</button>
+            <button type="button" class="calc-type-btn" data-multiplier="1.2" onclick="selectType(this)">Studio Suite</button>
+          </div>
+        </div>
+
+        <!-- Room / Bed Stepper -->
+        <div style="margin-bottom: 28px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;">Number of Rooms / Units</label>
+            <span id="roomsValueBadge" style="font-size: 15px; font-weight: 800; color: #183B3B; background: #DDEDAA; padding: 3px 12px; border-radius: 8px;">6 Units</span>
+          </div>
+          <input type="range" id="calcRooms" min="1" max="25" value="6" oninput="calculateRent()" style="width: 100%; height: 6px; border-radius: 4px; accent-color: #183B3B; cursor: pointer;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94A3B8; margin-top: 6px;">
+            <span>1 Unit (Solo Flat)</span>
+            <span>12 Units (Boutique PG)</span>
+            <span>25+ Units (Full Building)</span>
+          </div>
+        </div>
+
+        <!-- Furnishing Tier -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 8px;">Furnishing Level</label>
+          <div style="display: flex; gap: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; cursor: pointer; font-weight: 600;">
+              <input type="radio" name="calcFurnish" value="1.15" checked onchange="calculateRent()" style="accent-color: #183B3B;"> Fully Furnished
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; cursor: pointer; font-weight: 600;">
+              <input type="radio" name="calcFurnish" value="1.0" onchange="calculateRent()" style="accent-color: #183B3B;"> Semi-Furnished
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; cursor: pointer; font-weight: 600;">
+              <input type="radio" name="calcFurnish" value="0.85" onchange="calculateRent()" style="accent-color: #183B3B;"> Unfurnished
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Yield Outputs Display -->
+      <div style="background: linear-gradient(145deg, #183B3B 0%, #102A2A 100%); border-radius: 26px; padding: 40px; color: #FFFFFF; position: relative; overflow: hidden; box-shadow: 0 16px 36px rgba(24, 59, 59, 0.3);">
+        <div style="position: absolute; right: -40px; bottom: -40px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(221, 237, 170, 0.14) 0%, transparent 70%); pointer-events: none;"></div>
+
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #93B5C6; margin-bottom: 6px;">Estimated Rental Inflow</div>
+        
+        <!-- Big Number -->
+        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;">
+          <span style="font-size: 24px; font-weight: 700; color: #DDEDAA;">₹</span>
+          <span id="monthlyIncomeDisplay" style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 38px; font-weight: 800; color: #FFFFFF; line-height: 1;">1,10,400</span>
+          <span style="font-size: 15px; color: #94A3B8;">/ month</span>
+        </div>
+        <div style="font-size: 13px; color: #94A3B8; margin-bottom: 28px;">Net projected earnings with ~96% occupancy factor</div>
+
+        <!-- Breakdown List -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.12); padding-top: 20px; margin-bottom: 28px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: #CBD5E1;">Annual Gross Inflow:</span>
+            <span id="annualIncomeDisplay" style="font-weight: 700; color: #FFFFFF;">₹13,24,800 / yr</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: #CBD5E1;">Brokerage Saved on KiraayaGrid:</span>
+            <span id="brokerageSavedDisplay" style="font-weight: 700; color: #DDEDAA;">₹1,10,400 (100% saved)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <span style="color: #CBD5E1;">Average Resident Placement:</span>
+            <span style="font-weight: 700; color: #93B5C6;">3.2 Days</span>
+          </div>
+        </div>
+
+        <!-- Action Inside Calc -->
+        {% if is_owner %}
+          <a href="{% url 'owner_portal:add_property' %}" class="btn-get-started" style="display: block; text-align: center; width: 100%; padding: 15px; font-size: 15px; background: #DDEDAA; color: #183B3B; text-decoration: none; border-radius: 9999px;">
+            List These Units Now ↗
+          </a>
+        {% else %}
+          <button type="button" onclick="triggerHostAction()" class="btn-get-started" style="width: 100%; padding: 15px; font-size: 15px; background: #DDEDAA; color: #183B3B; border: none; cursor: pointer; border-radius: 9999px;">
+            Claim This Rental Yield Free ↗
+          </button>
+        {% endif %}
+        <div style="text-align: center; font-size: 12px; color: #94A3B8; margin-top: 12px;">
+          *Estimates based on live Bengaluru/Mumbai/Pune demand datasets.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works For Hosts (Apple 3-Step Bento) -->
+  <section style="background: #FFFFFF; padding: 96px 24px; border-top: 1px solid var(--apple-border); border-bottom: 1px solid var(--apple-border); margin-bottom: 80px;">
+    <div style="max-width: 1240px; margin: 0 auto;">
+      <div style="text-align: center; max-width: 680px; margin: 0 auto 64px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 8px;">Frictionless Onboarding</div>
+        <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: clamp(24px, 2.8vw, 32px); font-weight: 700; color: var(--apple-text-dark); letter-spacing: -0.02em;">
+          List in 3 minutes. <span class="apple-gradient-warm">Host with zero stress.</span>
+        </h2>
+        <p style="font-size: 16px; color: var(--apple-text-tertiary); margin-top: 12px;">
+          Everything you need to rent out your property without chasing tenants, dealing with brokers, or writing paperwork.
+        </p>
+      </div>
+
+      <!-- 3 Apple Cards -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
+        <!-- Step 1 -->
+        <div style="background: var(--apple-bg); border: 1px solid var(--apple-border); border-radius: 24px; padding: 36px 30px;">
+          <div style="width: 48px; height: 48px; border-radius: 14px; background: #183B3B; color: #DDEDAA; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; margin-bottom: 24px;">
+            1
+          </div>
+          <h3 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 10px;">Publish Your Listing</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B; margin-bottom: 20px;">
+            Upload real property photos, add room amenities (Wi-Fi, AC, Food), set monthly rent, and set your security deposit policy.
+          </p>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #10B981;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Instant review within 2 hours
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div style="background: var(--apple-bg); border: 1px solid var(--apple-border); border-radius: 24px; padding: 36px 30px;">
+          <div style="width: 48px; height: 48px; border-radius: 14px; background: #93B5C6; color: #183B3B; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; margin-bottom: 24px;">
+            2
+          </div>
+          <h3 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 10px;">Direct Chat & Visits</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B; margin-bottom: 20px;">
+            Interested tenants chat with you directly through KiraayaGrid. You see their employer/college verification before approving walkthroughs.
+          </p>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #10B981;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            No random unannounced visits
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div style="background: var(--apple-bg); border: 1px solid var(--apple-border); border-radius: 24px; padding: 36px 30px;">
+          <div style="width: 48px; height: 48px; border-radius: 14px; background: #D7816A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; margin-bottom: 24px;">
+            3
+          </div>
+          <h3 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 10px;">Digital Leases & Auto-Rent</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B; margin-bottom: 20px;">
+            Both parties sign the biometric e-agreement online. Security deposits and monthly rents credit straight to your registered bank account.
+          </p>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #10B981;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Automated digital invoices & receipts
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Matrix: Traditional Brokers vs KiraayaGrid -->
+  <section class="apple-matrix-section">
+    <div style="text-align: center; max-width: 600px; margin: 0 auto 40px;">
+      <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 26px; font-weight: 700; color: var(--apple-text-dark); letter-spacing: -0.02em;">
+        Why landlords are <span class="apple-gradient-warm">switching to KiraayaGrid</span>
+      </h2>
+    </div>
+
+    <div class="matrix-table-wrap">
+      <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid #E2E8F0; background: #F8FAFC;">
+            <th style="padding: 18px 24px; font-size: 13px; font-weight: 700; color: #475569;">Feature & Guarantee</th>
+            <th style="padding: 18px 24px; font-size: 13px; font-weight: 700; color: #94A3B8;">Traditional Brokers</th>
+            <th style="padding: 18px 24px; font-size: 14px; font-weight: 800; color: #183B3B; background: rgba(221, 237, 170, 0.25);">KiraayaGrid Platform</th>
+          </tr>
+        </thead>
+        <tbody style="font-size: 14px;">
+          <tr style="border-bottom: 1px solid #F1F5F9;">
+            <td style="padding: 16px 24px; font-weight: 600; color: #0F172A;">Listing & Commission Fee</td>
+            <td style="padding: 16px 24px; color: #EF4444;">15 to 30 days rent every renewal</td>
+            <td style="padding: 16px 24px; font-weight: 700; color: #10B981; background: rgba(221, 237, 170, 0.1);">₹0 (100% Free Forever)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F1F5F9;">
+            <td style="padding: 16px 24px; font-weight: 600; color: #0F172A;">Tenant Screening</td>
+            <td style="padding: 16px 24px; color: #64748B;">Random, no background check</td>
+            <td style="padding: 16px 24px; font-weight: 700; color: #183B3B; background: rgba(221, 237, 170, 0.1);">Aadhaar + Work Email + Phone KYC</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F1F5F9;">
+            <td style="padding: 16px 24px; font-weight: 600; color: #0F172A;">Rental Agreements</td>
+            <td style="padding: 16px 24px; color: #64748B;">Physical notary visits & delays</td>
+            <td style="padding: 16px 24px; font-weight: 700; color: #183B3B; background: rgba(221, 237, 170, 0.1);">Digital Biometric e-Stamp in 60s</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #F1F5F9;">
+            <td style="padding: 16px 24px; font-weight: 600; color: #0F172A;">Rent Collection</td>
+            <td style="padding: 16px 24px; color: #64748B;">Manual reminders, cash or UPI chasing</td>
+            <td style="padding: 16px 24px; font-weight: 700; color: #10B981; background: rgba(221, 237, 170, 0.1);">Automated payouts direct to bank</td>
+          </tr>
+          <tr>
+            <td style="padding: 16px 24px; font-weight: 600; color: #0F172A;">Property Damage Protection</td>
+            <td style="padding: 16px 24px; color: #EF4444;">Zero liability once broker is paid</td>
+            <td style="padding: 16px 24px; font-weight: 700; color: #183B3B; background: rgba(221, 237, 170, 0.1);">Digital room inventory checklist & deposit guard</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Real Landlord Testimonials -->
+  <section style="background: var(--apple-bg); padding: 80px 24px; margin-bottom: 80px;">
+    <div style="max-width: 1240px; margin: 0 auto;">
+      <div style="text-align: center; max-width: 600px; margin: 0 auto 52px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 8px;">Host Stories</div>
+        <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 32px; font-weight: 700; color: #0F172A;">
+          Trusted by over <span class="apple-gradient-warm">1,400+ property owners.</span>
+        </h2>
+      </div>
+
+      <div class="apple-testimonials-grid">
+        {% for t in testimonials %}
+        <div class="testimonial-bento-card">
+          <div>
+            <div style="color: #F0CF65; font-size: 16px; margin-bottom: 14px;">★★★★★</div>
+            <p style="font-size: 14px; line-height: 1.6; color: #334155; font-style: italic; margin-bottom: 20px;">
+              "{{ t.quote }}"
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; border-top: 1px solid #F1F5F9; padding-top: 16px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #183B3B; color: #DDEDAA; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+              {{ t.avatar }}
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 700; color: #0F172A;">{{ t.name }}</div>
+              <div style="font-size: 12px; color: #64748B;">{{ t.property }}</div>
+              <div style="font-size: 11px; color: #94A3B8;">{{ t.city }}</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section (Apple Style) -->
+  <section style="padding: 0 24px 96px; max-width: 880px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 40px;">
+      <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 32px; font-weight: 700; color: #0F172A;">
+        Frequently Asked Questions by Hosts
+      </h2>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <details style="background: #FFFFFF; border: 1px solid var(--apple-border); border-radius: 16px; padding: 20px 24px; cursor: pointer;">
+        <summary style="font-size: 15px; font-weight: 700; color: #0F172A; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+          <span>Is listing my property really 100% free?</span>
+          <span style="font-size: 18px; color: #64748B;">+</span>
+        </summary>
+        <p style="margin-top: 12px; font-size: 14px; line-height: 1.6; color: #475569;">
+          Yes. KiraayaGrid never charges landlords listing fees, subscription fees, or brokerage commissions. We believe property owners shouldn't have to surrender half a month's rent just to find quality residents.
+        </p>
+      </details>
+
+      <details style="background: #FFFFFF; border: 1px solid var(--apple-border); border-radius: 16px; padding: 20px 24px; cursor: pointer;">
+        <summary style="font-size: 15px; font-weight: 700; color: #0F172A; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+          <span>How does KiraayaGrid verify prospective tenants?</span>
+          <span style="font-size: 18px; color: #64748B;">+</span>
+        </summary>
+        <p style="margin-top: 12px; font-size: 14px; line-height: 1.6; color: #475569;">
+          Every tenant on KiraayaGrid undergoes automated KYC with Government ID (Aadhaar verification) and corporate work email or college ID verification. You have complete visibility over their profile before you approve any walkthrough visit.
+        </p>
+      </details>
+
+      <details style="background: #FFFFFF; border: 1px solid var(--apple-border); border-radius: 16px; padding: 20px 24px; cursor: pointer;">
+        <summary style="font-size: 15px; font-weight: 700; color: #0F172A; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+          <span>Can I set my own rent and house rules?</span>
+          <span style="font-size: 18px; color: #64748B;">+</span>
+        </summary>
+        <p style="margin-top: 12px; font-size: 14px; line-height: 1.6; color: #475569;">
+          Absolutely. You have 100% control over room pricing, gate timings, food preferences, guest policies, smoking/alcohol rules, and security deposit terms.
+        </p>
+      </details>
+
+      <details style="background: #FFFFFF; border: 1px solid var(--apple-border); border-radius: 16px; padding: 20px 24px; cursor: pointer;">
+        <summary style="font-size: 15px; font-weight: 700; color: #0F172A; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+          <span>How does rent collection and payout work?</span>
+          <span style="font-size: 18px; color: #64748B;">+</span>
+        </summary>
+        <p style="margin-top: 12px; font-size: 14px; line-height: 1.6; color: #475569;">
+          Tenants pay their monthly rent through the KiraayaGrid tenant portal using UPI, Credit Card, or Net Banking. Funds are automatically transferred directly to your verified bank account by the 5th of each month, along with digital tax invoices.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Big Bottom Apple CTA Section -->
+  <section style="background: var(--color-deep-forest); padding: 80px 24px; text-align: center; color: #FFFFFF;">
+    <div style="max-width: 760px; margin: 0 auto;">
+      <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: clamp(26px, 3.2vw, 36px); font-weight: 800; line-height: 1.15; margin-bottom: 20px;">
+        Ready to fill your rooms with <span class="apple-gradient-warm">verified residents?</span>
+      </h2>
+      <p style="font-size: 17px; color: #93B5C6; margin-bottom: 36px;">
+        Join over 1,400+ satisfied hosts across Bengaluru, Mumbai, Pune, and Hyderabad. Zero brokerage guaranteed.
+      </p>
+      
+      <div style="display: flex; justify-content: center; gap: 16px;">
+        {% if is_owner %}
+          <a href="{% url 'owner_portal:add_property' %}" class="btn-get-started" style="padding: 16px 40px; font-size: 16px; background: #DDEDAA; color: #183B3B; text-decoration: none; border-radius: 9999px;">
+            Start Listing Property ↗
+          </a>
+        {% else %}
+          <button type="button" onclick="triggerHostAction()" class="btn-get-started" style="padding: 16px 40px; font-size: 16px; background: #DDEDAA; color: #183B3B; border: none; cursor: pointer; border-radius: 9999px;">
+            Create Free Owner Account ↗
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Dynamic Rental Yield Calculator Script -->
+<script>
+  let currentMultiplier = 1.0;
+
+  function selectType(btn) {
+    document.querySelectorAll('.calc-type-btn').forEach(b => {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    currentMultiplier = parseFloat(btn.getAttribute('data-multiplier'));
+    calculateRent();
+  }
+
+  function calculateRent() {
+    const baseCityRent = parseFloat(document.getElementById('calcCity').value);
+    const rooms = parseInt(document.getElementById('calcRooms').value);
+    
+    // Update badge text
+    document.getElementById('roomsValueBadge').textContent = rooms + (rooms === 1 ? ' Unit' : ' Units');
+
+    let furnishMultiplier = 1.15;
+    const furnishRadios = document.getElementsByName('calcFurnish');
+    for (let r of furnishRadios) {
+      if (r.checked) {
+        furnishMultiplier = parseFloat(r.value);
+        break;
+      }
+    }
+
+    const estimatedPerUnit = Math.round(baseCityRent * currentMultiplier * furnishMultiplier);
+    const monthlyTotal = Math.round(estimatedPerUnit * rooms * 0.96); // 96% occupancy
+    const annualTotal = monthlyTotal * 12;
+
+    document.getElementById('monthlyIncomeDisplay').textContent = monthlyTotal.toLocaleString('en-IN');
+    document.getElementById('annualIncomeDisplay').textContent = '₹' + annualTotal.toLocaleString('en-IN') + ' / yr';
+    document.getElementById('brokerageSavedDisplay').textContent = '₹' + monthlyTotal.toLocaleString('en-IN') + ' (100% saved)';
+  }
+
+  function triggerHostAction() {
+    // Navigate directly to dedicated Owner registration with role pre-selected
+    window.location.href = "{% url 'public_portal:signup' %}?role=OWNER";
+  }
+
+  // Initial calculation on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    calculateRent();
+  });
+</script>
+{% endblock %}

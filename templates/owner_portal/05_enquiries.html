@@ -1,0 +1,637 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Seeker Enquiries — KiraayaGrid Owner Portal{% endblock %}
+{% block page_title %}Enquiries{% endblock %}
+{% block page_subtitle %}Manage tenant leads, messages, visit scheduling, and conversion status{% endblock %}
+
+{% block content %}
+<!-- TOAST MESSAGES -->
+{% if messages %}
+  <div style="margin-bottom: 20px;" id="djangoMessages">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- FLOATING AJAX NOTIFICATION TOAST -->
+<div id="ajaxToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #065F46; color: #FFFFFF; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.18); align-items: center; gap: 10px; animation: slideUp 0.2s ease;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="ajaxToastMsg">Enquiry updated successfully.</span>
+</div>
+
+<!-- HEADER ROW -->
+<div class="owner-header-row" style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+      Seeker Enquiries
+    </h1>
+    <p class="welcome-subheading" style="margin-top: 4px; font-size: 13px; color: var(--color-text-muted);">
+      Direct tenant leads from verified seekers with zero intermediary brokerage and real-time messaging.
+    </p>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <a href="{% url 'owner_portal:booking_requests' %}" class="btn-secondary-light" style="padding: 9px 14px; text-decoration: none;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>Property Visits ({{ count_visit }})</span>
+    </a>
+  </div>
+</div>
+
+<!-- 5 KPI SUMMARY METRIC CARDS -->
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px;">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL LEADS</div>
+    <div style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_all }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">Direct seeker enquiries</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: #059669; text-transform: uppercase; letter-spacing: 0.5px;">NEW ACTIONABLE</div>
+    <div style="font-size: 24px; font-weight: 700; color: #059669; margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_new }}
+    </div>
+    <div style="font-size: 11.5px; color: #059669; margin-top: 2px; font-weight: 600;">Requires first response</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: #2563EB; text-transform: uppercase; letter-spacing: 0.5px;">IN DISCUSSION</div>
+    <div style="font-size: 24px; font-weight: 700; color: #2563EB; margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_in_discussion }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">Contacted &amp; interested</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: #D97706; text-transform: uppercase; letter-spacing: 0.5px;">VISITS SCHEDULED</div>
+    <div style="font-size: 24px; font-weight: 700; color: #D97706; margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_visit }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">Walkthroughs booked</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: var(--color-dry-sage-dark); text-transform: uppercase; letter-spacing: 0.5px;">CONVERTED</div>
+    <div style="font-size: 24px; font-weight: 700; color: var(--color-dry-sage-dark); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_converted }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-dry-sage-dark); margin-top: 2px; font-weight: 600;">Moved in / booked</div>
+  </div>
+</div>
+
+<!-- FILTER TABS & TOOLBAR -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 12px 16px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Top: 7 Status Tabs -->
+  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+    <!-- All -->
+    <a href="?status=all{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+       class="enq-filter-tab {% if status_filter == 'all' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'all' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>All</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'all' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_all }}</span>
+    </a>
+
+    <!-- New -->
+    <a href="?status=new{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+       class="enq-filter-tab {% if status_filter == 'new' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'new' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>New</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'new' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_new }}</span>
+    </a>
+
+    <!-- Contacted -->
+    <a href="?status=contacted{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+       class="enq-filter-tab {% if status_filter == 'contacted' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'contacted' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Contacted</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'contacted' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_contacted }}</span>
+    </a>
+
+    <!-- Interested -->
+    <a href="?status=interested{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+       class="enq-filter-tab {% if status_filter == 'interested' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'interested' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Interested</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'interested' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_interested }}</span>
+    </a>
+
+    <!-- Visit Requested -->
+    <a href="?status=visit{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+       class="enq-filter-tab {% if status_filter == 'visit' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'visit' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Visit Requested</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'visit' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_visit }}</span>
+    </a>
+
+    <!-- Converted -->
+    <a href="?status=converted{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+       class="enq-filter-tab {% if status_filter == 'converted' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'converted' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Converted</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'converted' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_converted }}</span>
+    </a>
+
+    <!-- Closed -->
+    <a href="?status=closed{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+       class="enq-filter-tab {% if status_filter == 'closed' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'closed' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Closed</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'closed' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_closed }}</span>
+    </a>
+  </div>
+
+  <!-- Bottom: Property Selector, Search, & Sort -->
+  <form method="GET" style="margin: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    {% if status_filter != 'all' %}
+      <input type="hidden" name="status" value="{{ status_filter }}">
+    {% endif %}
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <!-- Property Selector -->
+      <select name="property_id" onchange="this.form.submit()" style="padding: 7px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff; color: var(--color-text-main); font-weight: 600;">
+        <option value="all" {% if not selected_property_id or selected_property_id == 'all' %}selected{% endif %}>
+          All Properties ({{ count_all }} leads)
+        </option>
+        {% for p in all_properties %}
+          <option value="{{ p.id }}" {% if selected_property_id == p.id|stringformat:"s" %}selected{% endif %}>
+            {{ p.title }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <!-- Sort By -->
+      <select name="sort" onchange="this.form.submit()" style="padding: 7px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff; color: var(--color-text-main);">
+        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest Enquiries First</option>
+        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+        <option value="budget_high" {% if sort_by == 'budget_high' %}selected{% endif %}>Budget: High to Low</option>
+        <option value="budget_low" {% if sort_by == 'budget_low' %}selected{% endif %}>Budget: Low to High</option>
+      </select>
+    </div>
+
+    <!-- Search Input -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="position: relative; width: 260px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" name="q" value="{{ q }}" placeholder="Search seeker name, phone, room..." style="width: 100%; padding: 7px 10px 7px 30px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; outline: none;">
+      </div>
+      <button type="submit" class="btn-primary-yale" style="padding: 7px 12px; font-size: 12px;">Search</button>
+
+      {% if q or selected_property_id and selected_property_id != 'all' or status_filter != 'all' or sort_by != 'newest' %}
+        <a href="{% url 'owner_portal:enquiries' %}" class="btn-secondary-light" style="padding: 6px 10px; font-size: 12px; color: #EF4444; text-decoration: none;" title="Reset Filters">
+          &times; Reset
+        </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- ENQUIRIES QUEUE TABLE (WITH ANCHOR #enquiriesList) -->
+<div id="enquiriesList" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <thead>
+      <tr style="background: var(--color-bg); border-bottom: 1px solid var(--color-border); text-align: left;">
+        <th style="padding: 12px 18px; font-weight: 700; color: var(--color-text-muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">SEEKER</th>
+        <th style="padding: 12px 14px; font-weight: 700; color: var(--color-text-muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">CONTACT</th>
+        <th style="padding: 12px 14px; font-weight: 700; color: var(--color-text-muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">INTERESTED PROPERTY</th>
+        <th style="padding: 12px 14px; font-weight: 700; color: var(--color-text-muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">ROOM &amp; BUDGET</th>
+        <th style="padding: 12px 14px; font-weight: 700; color: var(--color-text-muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">MOVE-IN &amp; DATE</th>
+        <th style="padding: 12px 14px; font-weight: 700; color: var(--color-text-muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;">STATUS</th>
+        <th style="padding: 12px 18px; font-weight: 700; color: var(--color-text-muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; text-align: right;">ACTION</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for enq in enquiries %}
+        <tr id="enquiry-row-{{ enq.id }}" style="border-bottom: 1px solid var(--color-border); transition: background 0.15s ease;">
+          <!-- Seeker -->
+          <td style="padding: 14px 18px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(30,77,107,0.1); color: var(--color-yale-blue); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12.5px; flex-shrink: 0;">
+                {{ enq.seeker_name|slice:":1"|upper }}
+              </div>
+              <div>
+                <a href="{% url 'owner_portal:enquiry_details' enq.id %}" style="font-weight: 700; color: var(--color-text-main); font-size: 13.5px; text-decoration: none;">
+                  {{ enq.seeker_name }}
+                </a>
+                <div style="font-size: 11px; color: var(--color-text-muted);">
+                  #ENQ-00{{ enq.id }}
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Contact -->
+          <td style="padding: 14px 14px;">
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: flex; align-items: center; gap: 6px;">
+              <span>{{ enq.seeker_phone }}</span>
+              <a href="https://wa.me/91{{ enq.seeker_phone|cut:' ' }}" target="_blank" style="color: #059669; text-decoration: none;" title="Open WhatsApp Chat">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              </a>
+            </div>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">
+              {{ enq.seeker_email|default:"verified@seeker.kiraayagrid.in" }}
+            </div>
+          </td>
+
+          <!-- Property -->
+          <td style="padding: 14px 14px;">
+            <a href="{% url 'owner_portal:manage_property' enq.property.id %}" style="font-weight: 600; color: var(--color-yale-blue); text-decoration: none; display: block;">
+              {{ enq.property.title }}
+            </a>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">
+              {{ enq.property.locality.name|default:"Locality" }}, {{ enq.property.city.name|default:"Bengaluru" }}
+            </div>
+          </td>
+
+          <!-- Room & Budget -->
+          <td style="padding: 14px 14px;">
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main);">
+              {{ enq.interested_room_type }}
+            </div>
+            <div style="font-size: 13px; font-weight: 700; color: #059669; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display'; margin-top: 2px;">
+              ₹{{ enq.budget|floatformat:0 }} <span style="font-size: 10.5px; font-weight: 500; color: var(--color-text-muted);">/ mo</span>
+            </div>
+          </td>
+
+          <!-- Move-in & Timestamp -->
+          <td style="padding: 14px 14px;">
+            <div style="font-size: 12px; color: var(--color-text-main); font-weight: 500;">
+              {% if enq.preferred_move_in %}
+                {{ enq.preferred_move_in|date:"d M Y" }}
+              {% else %}
+                Immediate Move-in
+              {% endif %}
+            </div>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">
+              Recd: {{ enq.created_at|date:"d M, h:i A" }}
+            </div>
+          </td>
+
+          <!-- Status Badge -->
+          <td style="padding: 14px 14px;">
+            <div id="enquiry-status-pill-{{ enq.id }}">
+              {% if enq.status == 'NEW' %}
+                <span style="background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">
+                  ● New Lead
+                </span>
+              {% elif enq.status == 'CONTACTED' %}
+                <span style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">
+                  ● Contacted
+                </span>
+              {% elif enq.status == 'INTERESTED' %}
+                <span style="background: #F3E8FF; color: #7E22CE; border: 1px solid #E9D5FF; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">
+                  ● Interested
+                </span>
+              {% elif enq.status == 'VISIT_REQUESTED' %}
+                <span style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">
+                  ● Visit Booked
+                </span>
+              {% elif enq.status == 'CONVERTED' %}
+                <span style="background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">
+                  ✓ Converted
+                </span>
+              {% else %}
+                <span style="background: #F3F4F6; color: #4B5563; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 9999px;">
+                  Closed
+                </span>
+              {% endif %}
+            </div>
+          </td>
+
+          <!-- Action Buttons -->
+          <td style="padding: 14px 18px; text-align: right;">
+            <div style="display: inline-flex; align-items: center; gap: 6px;">
+              <!-- View / Details Link -->
+              <a href="{% url 'owner_portal:enquiry_details' enq.id %}" class="btn-primary-yale" style="padding: 5px 10px; font-size: 11.5px; text-decoration: none;" title="Open complete enquiry conversation">
+                View &nearr;
+              </a>
+
+              <!-- Schedule Visit Button -->
+              <button type="button" class="btn-secondary-light" style="padding: 5px 8px; font-size: 11.5px;" title="Schedule Property Visit" onclick="openScheduleVisitModal({{ enq.id }}, '{{ enq.seeker_name|escapejs }}', '{{ enq.property.title|escapejs }}')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </button>
+
+              <!-- Quick Respond Button -->
+              <button type="button" class="btn-secondary-light" style="padding: 5px 8px; font-size: 11.5px;" title="Quick Reply Message" onclick="openQuickRespondModal({{ enq.id }}, '{{ enq.seeker_name|escapejs }}', '{{ enq.property.title|escapejs }}')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              </button>
+
+              <!-- Status Dropdown Select -->
+              <select onchange="updateEnquiryStatus({{ enq.id }}, this.value)" style="padding: 4px 6px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 11px; background: #fff; cursor: pointer; color: var(--color-text-muted);">
+                <option value="" disabled selected>Status...</option>
+                <option value="NEW">New</option>
+                <option value="CONTACTED">Contacted</option>
+                <option value="INTERESTED">Interested</option>
+                <option value="VISIT_REQUESTED">Visit Booked</option>
+                <option value="CONVERTED">Converted</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 48px; color: var(--color-text-muted);">
+            <div style="font-size: 15px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">No enquiries match this filter</div>
+            <p style="font-size: 13px; margin: 0;">Try selecting a different status tab or clearing your search filters.</p>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- PAGINATION CONTROLS (LIMIT 5 WITH SCROLL RETENTION #enquiriesList) -->
+{% if paginator.num_pages > 1 %}
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-top: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Showing indicator -->
+  <div style="font-size: 13px; color: var(--color-text-muted);">
+    Showing <strong style="color: var(--color-text-main);">{{ page_obj.start_index }}</strong> to <strong style="color: var(--color-text-main);">{{ page_obj.end_index }}</strong> of <strong style="color: var(--color-text-main);">{{ paginator.count }}</strong> enquiries
+  </div>
+
+  <!-- Page Navigation Controls -->
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <!-- Previous Page -->
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        &larr; Previous
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        &larr; Previous
+      </span>
+    {% endif %}
+
+    <!-- Page Number Pills -->
+    {% for num in paginator.page_range %}
+      {% if num == page_obj.number %}
+        <span style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; background: var(--color-yale-blue); color: #FFFFFF;">
+          {{ num }}
+        </span>
+      {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+           style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; color: var(--color-text-main); text-decoration: none; border: 1px solid var(--color-border); background: #FFFFFF;">
+          {{ num }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next Page -->
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#enquiriesList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        Next &rarr;
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        Next &rarr;
+      </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ========================================================= -->
+<!-- MODAL 1: SCHEDULE VISIT -->
+<!-- ========================================================= -->
+<div id="scheduleVisitModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 95%; max-width: 480px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin: 0;" id="scheduleVisitTitle">
+        Schedule Property Visit
+      </h3>
+      <button type="button" onclick="closeScheduleVisitModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="schedule_visit">
+      <input type="hidden" id="scheduleVisitEnquiryId" name="enquiry_id" value="">
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Visit Date</label>
+          <input type="date" id="scheduleVisitDate" name="visit_date" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Time Slot</label>
+          <select name="time_slot" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+            <option value="10:00 AM - 11:00 AM">Morning: 10:00 AM - 11:00 AM</option>
+            <option value="11:00 AM - 12:00 PM" selected>Morning: 11:00 AM - 12:00 PM</option>
+            <option value="02:00 PM - 03:00 PM">Afternoon: 02:00 PM - 03:00 PM</option>
+            <option value="04:00 PM - 05:00 PM">Evening: 04:00 PM - 05:00 PM</option>
+            <option value="06:00 PM - 07:00 PM">Evening: 06:00 PM - 07:00 PM</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Internal Notes (Optional)</label>
+          <textarea name="notes" rows="2" placeholder="e.g. Seeker interested in single room on 2nd floor" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+          <button type="button" class="btn-secondary-light" onclick="closeScheduleVisitModal()">Cancel</button>
+          <button type="submit" class="btn-primary-yale">Confirm &amp; Schedule Visit</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MODAL 2: QUICK RESPOND -->
+<!-- ========================================================= -->
+<div id="quickRespondModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 95%; max-width: 500px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin: 0;" id="quickRespondTitle">
+        Quick Reply to Seeker
+      </h3>
+      <button type="button" onclick="closeQuickRespondModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="quick_respond">
+      <input type="hidden" id="quickRespondEnquiryId" name="enquiry_id" value="">
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Reply Message</label>
+          <textarea id="quickRespondText" name="reply_text" rows="4" required style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5;"></textarea>
+        </div>
+
+        <!-- Quick Template Buttons -->
+        <div>
+          <span style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase;">Quick Fill Templates:</span>
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 6px;">
+            <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 4px 8px; text-align: left; justify-content: flex-start;" onclick="fillReplyTemplate(1)">
+              "Room is available for immediate move-in! Would you like to schedule a visit?"
+            </button>
+            <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 4px 8px; text-align: left; justify-content: flex-start;" onclick="fillReplyTemplate(2)">
+              "Rent includes high-speed WiFi, housekeeping, and 24/7 power backup. Let me know your move-in date."
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+          <button type="button" class="btn-secondary-light" onclick="closeQuickRespondModal()">Cancel</button>
+          <button type="submit" class="btn-primary-yale">Send Reply</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.enq-filter-tab {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-text-muted);
+  background: transparent;
+  transition: all 0.15s ease;
+}
+.enq-filter-tab:hover {
+  background: var(--color-bg);
+  color: var(--color-text-main);
+}
+.enq-filter-tab.active {
+  background: var(--color-yale-blue);
+  color: #FFFFFF;
+}
+</style>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('ajaxToast');
+  const msgEl = document.getElementById('ajaxToastMsg');
+  if (toast && msgEl) {
+    msgEl.innerText = msg;
+    toast.style.display = 'flex';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 3500);
+  }
+}
+
+// Quick Status Update via AJAX
+function updateEnquiryStatus(enquiryId, newStatus) {
+  if (!newStatus) return;
+
+  const formData = new FormData();
+  formData.append('action', 'update_status');
+  formData.append('enquiry_id', enquiryId);
+  formData.append('status', newStatus);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken'),
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showToast(data.message);
+      const pill = document.getElementById('enquiry-status-pill-' + enquiryId);
+      if (pill) {
+        let badgeHtml = '';
+        if (data.new_status === 'NEW') {
+          badgeHtml = '<span style="background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">● New Lead</span>';
+        } else if (data.new_status === 'CONTACTED') {
+          badgeHtml = '<span style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">● Contacted</span>';
+        } else if (data.new_status === 'INTERESTED') {
+          badgeHtml = '<span style="background: #F3E8FF; color: #7E22CE; border: 1px solid #E9D5FF; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">● Interested</span>';
+        } else if (data.new_status === 'VISIT_REQUESTED') {
+          badgeHtml = '<span style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">● Visit Booked</span>';
+        } else if (data.new_status === 'CONVERTED') {
+          badgeHtml = '<span style="background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">✓ Converted</span>';
+        } else {
+          badgeHtml = '<span style="background: #F3F4F6; color: #4B5563; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 9999px;">Closed</span>';
+        }
+        pill.innerHTML = badgeHtml;
+      }
+    }
+  })
+  .catch(err => {
+    console.error('Error updating status:', err);
+    window.location.reload();
+  });
+}
+
+// Modal Handlers: Schedule Visit
+function openScheduleVisitModal(enquiryId, seekerName, propertyTitle) {
+  document.getElementById('scheduleVisitEnquiryId').value = enquiryId;
+  document.getElementById('scheduleVisitTitle').innerText = `Schedule Visit for ${seekerName}`;
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('scheduleVisitDate').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('scheduleVisitModal').style.display = 'flex';
+}
+function closeScheduleVisitModal() {
+  document.getElementById('scheduleVisitModal').style.display = 'none';
+}
+
+// Modal Handlers: Quick Respond
+function openQuickRespondModal(enquiryId, seekerName, propertyTitle) {
+  document.getElementById('quickRespondEnquiryId').value = enquiryId;
+  document.getElementById('quickRespondTitle').innerText = `Reply to ${seekerName} (${propertyTitle})`;
+  document.getElementById('quickRespondText').value = `Hi ${seekerName}, thank you for your enquiry regarding ${propertyTitle}! The room is available for immediate occupancy. Would you like to schedule a property visit?`;
+  document.getElementById('quickRespondModal').style.display = 'flex';
+}
+function closeQuickRespondModal() {
+  document.getElementById('quickRespondModal').style.display = 'none';
+}
+
+function fillReplyTemplate(idx) {
+  const ta = document.getElementById('quickRespondText');
+  if (idx === 1) {
+    ta.value = "Hi! Yes, this room is available for immediate move-in with zero brokerage. When would be a good time for a property walkthrough?";
+  } else {
+    ta.value = "The monthly rent includes high-speed commercial Wi-Fi, daily housekeeping, hot water geyser, and 24/7 power backup. What is your preferred move-in date?";
+  }
+}
+
+// Close modals when clicking backdrop
+window.addEventListener('click', (e) => {
+  ['scheduleVisitModal', 'quickRespondModal'].forEach(mId => {
+    const el = document.getElementById(mId);
+    if (el && e.target === el) {
+      el.style.display = 'none';
+    }
+  });
+});
+</script>
+{% endblock %}

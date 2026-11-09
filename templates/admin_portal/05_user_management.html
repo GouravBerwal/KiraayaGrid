@@ -1,0 +1,852 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}User management — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}User management{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/05_user_management.css' %}?v=2.2">
+  <style>
+    /* APPLE-STYLE MODERN ENHANCEMENTS FOR USER MANAGEMENT */
+    .user-table-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .avatar-tenant { background: #EFF6FF; color: #1D4ED8; border: 1px solid #DBEAFE; }
+    .avatar-owner { background: #EEF2FF; color: #4338CA; border: 1px solid #E0E7FF; }
+    .avatar-admin { background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .role-tenant { background: #F1F5F9; color: #334155; }
+    .role-owner { background: #E0E7FF; color: #3730A3; }
+    .role-admin { background: #FEF3C7; color: #92400E; }
+
+    .selected-user-row td {
+      background: #F0F7FF !important;
+      border-top: 1px solid #93C5FD !important;
+      border-bottom: 1px solid #93C5FD !important;
+    }
+
+    /* SINGLE LINE COMPACT FILTER TOOLBAR (100% HORIZONTAL ROW) */
+    .user-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      margin-bottom: 24px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+    }
+
+    .user-search-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 10px !important;
+      padding: 9px 14px !important;
+      flex: 1 !important;
+      min-width: 260px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .user-search-wrap:focus-within {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .user-search-icon {
+      color: #64748B !important;
+      flex-shrink: 0 !important;
+    }
+
+    .user-search-input {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      width: 100% !important;
+      font-size: 13.5px !important;
+      color: #0F172A !important;
+      font-weight: 500 !important;
+      line-height: 1.4 !important;
+    }
+
+    .user-search-input::placeholder {
+      color: #94A3B8 !important;
+      font-weight: 400 !important;
+    }
+
+    .user-filter-select {
+      width: auto !important;
+      min-width: 150px !important;
+      padding: 9px 32px 9px 12px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 10px !important;
+      background: #FFFFFF !important;
+      font-size: 13.5px !important;
+      color: #0F172A !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      flex-shrink: 0 !important;
+      transition: all 0.15s ease !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .user-filter-select:focus {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+      outline: none !important;
+    }
+
+    .user-filter-submit-btn {
+      padding: 9px 20px !important;
+      background: #1C5D99 !important;
+      color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 10px !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      flex-shrink: 0 !important;
+      transition: all 0.15s ease !important;
+      box-shadow: 0 1px 3px rgba(28, 93, 153, 0.2) !important;
+    }
+
+    .user-filter-submit-btn:hover {
+      background: #154a7c !important;
+    }
+
+    .user-filter-reset-btn {
+      padding: 9px 16px !important;
+      background: #FFFFFF !important;
+      color: #64748B !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 10px !important;
+      font-size: 13.5px !important;
+      font-weight: 500 !important;
+      text-decoration: none !important;
+      cursor: pointer !important;
+      flex-shrink: 0 !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .user-filter-reset-btn:hover {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+      border-color: #94A3B8 !important;
+    }
+
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      animation: fadeInModal 0.2s ease-out;
+    }
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-dialog {
+      background: #FFFFFF;
+      border-radius: 16px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border: 1px solid #E2E8F0;
+      overflow: hidden;
+      animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideUpModal {
+      from { transform: translateY(20px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid #E2E8F0;
+      background: #FFFFFF;
+    }
+    .modal-title-text {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-close-icon {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #94A3B8;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+    .modal-close-icon:hover {
+      color: #0F172A;
+    }
+    .modal-body-content {
+      padding: 24px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+    .modal-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px;
+      border-top: 1px solid #E2E8F0;
+      background: #FFFFFF;
+    }
+
+    .form-group-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: #0F172A;
+      outline: none;
+      background: #FFFFFF;
+      transition: all 0.15s ease;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: #1C5D99;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12);
+    }
+
+    /* TOAST ALERT */
+    .toast-alert {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      animation: slideUpToast 0.25s ease-out;
+    }
+    @keyframes slideUpToast {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">User management</h1>
+    <p class="page-subtitle">Understand tenant and owner activity, protect accounts and manage access responsibly.</p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 'admin_portal:user_export_csv' %}" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      <span>Export users</span>
+    </a>
+  </div>
+</div>
+
+<!-- KPI CARDS (100% DYNAMIC FROM MYSQL) -->
+<div class="stats-grid-4">
+  <div class="stat-box">
+    <div class="stat-label">Registered users</div>
+    <div class="stat-value">{{ total_users }}</div>
+    <div class="stat-trend neutral">{{ tenant_count }} tenants · {{ owner_count }} owners</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Verified owners</div>
+    <div class="stat-value" style="color: #059669;">{{ verified_owners_count }}</div>
+    <div class="stat-trend neutral">KYC credentials approved</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">New this month</div>
+    <div class="stat-value" style="color: #1C5D99;">{{ new_this_month }}</div>
+    <div class="stat-trend positive">↑ Growth on KiraayaGrid</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Suspended accounts</div>
+    <div class="stat-value" style="color: #DC2626;">{{ suspended_count }}</div>
+    <div class="stat-trend neutral">{{ suspended_count }} eligible for restoration</div>
+  </div>
+</div>
+
+<!-- FILTER TABS WITH LIVE COUNTS -->
+<div class="nav-tab-strip">
+  <a href="?tab=ALL{% if search_q %}&q={{ search_q }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}" class="tab-btn {% if active_tab == 'ALL' %}active{% endif %}">All users · {{ tab_counts.ALL }}</a>
+  <a href="?tab=TENANTS{% if search_q %}&q={{ search_q }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}" class="tab-btn {% if active_tab == 'TENANTS' %}active{% endif %}">Tenants · {{ tab_counts.TENANTS }}</a>
+  <a href="?tab=OWNERS{% if search_q %}&q={{ search_q }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}" class="tab-btn {% if active_tab == 'OWNERS' %}active{% endif %}">Owners · {{ tab_counts.OWNERS }}</a>
+  <a href="?tab=STAFF{% if search_q %}&q={{ search_q }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}" class="tab-btn {% if active_tab == 'STAFF' %}active{% endif %}">Staff / Admin · {{ tab_counts.STAFF }}</a>
+  <a href="?tab=SUSPENDED{% if search_q %}&q={{ search_q }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}" class="tab-btn {% if active_tab == 'SUSPENDED' %}active{% endif %}">Suspended · {{ tab_counts.SUSPENDED }}</a>
+</div>
+
+<!-- FILTER TOOLBAR ROW (100% SINGLE LINE) -->
+<form method="GET" action="{% url 'admin_portal:user_management' %}" class="user-filter-toolbar">
+  <input type="hidden" name="tab" value="{{ active_tab }}">
+  
+  <div class="user-search-wrap">
+    <svg class="user-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input type="text" name="q" placeholder="Search by name, email, phone or user ID..." class="user-search-input" value="{{ search_q }}">
+  </div>
+
+  <select name="role" class="user-filter-select" onchange="this.form.submit()">
+    <option value="ALL">All roles</option>
+    <option value="TENANT" {% if role_filter == 'TENANT' %}selected{% endif %}>Tenants</option>
+    <option value="OWNER" {% if role_filter == 'OWNER' %}selected{% endif %}>Property Owners</option>
+    <option value="ADMIN" {% if role_filter == 'ADMIN' %}selected{% endif %}>Admin / Staff</option>
+  </select>
+
+  <select name="status" class="user-filter-select" onchange="this.form.submit()">
+    <option value="ALL">Account status</option>
+    <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active</option>
+    <option value="SUSPENDED" {% if status_filter == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
+  </select>
+
+  <button type="submit" class="user-filter-submit-btn">Filter</button>
+  {% if search_q or role_filter or status_filter %}
+    <a href="?tab={{ active_tab }}" class="user-filter-reset-btn">Reset</a>
+  {% endif %}
+</form>
+
+<!-- DATA TABLE (100% DYNAMIC) -->
+<div class="table-card mb-24" id="usersTableCard">
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>USER</th>
+          <th>CONTACT</th>
+          <th>ROLE</th>
+          <th>JOINED</th>
+          <th>ACCOUNT</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr class="{% if selected_user and u.id == selected_user.id %}selected-user-row{% endif %}">
+          <td>
+            <div class="actor-cell">
+              <div class="user-table-avatar {% if u.role == 'OWNER' %}avatar-owner{% elif u.role == 'ADMIN' %}avatar-admin{% else %}avatar-tenant{% endif %}">
+                {{ u.first_name|default:u.username|slice:":1"|upper }}{{ u.last_name|slice:":1"|upper }}
+              </div>
+              <div>
+                <div class="actor-name" style="font-weight: 700; color: #0F172A;">
+                  {{ u.get_full_name|default:u.username }}
+                  {% if u.is_verified_owner %}
+                    <span title="KYC Verified" style="color: #059669; font-size: 11px; margin-left: 3px;">✓</span>
+                  {% endif %}
+                </div>
+                <div class="text-subtle font-mono" style="font-size: 11px;">
+                  {% if u.role == 'OWNER' %}OWN-{{ u.id }}{% else %}USR-{{ u.id }}{% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 13px; color: #0F172A;">{{ u.email|default:"No email registered" }}</div>
+            <div class="text-subtle" style="font-size: 11.5px;">{{ u.phone_number|default:"No mobile registered" }}</div>
+          </td>
+          <td>
+            <span class="role-badge {% if u.role == 'OWNER' %}role-owner{% elif u.role == 'ADMIN' %}role-admin{% else %}role-tenant{% endif %}">
+              {{ u.get_role_display|default:u.role }}
+            </span>
+          </td>
+          <td>{{ u.date_joined|date:"d M Y" }}</td>
+          <td>
+            {% if u.is_active %}
+              <span class="status-pill success" id="table-status-pill-{{ u.id }}">✓ Active</span>
+            {% else %}
+              <span class="status-pill danger" id="table-status-pill-{{ u.id }}">⊘ Suspended</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <a href="?tab={{ active_tab }}&id={{ u.id }}{% if search_q %}&q={{ search_q }}{% endif %}" class="table-link" style="font-weight: 600; font-size: 12.5px;">
+                {% if selected_user and u.id == selected_user.id %}
+                  Profile open ↓
+                {% else %}
+                  View details ↗
+                {% endif %}
+              </a>
+              <button class="btn-quick-edit" 
+                      data-id="{{ u.id }}"
+                      data-first="{{ u.first_name }}"
+                      data-last="{{ u.last_name }}"
+                      data-email="{{ u.email }}"
+                      data-phone="{{ u.phone_number }}"
+                      data-role="{{ u.role }}"
+                      data-active="{{ u.is_active|yesno:'1,0' }}"
+                      style="background:none; border:none; cursor:pointer; color:#64748B; padding:2px;"
+                      title="Quick edit profile">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="padding: 40px; text-align: center; color: #64748B;">
+            <div style="font-size: 15px; font-weight: 600; color: #0F172A; margin-bottom: 4px;">No users match your criteria</div>
+            <div style="font-size: 13px;">Try adjusting your filter or search query.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-footer-bar">
+    <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} users</span>
+    <div class="pagination-wrap" style="display: flex; align-items: center; gap: 8px;">
+      {% if page_obj.has_previous %}
+        <a href="?tab={{ active_tab }}&role={{ role_filter }}&status={{ status_filter }}&q={{ search_q }}&page={{ page_obj.previous_page_number }}#usersTableCard" class="page-btn">← Prev</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">← Prev</span>
+      {% endif %}
+
+      <span class="page-indicator" style="font-size: 12.5px; font-weight: 600; color: #475569; padding: 0 8px;">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?tab={{ active_tab }}&role={{ role_filter }}&status={{ status_filter }}&q={{ search_q }}&page={{ page_obj.next_page_number }}#usersTableCard" class="page-btn">Next →</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">Next →</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- SELECTED USER PROFILE EXPANSION PANEL (100% DYNAMIC) -->
+{% if selected_user %}
+<div class="user-detail-expansion-grid">
+  <!-- USER CARD -->
+  <div class="card">
+    <div class="card-header-flex">
+      <div>
+        <h3 class="user-panel-name">{{ selected_user.get_full_name|default:selected_user.username }}</h3>
+        <div class="user-panel-sub">
+          {{ selected_user.get_role_display|default:selected_user.role }} · 
+          {% if selected_user.role == 'OWNER' %}OWN-{{ selected_user.id }}{% else %}USR-{{ selected_user.id }}{% endif %} · 
+          Joined {{ selected_user.date_joined|date:"d M Y" }}
+        </div>
+      </div>
+      <span id="detailStatusBadge">
+        {% if selected_user.is_active %}
+          <span class="status-pill success">✓ Active</span>
+        {% else %}
+          <span class="status-pill danger">⊘ Suspended</span>
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="stats-tri-row">
+      <div class="mini-stat-cell">
+        <span class="mini-stat-lbl">Email & mobile</span>
+        <span class="mini-stat-val">
+          {% if selected_user.email %}Verified ✓{% else %}Pending{% endif %}
+        </span>
+      </div>
+      <div class="mini-stat-cell">
+        <span class="mini-stat-lbl">
+          {% if selected_user.role == 'OWNER' %}Properties listed{% else %}Account role{% endif %}
+        </span>
+        <span class="mini-stat-val">
+          {% if selected_user.role == 'OWNER' %}
+            {{ user_properties_count }} properties ({{ user_rooms_count }} rooms)
+          {% else %}
+            Tenant Discovery Access
+          {% endif %}
+        </span>
+      </div>
+      <div class="mini-stat-cell">
+        <span class="mini-stat-lbl">
+          {% if selected_user.role == 'OWNER' %}Owner KYC status{% else %}Activity status{% endif %}
+        </span>
+        <span class="mini-stat-val">
+          {% if selected_user.role == 'OWNER' %}
+            {% if selected_user.is_verified_owner %}
+              <span style="color:#059669;">Verified ✓ ({{ user_kyc.document_type|default:"ID" }})</span>
+            {% else %}
+              <span style="color:#D97706;">Pending Review</span>
+            {% endif %}
+          {% else %}
+            Active platform member
+          {% endif %}
+        </span>
+      </div>
+    </div>
+
+    <div class="user-panel-actions">
+      <!-- SUSPEND / RESTORE TOGGLE BUTTON -->
+      <button class="btn btn-outline" id="toggleUserStatusBtn" data-id="{{ selected_user.id }}" data-active="{{ selected_user.is_active|yesno:'1,0' }}">
+        {% if selected_user.is_active %}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+          <span style="color: #DC2626;">Suspend account</span>
+        {% else %}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <span style="color: #059669;">Restore account</span>
+        {% endif %}
+      </button>
+
+      <!-- SEND PASSWORD RESET BUTTON -->
+      <button class="btn btn-outline" id="sendPasswordResetBtn" data-id="{{ selected_user.id }}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>Send password reset</span>
+      </button>
+
+      <!-- EDIT PROFILE BUTTON -->
+      <button class="btn btn-primary" id="openEditUserBtn" 
+              data-id="{{ selected_user.id }}"
+              data-first="{{ selected_user.first_name }}"
+              data-last="{{ selected_user.last_name }}"
+              data-email="{{ selected_user.email }}"
+              data-phone="{{ selected_user.phone_number }}"
+              data-role="{{ selected_user.role }}"
+              data-active="{{ selected_user.is_active|yesno:'1,0' }}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        <span>Edit profile</span>
+      </button>
+    </div>
+    <div class="panel-foot-note">
+      {% if selected_user.is_active %}
+        Suspending an account temporarily revokes login and hides associated listings.
+      {% else %}
+        Restoring this account will immediately reactivate login access.
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ACTIVITY HISTORY CARD -->
+  <div class="card">
+    <h3 class="card-section-title">Activity history</h3>
+    <p class="card-subtitle mb-14">Latest account events · All times IST</p>
+
+    <div class="timeline-list">
+      {% for act in user_activities %}
+      <div class="timeline-row">
+        <span class="timeline-time">{{ act.time }}</span>
+        <span class="timeline-desc">{{ act.desc }}</span>
+      </div>
+      {% empty %}
+      <div style="padding: 24px; text-align: center; color: #94A3B8; font-size: 13px;">
+        No recent audit actions recorded for this user.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ======================================================== -->
+<!-- MODAL: EDIT USER PROFILE                                 -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="editUserModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header-bar">
+      <div class="modal-title-text">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C5D99" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Edit User Account</span>
+      </div>
+      <button class="modal-close-icon" id="closeEditUserBtn">✕</button>
+    </div>
+    <div class="modal-body-content">
+      <form id="editUserForm">
+        <input type="hidden" id="editUserId">
+
+        <div class="form-group-grid">
+          <div>
+            <label class="form-label">First Name *</label>
+            <input type="text" class="form-input" id="editUserFirst" required>
+          </div>
+          <div>
+            <label class="form-label">Last Name *</label>
+            <input type="text" class="form-input" id="editUserLast" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" class="form-input" id="editUserEmail" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input type="text" class="form-input" id="editUserPhone" placeholder="+91 98765 43210">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Account Role *</label>
+          <select class="form-select" id="editUserRole" required>
+            <option value="TENANT">Tenant</option>
+            <option value="OWNER">Property Owner</option>
+            <option value="ADMIN">Staff / Administrator</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #334155; cursor: pointer;">
+            <input type="checkbox" id="editUserActive">
+            <span>Account is Active (Uncheck to suspend)</span>
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer-bar">
+      <button class="btn btn-outline" id="cancelEditUserBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveUserBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST ALERT -->
+<div id="toastAlert" class="toast-alert" style="display: none;">
+  <span id="toastIcon">✓</span>
+  <span id="toastMessage">Action completed</span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    const toast = document.getElementById('toastAlert');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+    let toastTimeout;
+
+    function showToast(message, isSuccess = true) {
+      if (!toast) return;
+      toastMsg.textContent = message;
+      toastIcon.textContent = isSuccess ? '✓' : '⚠';
+      toast.style.background = isSuccess ? '#0F172A' : '#DC2626';
+      toast.style.display = 'flex';
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    // 1. Suspend / Restore Toggle
+    const toggleStatusBtn = document.getElementById('toggleUserStatusBtn');
+    if (toggleStatusBtn) {
+      toggleStatusBtn.addEventListener('click', async () => {
+        const userId = toggleStatusBtn.getAttribute('data-id');
+        toggleStatusBtn.disabled = true;
+
+        try {
+          const res = await fetch("{% url 'admin_portal:user_toggle_status' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken') || ''
+            },
+            body: JSON.stringify({ user_id: userId })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast(data.message, true);
+            setTimeout(() => window.location.reload(), 800);
+          } else {
+            alert(data.error || 'Failed to update user status');
+            toggleStatusBtn.disabled = false;
+          }
+        } catch (err) {
+          alert('Network error while toggling status');
+          toggleStatusBtn.disabled = false;
+        }
+      });
+    }
+
+    // 2. Password Reset Dispatch
+    const sendResetBtn = document.getElementById('sendPasswordResetBtn');
+    if (sendResetBtn) {
+      sendResetBtn.addEventListener('click', async () => {
+        const userId = sendResetBtn.getAttribute('data-id');
+        sendResetBtn.disabled = true;
+        sendResetBtn.textContent = 'Sending...';
+
+        try {
+          const res = await fetch("{% url 'admin_portal:user_reset_password' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken') || ''
+            },
+            body: JSON.stringify({ user_id: userId })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast(data.message, true);
+            sendResetBtn.disabled = false;
+            sendResetBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> <span>Reset Sent ✓</span>';
+          } else {
+            alert(data.error || 'Failed to dispatch reset link');
+            sendResetBtn.disabled = false;
+            sendResetBtn.textContent = 'Send password reset';
+          }
+        } catch (err) {
+          alert('Network error while sending password reset');
+          sendResetBtn.disabled = false;
+          sendResetBtn.textContent = 'Send password reset';
+        }
+      });
+    }
+
+    // 3. Edit User Modal Handlers
+    const editModal = document.getElementById('editUserModal');
+    const closeEditBtn = document.getElementById('closeEditUserBtn');
+    const cancelEditBtn = document.getElementById('cancelEditUserBtn');
+    const saveUserBtn = document.getElementById('saveUserBtn');
+
+    function populateEditModal(btn) {
+      document.getElementById('editUserId').value = btn.getAttribute('data-id');
+      document.getElementById('editUserFirst').value = btn.getAttribute('data-first');
+      document.getElementById('editUserLast').value = btn.getAttribute('data-last');
+      document.getElementById('editUserEmail').value = btn.getAttribute('data-email');
+      document.getElementById('editUserPhone').value = btn.getAttribute('data-phone');
+      document.getElementById('editUserRole').value = btn.getAttribute('data-role');
+      document.getElementById('editUserActive').checked = btn.getAttribute('data-active') === '1';
+      if (editModal) editModal.style.display = 'flex';
+    }
+
+    const openEditUserBtn = document.getElementById('openEditUserBtn');
+    if (openEditUserBtn) {
+      openEditUserBtn.addEventListener('click', () => populateEditModal(openEditUserBtn));
+    }
+
+    document.querySelectorAll('.btn-quick-edit').forEach(btn => {
+      btn.addEventListener('click', () => populateEditModal(btn));
+    });
+
+    if (closeEditBtn) closeEditBtn.addEventListener('click', () => { editModal.style.display = 'none'; });
+    if (cancelEditBtn) cancelEditBtn.addEventListener('click', () => { editModal.style.display = 'none'; });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === editModal) editModal.style.display = 'none';
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && editModal) editModal.style.display = 'none';
+    });
+
+    if (saveUserBtn) {
+      saveUserBtn.addEventListener('click', async () => {
+        const userId = document.getElementById('editUserId').value;
+        const first = document.getElementById('editUserFirst').value.trim();
+        const last = document.getElementById('editUserLast').value.trim();
+        const email = document.getElementById('editUserEmail').value.trim();
+        const phone = document.getElementById('editUserPhone').value.trim();
+        const role = document.getElementById('editUserRole').value;
+        const isActive = document.getElementById('editUserActive').checked;
+
+        if (!first || !email) {
+          alert('First name and Email are required.');
+          return;
+        }
+
+        saveUserBtn.disabled = true;
+        saveUserBtn.textContent = 'Saving...';
+
+        try {
+          const res = await fetch("{% url 'admin_portal:user_save' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken') || ''
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              first_name: first,
+              last_name: last,
+              email: email,
+              phone_number: phone,
+              role: role,
+              is_active: isActive
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            editModal.style.display = 'none';
+            showToast(data.message, true);
+            setTimeout(() => window.location.reload(), 800);
+          } else {
+            alert(data.error || 'Failed to update user profile');
+            saveUserBtn.disabled = false;
+            saveUserBtn.textContent = 'Save Changes';
+          }
+        } catch (err) {
+          alert('Network error while saving user profile');
+          saveUserBtn.disabled = false;
+          saveUserBtn.textContent = 'Save Changes';
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,591 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Owner Notifications & Alerts — KiraayaGrid{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}Real-time updates on seeker leads, property walkthroughs, listing verification and billing{% endblock %}
+
+{% block extra_head %}
+<style>
+  .notifs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* Segmented Pill Tabs (Apple SF Pro) */
+  .notif-filter-tabs {
+    display: inline-flex;
+    align-items: center;
+    background: #F1F5F9;
+    padding: 4px;
+    border-radius: 9999px;
+    gap: 2px;
+    flex-wrap: wrap;
+  }
+  .notif-tab-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 15px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none !important;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+  }
+  .notif-tab-pill:hover {
+    color: #0F172A;
+    background: rgba(255, 255, 255, 0.6);
+  }
+  .notif-tab-pill.active {
+    background: #FFFFFF;
+    color: var(--color-yale-blue);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+    font-weight: 700;
+  }
+  .notif-tab-pill .pill-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    background: #E2E8F0;
+    color: #475569;
+  }
+  .notif-tab-pill.active .pill-badge {
+    background: #0F3E4D;
+    color: #FFFFFF;
+  }
+  .notif-tab-pill .pill-badge-unread {
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Toolbar */
+  .notifs-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .notifs-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+    max-width: 420px;
+  }
+  .notifs-search-input {
+    width: 100%;
+    padding: 9px 14px 9px 38px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: #FFFFFF;
+    color: var(--color-text-main);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .notifs-search-input:focus {
+    border-color: var(--color-yale-blue);
+    box-shadow: 0 0 0 3px rgba(15, 62, 77, 0.1);
+  }
+  .notifs-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    pointer-events: none;
+  }
+
+  /* Notifications Main Card */
+  .notifs-card {
+    background: #FFFFFF;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(15, 62, 77, 0.04);
+  }
+
+  /* Single Notification Row */
+  .notif-item {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: background 0.15s ease;
+    position: relative;
+  }
+  .notif-item:last-child {
+    border-bottom: none;
+  }
+  .notif-item.unread {
+    background: #F8FBFF;
+  }
+  .notif-item:hover {
+    background: #F8FAFC;
+  }
+
+  /* Channel Icons */
+  .notif-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .notif-icon-box.enquiry {
+    background: #EFF6FF;
+    color: #2563EB;
+  }
+  .notif-icon-box.visit {
+    background: #ECFDF5;
+    color: #059669;
+  }
+  .notif-icon-box.billing {
+    background: #F3E8FF;
+    color: #7E22CE;
+  }
+  .notif-icon-box.support {
+    background: #FFF7ED;
+    color: #EA580C;
+  }
+  .notif-icon-box.system {
+    background: #EBF3F5;
+    color: var(--color-yale-blue);
+  }
+
+  /* Apple Buttons */
+  .btn-apple {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    text-decoration: none !important;
+  }
+  .btn-apple-primary {
+    background: var(--color-yale-blue);
+    color: #FFFFFF !important;
+  }
+  .btn-apple-primary:hover {
+    background: #092832;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 62, 77, 0.2);
+  }
+  .btn-apple-secondary {
+    background: #FFFFFF;
+    color: #334155 !important;
+    border: 1px solid #CBD5E1;
+  }
+  .btn-apple-secondary:hover {
+    background: #F8FAFC;
+    border-color: #94A3B8;
+  }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: #10B981;
+    color: #FFFFFF;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .toast-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .toast-notification.error {
+    background: #EF4444;
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notifs-container">
+
+  <!-- PAGE HEADER -->
+  <div class="owner-header-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h1 class="welcome-heading" style="font-size: 24px; font-weight: 800; color: var(--color-text-main); margin-bottom: 4px;">Notifications</h1>
+      <p class="welcome-subheading" style="font-size: 13.5px; color: var(--color-text-muted); margin: 0;">
+        Stay informed on seeker leads, scheduled walkthroughs, property verification statuses and billing.
+      </p>
+    </div>
+    
+    {% if count_unread > 0 %}
+    <button type="button" onclick="markAllAsRead()" class="btn-apple btn-apple-secondary" id="btnMarkAllRead">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span>Mark All as Read ({{ count_unread }})</span>
+    </button>
+    {% else %}
+    <span style="font-size: 12px; font-weight: 600; color: #059669; background: #ECFDF5; padding: 6px 12px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 5px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      All caught up
+    </span>
+    {% endif %}
+  </div>
+
+  <!-- NOTIFICATIONS CARD -->
+  <div id="notificationsList" class="notifs-card" style="scroll-margin-top: 90px;">
+    
+    <!-- Segmented Tabs Header -->
+    <div style="padding: 18px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+      <div class="notif-filter-tabs">
+        <a href="?tab=all{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList"
+           class="notif-tab-pill {% if tab == 'all' %}active{% endif %}">
+          <span>All</span>
+          <span class="pill-badge">{{ count_all }}</span>
+        </a>
+        <a href="?tab=unread{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList"
+           class="notif-tab-pill {% if tab == 'unread' %}active{% endif %}">
+          <span>Unread</span>
+          <span class="pill-badge {% if count_unread > 0 %}pill-badge-unread{% endif %}">{{ count_unread }}</span>
+        </a>
+        <a href="?tab=enquiry{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList"
+           class="notif-tab-pill {% if tab == 'enquiry' %}active{% endif %}">
+          <span>Enquiries</span>
+          <span class="pill-badge">{{ count_enquiry }}</span>
+        </a>
+        <a href="?tab=visit{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList"
+           class="notif-tab-pill {% if tab == 'visit' %}active{% endif %}">
+          <span>Walkthroughs</span>
+          <span class="pill-badge">{{ count_visit }}</span>
+        </a>
+        <a href="?tab=billing{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList"
+           class="notif-tab-pill {% if tab == 'billing' %}active{% endif %}">
+          <span>Billing</span>
+          <span class="pill-badge">{{ count_billing }}</span>
+        </a>
+        <a href="?tab=system{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList"
+           class="notif-tab-pill {% if tab == 'system' %}active{% endif %}">
+          <span>System</span>
+          <span class="pill-badge">{{ count_system }}</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div style="padding: 12px 24px; background: #FAFCFD; border-bottom: 1px solid var(--color-border);">
+      <form method="GET" action="#notificationsList" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin: 0;">
+        <input type="hidden" name="tab" value="{{ tab }}">
+        
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; flex-wrap: wrap;">
+          <div class="notifs-search-box">
+            <svg class="notifs-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" name="q" value="{{ q }}" placeholder="Search notifications by title or text..." class="notifs-search-input">
+          </div>
+
+          <select name="sort" onchange="this.form.submit()" class="notifs-search-input" style="width: auto; padding-left: 12px; min-width: 140px;">
+            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+            <option value="unread_first" {% if sort_by == 'unread_first' %}selected{% endif %}>Unread First</option>
+          </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="submit" class="btn-apple btn-apple-secondary" style="padding: 7px 14px; font-size: 12px;">
+            Filter
+          </button>
+          {% if q or sort_by != 'newest' or tab != 'all' %}
+          <a href="?tab=all#notificationsList" class="btn-apple btn-apple-secondary" style="padding: 7px 12px; font-size: 12px; color: #DC2626 !important;" title="Reset filters">
+            Reset
+          </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+
+    <!-- Notification Feed Rows -->
+    <div id="notificationsFeed">
+      {% for n in notifications %}
+      <div id="notifRow-{{ n.id }}" class="notif-item {% if not n.is_read %}unread{% endif %}">
+        
+        <!-- Channel Icon Box -->
+        <div class="notif-icon-box {{ n.channel|lower }}">
+          {% if n.channel == 'ENQUIRY' %}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          {% elif n.channel == 'VISIT' %}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          {% elif n.channel == 'BILLING' %}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          {% elif n.channel == 'SUPPORT' %}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          {% else %}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          {% endif %}
+        </div>
+
+        <!-- Content Body -->
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 14px; font-weight: 700; color: #0F172A;">{{ n.title }}</span>
+              {% if not n.is_read %}
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #2563EB; display: inline-block;" title="Unread notification"></span>
+              {% endif %}
+            </div>
+            <span style="font-size: 11.5px; color: #94A3B8; white-space: nowrap;">
+              {{ n.created_at|date:"d M Y, h:i A" }}
+            </span>
+          </div>
+
+          <p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0 0 12px 0;">
+            {{ n.message }}
+          </p>
+
+          <!-- Action Buttons Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              {% if n.button_url %}
+              <a href="{{ n.button_url }}" onclick="markAsReadQuick({{ n.id }})" class="btn-apple btn-apple-primary" style="padding: 5px 14px; font-size: 11.5px;">
+                {{ n.button_label|default:"View Details" }} &nearr;
+              </a>
+              {% endif %}
+
+              <button type="button" onclick="toggleReadStatus({{ n.id }})" class="btn-apple btn-apple-secondary" style="padding: 5px 12px; font-size: 11.5px;">
+                {% if n.is_read %}Mark as Unread{% else %}Mark as Read{% endif %}
+              </button>
+            </div>
+
+            <!-- Delete action -->
+            <button type="button" onclick="deleteNotification({{ n.id }})" class="btn-apple btn-apple-secondary" style="padding: 5px 10px; font-size: 11px; color: #94A3B8;" title="Delete notification">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+      {% empty %}
+      <div style="padding: 56px 24px; text-align: center;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: #F1F5F9; color: #94A3B8; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </div>
+        <div style="font-size: 15px; font-weight: 700; color: #1E293B; margin-bottom: 4px;">No notifications found</div>
+        <p style="font-size: 13px; color: #64748B; margin: 0 0 14px 0;">You have no notifications matching this category or filter.</p>
+        <a href="?tab=all#notificationsList" class="btn-apple btn-apple-secondary" style="font-size: 12.5px;">View All Notifications</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Limit 5 Pagination Controls -->
+    {% if paginator.num_pages > 1 %}
+    <div style="padding: 16px 24px; border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; background: #FAFCFD;">
+      <div style="font-size: 12.5px; color: #64748B;">
+        Showing <span style="font-weight: 700; color: #0F172A;">{{ page_obj.start_index }}</span> to <span style="font-weight: 700; color: #0F172A;">{{ page_obj.end_index }}</span> of <span style="font-weight: 700; color: #0F172A;">{{ paginator.count }}</span> notifications (Limit 5 per page)
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <!-- Previous Button -->
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if tab %}&tab={{ tab }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList" 
+           class="btn-apple btn-apple-secondary" style="padding: 6px 12px; font-size: 12.5px;">
+          &larr; Previous
+        </a>
+        {% else %}
+        <button class="btn-apple btn-apple-secondary" disabled style="padding: 6px 12px; font-size: 12.5px; opacity: 0.5; cursor: not-allowed;">
+          &larr; Previous
+        </button>
+        {% endif %}
+
+        <!-- Numbered Page Buttons -->
+        {% for num in paginator.page_range %}
+          {% if num == page_obj.number %}
+          <span class="btn-apple btn-apple-primary" style="padding: 6px 12px; font-size: 12.5px; min-width: 34px;">
+            {{ num }}
+          </span>
+          {% else %}
+          <a href="?page={{ num }}{% if tab %}&tab={{ tab }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList" 
+             class="btn-apple btn-apple-secondary" style="padding: 6px 12px; font-size: 12.5px; min-width: 34px;">
+            {{ num }}
+          </a>
+          {% endif %}
+        {% endfor %}
+
+        <!-- Next Button -->
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if tab %}&tab={{ tab }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#notificationsList" 
+           class="btn-apple btn-apple-secondary" style="padding: 6px 12px; font-size: 12.5px;">
+          Next &rarr;
+        </a>
+        {% else %}
+        <button class="btn-apple btn-apple-secondary" disabled style="padding: 6px 12px; font-size: 12.5px; opacity: 0.5; cursor: not-allowed;">
+          Next &rarr;
+        </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+
+<!-- TOAST FEEDBACK NOTIFICATION -->
+<div id="toastNotification" class="toast-notification">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toastMessage">Action completed successfully</span>
+</div>
+
+<!-- ========================================================
+     JAVASCRIPT: REAL AJAX NOTIFICATION ACTIONS
+     ======================================================== -->
+<script>
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('toastNotification');
+    const msgEl = document.getElementById('toastMessage');
+    msgEl.textContent = message;
+    if (isError) {
+      toast.classList.add('error');
+    } else {
+      toast.classList.remove('error');
+    }
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3500);
+  }
+
+  // Mark All As Read
+  function markAllAsRead() {
+    const btn = document.getElementById('btnMarkAllRead');
+    if (btn) btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('action', 'mark_all_read');
+    formData.append('is_ajax', '1');
+
+    fetch("{% url 'owner_portal:notifications' %}", {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showToast(data.message);
+        setTimeout(() => { window.location.reload(); }, 600);
+      } else {
+        showToast(data.message || 'Error updating notifications', true);
+        if (btn) btn.disabled = false;
+      }
+    })
+    .catch(err => {
+      showToast('Network error marking all as read', true);
+      if (btn) btn.disabled = false;
+    });
+  }
+
+  // Toggle Read Status
+  function toggleReadStatus(notifId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('action', 'toggle_read');
+    formData.append('notification_id', notifId);
+    formData.append('is_ajax', '1');
+
+    fetch("{% url 'owner_portal:notifications' %}", {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showToast(data.message);
+        const row = document.getElementById(`notifRow-${notifId}`);
+        if (row) {
+          if (data.is_read) {
+            row.classList.remove('unread');
+          } else {
+            row.classList.add('unread');
+          }
+        }
+        setTimeout(() => { window.location.reload(); }, 500);
+      }
+    })
+    .catch(err => {
+      showToast('Network error updating notification', true);
+    });
+  }
+
+  // Quick mark read on navigation click
+  function markAsReadQuick(notifId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('action', 'mark_read');
+    formData.append('notification_id', notifId);
+    formData.append('is_ajax', '1');
+
+    fetch("{% url 'owner_portal:notifications' %}", {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+  }
+
+  // Delete Notification
+  function deleteNotification(notifId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('action', 'delete_notification');
+    formData.append('notification_id', notifId);
+    formData.append('is_ajax', '1');
+
+    fetch("{% url 'owner_portal:notifications' %}", {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showToast(data.message);
+        const row = document.getElementById(`notifRow-${notifId}`);
+        if (row) {
+          row.style.opacity = '0';
+          setTimeout(() => { row.remove(); window.location.reload(); }, 300);
+        }
+      }
+    })
+    .catch(err => {
+      showToast('Network error deleting notification', true);
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,1563 @@
+{% extends 'public_portal/base.html' %}
+{% load static %}
+
+{% block title %}{% if mode == 'signup' %}Join KiraayaGrid — Create Account{% else %}Sign In to KiraayaGrid — Direct Living{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Apple Ambient Backdrop */
+  .auth-viewport {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #FAF8F2 0%, #EEF4F7 50%, #F5F7EE 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 130px 24px 72px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Soft Ambient Glows */
+  .auth-ambient-orb-1 {
+    position: absolute;
+    top: 8%;
+    left: 15%;
+    width: 440px;
+    height: 440px;
+    background: radial-gradient(circle, rgba(147, 181, 198, 0.28) 0%, rgba(147, 181, 198, 0) 70%);
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .auth-ambient-orb-2 {
+    position: absolute;
+    bottom: 12%;
+    right: 12%;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle, rgba(215, 129, 106, 0.22) 0%, rgba(215, 129, 106, 0) 70%);
+    filter: blur(70px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .auth-ambient-orb-3 {
+    position: absolute;
+    top: 40%;
+    right: 25%;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(221, 237, 170, 0.35) 0%, rgba(221, 237, 170, 0) 70%);
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Frosted Glass Master Card */
+  .auth-glass-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 520px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(36px) saturate(180%);
+    -webkit-backdrop-filter: blur(36px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-radius: 36px;
+    box-shadow: 0 32px 72px -12px rgba(15, 23, 42, 0.09), 0 2px 10px rgba(0, 0, 0, 0.03);
+    padding: 44px 40px;
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Brand Header */
+  .auth-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .auth-brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-deep-forest);
+    font-size: 20px;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    margin-bottom: 12px;
+    transition: transform 0.2s ease;
+  }
+
+  .auth-brand-badge:hover {
+    transform: scale(1.03);
+  }
+
+  .auth-headline {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #0F172A;
+    letter-spacing: -0.4px;
+    margin-bottom: 8px;
+  }
+
+  .auth-subhead {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #64748B;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* Apple Segmented Pill Switcher */
+  .auth-switcher-track {
+    display: flex;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 9999px;
+    padding: 4px;
+    margin-bottom: 24px;
+    gap: 4px;
+  }
+
+  .auth-switcher-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748B;
+    border-radius: 9999px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+  }
+
+  .auth-switcher-btn.active {
+    background: #FFFFFF;
+    color: #0F172A;
+    font-weight: 700;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .auth-switcher-btn:hover:not(.active) {
+    color: #0F172A;
+  }
+
+  /* Form Controls */
+  .auth-form-group {
+    margin-bottom: 16px;
+  }
+
+  .auth-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+  }
+
+  .auth-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .auth-input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1px solid #CBD5E1;
+    border-radius: 14px;
+    font-size: 14px;
+    font-family: var(--font-sans);
+    color: #0F172A;
+    background: #FFFFFF;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .auth-input:focus {
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 0 0 4px rgba(24, 59, 59, 0.12);
+  }
+
+  .auth-input::placeholder {
+    color: #94A3B8;
+  }
+
+  .input-icon-btn {
+    position: absolute;
+    right: 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #94A3B8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s ease;
+  }
+
+  .input-icon-btn:hover {
+    color: #475569;
+  }
+
+  /* Role Selection Bento Cards for Signup */
+  .role-selector-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .role-bento-card {
+    border: 1.5px solid #E2E8F0;
+    background: #FFFFFF;
+    border-radius: 14px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    user-select: none;
+  }
+
+  .role-bento-card:hover {
+    border-color: #94A3B8;
+  }
+
+  .role-bento-card.selected {
+    border-color: var(--color-deep-forest);
+    background: rgba(24, 59, 59, 0.03);
+    box-shadow: 0 4px 14px rgba(24, 59, 59, 0.08);
+  }
+
+  .role-bento-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .role-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .role-card-icon {
+    font-size: 20px;
+  }
+
+  .role-check-indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid #CBD5E1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .role-bento-card.selected .role-check-indicator {
+    border-color: var(--color-deep-forest);
+    background: var(--color-deep-forest);
+  }
+
+  .role-bento-card.selected .role-check-indicator::after {
+    content: "✓";
+    font-size: 12px;
+    color: #FFFFFF;
+    font-weight: 800;
+  }
+
+  .role-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+  }
+
+  .role-card-desc {
+    font-size: 12px;
+    color: #64748B;
+    line-height: 1.4;
+    margin-top: 3px;
+  }
+
+  /* Submit Button */
+  .btn-submit-action {
+    width: 100%;
+    padding: 15px;
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0 4px 14px rgba(24, 59, 59, 0.25);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-submit-action:hover {
+    background: var(--color-forest-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(24, 59, 59, 0.32);
+  }
+
+  .btn-submit-action:active {
+    transform: translateY(0);
+  }
+
+  /* Mandatory Asterisk */
+  .req-star {
+    color: #DC2626;
+    font-weight: 700;
+    margin-left: 2px;
+  }
+
+  /* Phone Input Group */
+  .phone-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .phone-prefix-tag {
+    padding: 13px 14px;
+    background: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    border-right: none;
+    border-radius: 14px 0 0 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #475569;
+    display: flex;
+    align-items: center;
+  }
+
+  .phone-input-group .auth-input {
+    border-radius: 0 14px 14px 0;
+  }
+
+  /* Live Username Status & Suggestions */
+  .username-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    display: none;
+  }
+
+  .username-status-badge.available {
+    display: inline-block;
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #86EFAC;
+  }
+
+  .username-status-badge.taken {
+    display: inline-block;
+    background: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FCA5A5;
+  }
+
+  .username-status-badge.checking {
+    display: inline-block;
+    background: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+  }
+
+  /* Password Match Badge */
+  .password-match-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    display: none;
+  }
+
+  .password-match-badge.matched {
+    display: inline-block;
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #86EFAC;
+  }
+
+  .password-match-badge.mismatch {
+    display: inline-block;
+    background: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FCA5A5;
+  }
+
+  .username-suggestions-wrap {
+    margin-top: 8px;
+    background: rgba(248, 250, 252, 0.9);
+    border: 1px dashed #CBD5E1;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: none;
+    animation: fadeInUp 0.25s ease;
+  }
+
+  .username-suggestions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .btn-refresh-suggestions {
+    background: none;
+    border: none;
+    font-size: 11px;
+    color: var(--color-burnt-peach);
+    cursor: pointer;
+    font-weight: 700;
+    padding: 0;
+  }
+
+  .btn-refresh-suggestions:hover {
+    text-decoration: underline;
+  }
+
+  .username-pills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .username-pill {
+    padding: 4px 11px;
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1E293B;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .username-pill:hover {
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    border-color: var(--color-deep-forest);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  /* OTP Screen */
+  .otp-container {
+    display: none;
+    animation: fadeInUp 0.4s ease;
+    text-align: center;
+  }
+
+  .otp-icon-bubble {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(221, 237, 170, 0.35);
+    border: 1.5px solid #DDEDAA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin: 0 auto 16px;
+  }
+
+  .otp-title {
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 8px;
+  }
+
+  .otp-subtitle {
+    font-size: 13.5px;
+    color: #64748B;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .otp-dest-pills {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .otp-dest-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 9999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1E293B;
+  }
+
+  .otp-dev-helper {
+    background: #FEF3C7;
+    border: 1px dashed #F59E0B;
+    color: #92400E;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 20px;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .otp-dev-helper:hover {
+    background: #FDE68A;
+    transform: translateY(-1px);
+  }
+
+  .otp-digits-grid {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .otp-digit-input {
+    width: 48px;
+    height: 56px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 800;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: #0F172A;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .otp-digit-input:focus {
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 0 0 4px rgba(24, 59, 59, 0.12);
+    transform: scale(1.04);
+  }
+
+  .otp-timer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 20px;
+  }
+
+  .btn-resend-otp {
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-burnt-peach);
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+  }
+
+  .btn-resend-otp:disabled {
+    color: #94A3B8;
+    text-decoration: none;
+    cursor: not-allowed;
+  }
+
+  .btn-edit-details {
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748B;
+    cursor: pointer;
+    margin-top: 14px;
+  }
+
+  .btn-edit-details:hover {
+    color: #0F172A;
+    text-decoration: underline;
+  }
+
+  /* Error Callout */
+  .auth-error-badge {
+    background: rgba(254, 242, 242, 0.95);
+    border: 1px solid #FCA5A5;
+    color: #991B1B;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    animation: fadeInUp 0.3s ease;
+  }
+
+  /* Security Badges Ribbon */
+  .auth-security-ribbon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #E2E8F0;
+    font-size: 12px;
+    color: #64748B;
+    font-weight: 500;
+    flex-wrap: wrap;
+  }
+
+  .auth-security-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* =========================================================================
+     RESPONSIVE BREAKPOINTS (4K, Laptop L, Laptop, Tablet, Mobile L/M/S)
+     ========================================================================= */
+  @media (min-width: 1920px) {
+    .auth-glass-container {
+      max-width: 500px;
+    }
+  }
+
+  @media (max-width: 580px) {
+    .auth-viewport {
+      padding: 100px 16px 48px;
+    }
+    .auth-glass-container {
+      padding: 28px 20px;
+      border-radius: 24px;
+    }
+    .auth-headline {
+      font-size: 22px;
+    }
+    .auth-input-field {
+      font-size: 16px; /* Prevents auto-zoom on iOS */
+    }
+    .role-selector-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .auth-viewport {
+      padding: 90px 12px 36px;
+    }
+    .auth-glass-container {
+      padding: 22px 14px;
+      border-radius: 20px;
+    }
+    .auth-headline {
+      font-size: 20px;
+    }
+    .auth-subhead {
+      font-size: 12.5px;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .auth-viewport {
+      padding: 80px 8px 30px;
+    }
+    .auth-glass-container {
+      padding: 18px 12px;
+    }
+    .auth-headline {
+      font-size: 19px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-viewport">
+  <!-- Soft Ambient Glow Orbs -->
+  <div class="auth-ambient-orb-1"></div>
+  <div class="auth-ambient-orb-2"></div>
+  <div class="auth-ambient-orb-3"></div>
+
+  <!-- Master Frosted Glass Card -->
+  <div class="auth-glass-container">
+    
+    <!-- Brand Header -->
+    <div class="auth-header">
+      <a href="{% url 'public_portal:home' %}" class="kg-nav-brand" style="justify-content: center; color: var(--color-deep-forest); margin-bottom: 12px;">
+        <div class="kg-logo-badge">
+          <svg width="32" height="32" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="34" height="34" rx="10" fill="url(#kgAuthGrad)"/>
+            <rect x="6.5" y="6.5" width="9" height="9" rx="3" fill="#DDEDAA"/>
+            <rect x="18.5" y="6.5" width="9" height="9" rx="3" fill="#93B5C6"/>
+            <rect x="6.5" y="18.5" width="9" height="9" rx="3" fill="#F0CF65"/>
+            <path d="M18.5 22C18.5 20.067 20.067 18.5 22 18.5H25C26.933 18.5 28.5 20.067 28.5 22V27.5H18.5V22Z" fill="#D7816A"/>
+            <circle cx="23.5" cy="22.5" r="1.5" fill="#FFFFFF"/>
+            <defs>
+              <linearGradient id="kgAuthGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#183B3B"/>
+                <stop offset="1" stop-color="#0E2424"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="kg-brand-text">Kiraaya<span class="kg-brand-accent">Grid</span></span>
+      </a>
+
+      <h1 class="auth-headline">
+        {% if mode == 'signup' %}
+          Make room for <span class="apple-gradient">living</span>
+        {% else %}
+          Welcome back to <span class="apple-gradient">KiraayaGrid</span>
+        {% endif %}
+      </h1>
+
+      <p class="auth-subhead">
+        {% if mode == 'signup' %}
+          Create your verified account. Rent spaces directly from homeowners or list properties with 100% zero brokerage.
+        {% else %}
+          Sign in to manage your stays, scheduled visits, rental agreements, and direct owner conversations.
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- Apple Segmented Pill Switcher -->
+    <div class="auth-switcher-track">
+      <a href="{% url 'public_portal:login' %}{% if next_url %}?next={{ next_url }}{% endif %}" 
+         class="auth-switcher-btn {% if mode != 'signup' %}active{% endif %}">
+        Sign In
+      </a>
+      <a href="{% url 'public_portal:signup' %}{% if next_url %}?next={{ next_url }}{% endif %}" 
+         class="auth-switcher-btn {% if mode == 'signup' %}active{% endif %}">
+        Create Account
+      </a>
+    </div>
+
+    <!-- Error Alert Callout if any -->
+    {% if error_msg %}
+    <div class="auth-error-badge">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <div>{{ error_msg }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Forms Block -->
+    {% if mode == 'signup' %}
+      <!-- Registration Form -->
+      <form action="{% url 'public_portal:signup' %}" method="POST" id="signupForm">
+        {% csrf_token %}
+        {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
+
+        <!-- Role Selector Bento -->
+        <div class="auth-form-group">
+          <div class="auth-label">
+            <span>Select Account Role <span class="req-star">*</span></span>
+            <span style="font-weight: 500; font-size: 12px; color: #94A3B8;">Choose how you'll use KiraayaGrid</span>
+          </div>
+
+          <div class="role-selector-row">
+            <!-- Tenant Card -->
+            <label class="role-bento-card {% if prefill_role != 'OWNER' %}selected{% endif %}" id="roleCardTenant" onclick="selectRole('TENANT')">
+              <input type="radio" name="role" value="TENANT" id="roleInputTenant" {% if prefill_role != 'OWNER' %}checked{% endif %}>
+              <div class="role-card-header">
+                <span class="role-card-icon">🏡</span>
+                <span class="role-check-indicator"></span>
+              </div>
+              <div class="role-card-title">Resident / Seeker</div>
+              <div class="role-card-desc">Find verified stays, zero brokerage, direct visits</div>
+            </label>
+
+            <!-- Owner Card -->
+            <label class="role-bento-card {% if prefill_role == 'OWNER' %}selected{% endif %}" id="roleCardOwner" onclick="selectRole('OWNER')">
+              <input type="radio" name="role" value="OWNER" id="roleInputOwner" {% if prefill_role == 'OWNER' %}checked{% endif %}>
+              <div class="role-card-header">
+                <span class="role-card-icon">🔑</span>
+                <span class="role-check-indicator"></span>
+              </div>
+              <div class="role-card-title">Property Owner</div>
+              <div class="role-card-desc">List flats & coliving, automated rent, KYC tenants</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Full Name (Mandatory) -->
+        <div class="auth-form-group">
+          <label class="auth-label" for="full_name">
+            <span>Full Name <span class="req-star">*</span></span>
+          </label>
+          <div class="auth-input-wrapper">
+            <input type="text" id="full_name" name="full_name" required placeholder="e.g. Aarav Sharma" class="auth-input" autocomplete="name" oninput="triggerSuggestionsDebounced()">
+          </div>
+        </div>
+
+        <!-- Email Address (Mandatory) -->
+        <div class="auth-form-group">
+          <label class="auth-label" for="email">
+            <span>Email Address <span class="req-star">*</span></span>
+            <span style="font-size: 11px; color: #64748B; font-weight: 500;">Gmail, Outlook, etc. (OTP will be sent here)</span>
+          </label>
+          <div class="auth-input-wrapper">
+            <input type="email" id="email" name="email" required placeholder="e.g. aarav.sharma@gmail.com" class="auth-input" autocomplete="email" oninput="triggerSuggestionsDebounced()">
+          </div>
+        </div>
+
+        <!-- Mobile Phone Number (Mandatory) -->
+        <div class="auth-form-group">
+          <label class="auth-label" for="phone">
+            <span>Mobile Phone Number <span class="req-star">*</span></span>
+            <span style="font-size: 11px; color: #64748B; font-weight: 500;">10 Digits (OTP verification)</span>
+          </label>
+          <div class="phone-input-group">
+            <div class="phone-prefix-tag">🇮🇳 +91</div>
+            <input type="tel" id="phone" name="phone" required placeholder="9876543210" class="auth-input" pattern="[0-9]{10}" maxlength="10" title="Please enter a valid 10-digit mobile number" autocomplete="tel">
+          </div>
+        </div>
+
+        <!-- Username (Mandatory with Unique Auto-Suggestions) -->
+        <div class="auth-form-group">
+          <div class="auth-label">
+            <span>Desired Username <span class="req-star">*</span></span>
+            <span class="username-status-badge" id="usernameStatusBadge">Checking...</span>
+          </div>
+          <div class="auth-input-wrapper">
+            <input type="text" id="username" name="username" required placeholder="e.g. aarav_sharma" class="auth-input" autocomplete="off" autocapitalize="none" oninput="onUsernameTyped()">
+          </div>
+
+          <!-- Smart Unique Username Suggestions Box -->
+          <div class="username-suggestions-wrap" id="usernameSuggestionsWrap">
+            <div class="username-suggestions-header">
+              <span>✨ Recommended Unique Usernames:</span>
+              <button type="button" class="btn-refresh-suggestions" onclick="fetchUsernameSuggestions()">Refresh ⟳</button>
+            </div>
+            <div class="username-pills-row" id="usernamePillsRow">
+              <!-- Dynamically populated unique suggestions -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Password (Mandatory) -->
+        <div class="auth-form-group">
+          <label class="auth-label" for="password">
+            <span>Create Password <span class="req-star">*</span></span>
+            <span style="font-size: 11px; color: #64748B; font-weight: 500;">Min 6 characters</span>
+          </label>
+          <div class="auth-input-wrapper">
+            <input type="password" id="password" name="password" required placeholder="Minimum 6 characters" minlength="6" class="auth-input" autocomplete="new-password" oninput="checkPasswordMatch()">
+            <button type="button" class="input-icon-btn" onclick="togglePasswordVisibility('password', this)" title="Show/Hide Password" aria-label="Toggle password view">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password (Mandatory) -->
+        <div class="auth-form-group">
+          <div class="auth-label">
+            <label for="confirm_password">Confirm Password <span class="req-star">*</span></label>
+            <span class="password-match-badge" id="passwordMatchBadge"></span>
+          </div>
+          <div class="auth-input-wrapper">
+            <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter your password" minlength="6" class="auth-input" autocomplete="new-password" oninput="checkPasswordMatch()">
+            <button type="button" class="input-icon-btn" onclick="togglePasswordVisibility('confirm_password', this)" title="Show/Hide Password" aria-label="Toggle password view">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Client-Side Error Box -->
+        <div class="auth-error-badge" id="signupClientErrorBadge" style="display: none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <div id="signupClientErrorMsg"></div>
+        </div>
+
+        <!-- Invisible Firebase Phone Auth reCAPTCHA container -->
+        <div id="recaptcha-container"></div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit-action" id="btnCreateAccount">
+          <span id="btnCreateText">Create Free KiraayaGrid Account</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+
+        <p style="font-size: 12px; text-align: center; color: #94A3B8; margin-top: 14px; line-height: 1.45;">
+          By creating an account, you agree to KiraayaGrid's <a href="#" style="text-decoration: underline; color: #64748B;">Direct Living Terms</a> and <a href="#" style="text-decoration: underline; color: #64748B;">Zero Brokerage Charter</a>.
+        </p>
+      </form>
+
+      <!-- OTP Verification Card (Revealed after OTP dispatch) -->
+      <div class="otp-container" id="otpContainer">
+        <div class="otp-icon-bubble">📱</div>
+        <h2 class="otp-title">Verify Your Phone & Email</h2>
+        <p class="otp-subtitle">We have dispatched a 6-digit verification code to:</p>
+        
+        <div class="otp-dest-pills">
+          <div class="otp-dest-pill">
+            <span>📱</span>
+            <span id="displayPhone">+91 ******0000</span>
+          </div>
+          <div class="otp-dest-pill">
+            <span>✉️</span>
+            <span id="displayEmail">user@gmail.com</span>
+          </div>
+        </div>
+
+        <div class="otp-dev-helper" id="devOtpBanner" onclick="quickFillDevOtp()" title="Click to auto-enter OTP">
+          ⚡ <strong>Dev Quick Fill:</strong> Code is <span id="devOtpDisplay">123456</span> <span style="text-decoration: underline; font-weight: 700;">(Click to auto-enter)</span>
+        </div>
+
+        <div class="auth-error-badge" id="otpErrorBadge" style="display: none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <div id="otpErrorMsg">Invalid OTP</div>
+        </div>
+
+        <div class="otp-digits-grid">
+          <input type="text" maxlength="1" class="otp-digit-input" data-index="0" autofocus inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" data-index="1" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" data-index="2" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" data-index="3" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" data-index="4" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-digit-input" data-index="5" inputmode="numeric">
+        </div>
+
+        <div class="otp-timer-row">
+          <span id="timerText">Resend code in <strong id="timerSeconds">00:59</strong></span>
+          <button type="button" class="btn-resend-otp" id="resendOtpBtn" onclick="resendOtp()" disabled>Resend Code</button>
+        </div>
+
+        <button type="button" class="btn-submit-action" id="verifyOtpBtn" onclick="submitOtpVerification()">
+          <span id="verifyBtnText">Verify & Complete Account Creation</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+
+        <div style="text-align: center; margin-top: 14px;">
+          <button type="button" class="btn-edit-details" onclick="editRegistrationDetails()">
+            ← Edit Registration Details
+          </button>
+        </div>
+      </div>
+
+    {% else %}
+      <!-- Sign In Form (Direct Database Connection — No OTP on Login) -->
+      <form action="{% url 'public_portal:login' %}" method="POST" id="loginForm">
+        {% csrf_token %}
+        {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
+
+        <!-- Username, Email, or Mobile Phone -->
+        <div class="auth-form-group">
+          <label class="auth-label" for="login_username">Username, Email, or Mobile Number</label>
+          <div class="auth-input-wrapper">
+            <input type="text" id="login_username" name="username" required placeholder="e.g. arjun_mehta, user@gmail.com, or 9876543210" class="auth-input" autocomplete="username" autocapitalize="none">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="auth-form-group">
+          <div class="auth-label">
+            <label for="login_password">Password</label>
+            <a href="tel:+918045678900" style="font-size: 12px; color: var(--color-burnt-peach); font-weight: 600; text-decoration: none;">Forgot Password?</a>
+          </div>
+          <div class="auth-input-wrapper">
+            <input type="password" id="login_password" name="password" required placeholder="••••••••" class="auth-input" autocomplete="current-password">
+            <button type="button" class="input-icon-btn" onclick="togglePasswordVisibility('login_password', this)" title="Show/Hide Password" aria-label="Toggle password view">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-submit-action">
+          <span>Sign In to KiraayaGrid</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+
+        <div style="text-align: center; margin-top: 18px; font-size: 14px; color: #64748B;">
+          New to KiraayaGrid? <a href="{% url 'public_portal:signup' %}{% if next_url %}?next={{ next_url }}{% endif %}" style="color: var(--color-burnt-peach); font-weight: 700; text-decoration: none;">Create free account ↗</a>
+        </div>
+      </form>
+    {% endif %}
+
+    <!-- Security & Trust Badges Ribbon -->
+    <div class="auth-security-ribbon">
+      <div class="auth-security-item">
+        <span>🔒</span>
+        <span>256-Bit SSL Encryption</span>
+      </div>
+      <div class="auth-security-item">
+        <span>🚫</span>
+        <span>Zero Brokerage Forever</span>
+      </div>
+      <div class="auth-security-item">
+        <span>🏛️</span>
+        <span>Model Tenancy Act 2021</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Google Firebase SDK for 100% Free Phone SMS Verification (10,000 SMS / Month) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script>
+  // Firebase Phone Auth Initialization
+  const firebaseConfig = {
+    apiKey: "{{ firebase_config.apiKey|default:'' }}",
+    authDomain: "{{ firebase_config.authDomain|default:'' }}",
+    projectId: "{{ firebase_config.projectId|default:'' }}",
+    storageBucket: "{{ firebase_config.storageBucket|default:'' }}",
+    messagingSenderId: "{{ firebase_config.messagingSenderId|default:'' }}",
+    appId: "{{ firebase_config.appId|default:'' }}"
+  };
+
+  let isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
+  let appVerifier = null;
+
+  if (isFirebaseConfigured && typeof firebase !== 'undefined') {
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      appVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible',
+        'callback': function(response) {
+          console.log('[Firebase reCAPTCHA] Solved');
+        }
+      });
+      appVerifier.render();
+      console.log('[Firebase Phone Auth] Initialized & Ready (10,000 Free SMS/mo)');
+    } catch (e) {
+      console.warn('[Firebase Init Warning]', e);
+    }
+  }
+
+  // Helper to extract CSRF token
+  function getCsrfToken() {
+    const el = document.querySelector('[name=csrfmiddlewaretoken]');
+    return el ? el.value : '';
+  }
+
+  // Role selector card logic for signup
+  function selectRole(role) {
+    const tenantCard = document.getElementById('roleCardTenant');
+    const ownerCard = document.getElementById('roleCardOwner');
+    const tenantRadio = document.getElementById('roleInputTenant');
+    const ownerRadio = document.getElementById('roleInputOwner');
+
+    if (role === 'OWNER') {
+      ownerCard.classList.add('selected');
+      tenantCard.classList.remove('selected');
+      ownerRadio.checked = true;
+    } else {
+      tenantCard.classList.add('selected');
+      ownerCard.classList.remove('selected');
+      tenantRadio.checked = true;
+    }
+    fetchUsernameSuggestions();
+  }
+
+  // Toggle Password Visibility
+  function togglePasswordVisibility(fieldId, btn) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+
+    if (field.type === 'password') {
+      field.type = 'text';
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+    } else {
+      field.type = 'password';
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    }
+  }
+
+  // =========================================================================
+  // SMART UNIQUE USERNAME SUGGESTIONS & LIVE DB CHECK
+  // =========================================================================
+  let suggestDebounceTimer = null;
+  let checkDebounceTimer = null;
+
+  function triggerSuggestionsDebounced() {
+    clearTimeout(suggestDebounceTimer);
+    suggestDebounceTimer = setTimeout(() => {
+      fetchUsernameSuggestions();
+    }, 400);
+  }
+
+  function fetchUsernameSuggestions() {
+    const nameInput = document.getElementById('full_name');
+    const emailInput = document.getElementById('email');
+    if (!nameInput && !emailInput) return;
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const email = emailInput ? emailInput.value.trim() : '';
+    const roleInput = document.querySelector('input[name="role"]:checked');
+    const role = roleInput ? roleInput.value : 'TENANT';
+
+    if (!name && !email) {
+      const wrap = document.getElementById('usernameSuggestionsWrap');
+      if (wrap) wrap.style.display = 'none';
+      return;
+    }
+
+    const url = `{% url 'public_portal:api_suggest_usernames' %}?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}`;
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.suggestions && data.suggestions.length > 0) {
+          const wrap = document.getElementById('usernameSuggestionsWrap');
+          const pillsRow = document.getElementById('usernamePillsRow');
+          if (!wrap || !pillsRow) return;
+
+          pillsRow.innerHTML = '';
+          data.suggestions.forEach(cand => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'username-pill';
+            btn.innerHTML = `<span>@${cand}</span> <span style="font-size: 11px; opacity: 0.7;">+</span>`;
+            btn.onclick = () => selectSuggestedUsername(cand);
+            pillsRow.appendChild(btn);
+          });
+          wrap.style.display = 'block';
+
+          // Auto-fill username if field is currently blank
+          const usernameInput = document.getElementById('username');
+          if (usernameInput && !usernameInput.value.trim()) {
+            selectSuggestedUsername(data.suggestions[0]);
+          }
+        }
+      })
+      .catch(err => console.log('Suggestion error:', err));
+  }
+
+  function selectSuggestedUsername(cand) {
+    const usernameInput = document.getElementById('username');
+    if (!usernameInput) return;
+    usernameInput.value = cand;
+    checkUsernameAvailability(cand);
+  }
+
+  function onUsernameTyped() {
+    clearTimeout(checkDebounceTimer);
+    const usernameInput = document.getElementById('username');
+    if (!usernameInput) return;
+
+    const val = usernameInput.value.trim().toLowerCase();
+    usernameInput.value = val;
+
+    if (!val) {
+      updateUsernameBadge('', '');
+      return;
+    }
+
+    updateUsernameBadge('Checking...', 'checking');
+    checkDebounceTimer = setTimeout(() => {
+      checkUsernameAvailability(val);
+    }, 350);
+  }
+
+  function checkUsernameAvailability(username) {
+    const roleInput = document.querySelector('input[name="role"]:checked');
+    const role = roleInput ? roleInput.value : 'TENANT';
+    const url = `{% url 'public_portal:api_check_username' %}?username=${encodeURIComponent(username)}&role=${encodeURIComponent(role)}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.available) {
+          updateUsernameBadge('✓ Unique & Available', 'available');
+        } else {
+          updateUsernameBadge('✗ Taken', 'taken');
+          // If taken, show suggestions
+          if (data.suggestions && data.suggestions.length > 0) {
+            const wrap = document.getElementById('usernameSuggestionsWrap');
+            const pillsRow = document.getElementById('usernamePillsRow');
+            if (wrap && pillsRow) {
+              pillsRow.innerHTML = '';
+              data.suggestions.forEach(cand => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'username-pill';
+                btn.innerHTML = `<span>@${cand}</span> <span style="font-size: 11px; opacity: 0.7;">+</span>`;
+                btn.onclick = () => selectSuggestedUsername(cand);
+                pillsRow.appendChild(btn);
+              });
+              wrap.style.display = 'block';
+            }
+          }
+        }
+      })
+      .catch(err => console.log('Username check error:', err));
+  }
+
+  function updateUsernameBadge(text, type) {
+    const badge = document.getElementById('usernameStatusBadge');
+    if (!badge) return;
+
+    badge.className = 'username-status-badge';
+    if (!text) {
+      badge.style.display = 'none';
+      return;
+    }
+
+    badge.innerText = text;
+    if (type) badge.classList.add(type);
+    badge.style.display = 'inline-block';
+  }
+
+  // Live Password & Confirm Password Match Checker
+  function checkPasswordMatch() {
+    const pwdInput = document.getElementById('password');
+    const cpwdInput = document.getElementById('confirm_password');
+    const badge = document.getElementById('passwordMatchBadge');
+    if (!pwdInput || !cpwdInput || !badge) return;
+
+    const pwd = pwdInput.value;
+    const cpwd = cpwdInput.value;
+
+    if (!cpwd) {
+      badge.style.display = 'none';
+      return;
+    }
+
+    if (pwd === cpwd) {
+      badge.innerText = '✓ Passwords Match';
+      badge.className = 'password-match-badge matched';
+    } else {
+      badge.innerText = '✗ Does Not Match';
+      badge.className = 'password-match-badge mismatch';
+    }
+  }
+
+  // =========================================================================
+  // SIGNUP FORM SUBMISSION -> DISPATCH OTP TO MOBILE & GMAIL
+  // =========================================================================
+  const signupForm = document.getElementById('signupForm');
+  if (signupForm) {
+    signupForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Client-side validations
+      const fullName = document.getElementById('full_name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm_password').value;
+      const errorBadge = document.getElementById('signupClientErrorBadge');
+      const errorMsg = document.getElementById('signupClientErrorMsg');
+
+      errorBadge.style.display = 'none';
+
+      if (!fullName || !email || !phone || !username || !password || !confirmPassword) {
+        errorMsg.innerText = 'All fields are mandatory. Please fill in all details including confirm password.';
+        errorBadge.style.display = 'flex';
+        return;
+      }
+
+      if (phone.length !== 10 || isNaN(phone)) {
+        errorMsg.innerText = 'Please enter a valid 10-digit mobile number.';
+        errorBadge.style.display = 'flex';
+        return;
+      }
+
+      if (password.length < 6) {
+        errorMsg.innerText = 'Password must be at least 6 characters long.';
+        errorBadge.style.display = 'flex';
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        errorMsg.innerText = 'Passwords do not match. Please ensure both passwords are identical.';
+        errorBadge.style.display = 'flex';
+        document.getElementById('confirm_password').focus();
+        return;
+      }
+
+      // Show sending state
+      const btn = document.getElementById('btnCreateAccount');
+      const btnText = document.getElementById('btnCreateText');
+      btn.disabled = true;
+      btnText.innerText = 'Sending Verification OTP to Mobile & Email...';
+
+      const formData = new FormData(signupForm);
+
+      fetch("{% url 'public_portal:api_send_signup_otp' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCsrfToken()
+        },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btnText.innerText = 'Create Free KiraayaGrid Account';
+
+        if (data.status === 'otp_sent') {
+          // Switch to OTP view
+          signupForm.style.display = 'none';
+          const otpContainer = document.getElementById('otpContainer');
+          otpContainer.style.display = 'block';
+
+          document.getElementById('displayPhone').innerText = data.masked_phone || phone;
+          document.getElementById('displayEmail').innerText = data.masked_email || email;
+          document.getElementById('devOtpDisplay').innerText = data.dev_otp || '';
+
+          // If Firebase Phone Auth is enabled, dispatch SMS via Google Firebase (10,000 Free SMS/mo)
+          if (isFirebaseConfigured && appVerifier) {
+            const fullPhone = "+91" + phone;
+            firebase.auth().signInWithPhoneNumber(fullPhone, appVerifier)
+              .then(function(confirmationResult) {
+                window.confirmationResult = confirmationResult;
+                console.log('[Firebase SMS] Google dispatched verification code to ' + fullPhone);
+              })
+              .catch(function(error) {
+                console.warn('[Firebase SMS Notice]', error);
+              });
+          }
+
+          // Focus first digit
+          const firstDigit = document.querySelector('.otp-digit-input[data-index="0"]');
+          if (firstDigit) firstDigit.focus();
+
+          startOtpTimer(60);
+        } else {
+          errorMsg.innerText = data.message || 'Error sending verification code. Please try again.';
+          errorBadge.style.display = 'flex';
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btnText.innerText = 'Create Free KiraayaGrid Account';
+        errorMsg.innerText = 'Network error. Please try again.';
+        errorBadge.style.display = 'flex';
+      });
+    });
+  }
+
+  // =========================================================================
+  // OTP INPUT DIGITS, TIMER & AUTO-ADVANCE
+  // =========================================================================
+  const digitInputs = document.querySelectorAll('.otp-digit-input');
+  digitInputs.forEach((input, idx) => {
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/[^0-9]/g, '');
+      e.target.value = val ? val[val.length - 1] : '';
+
+      if (val && idx < digitInputs.length - 1) {
+        digitInputs[idx + 1].focus();
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+        digitInputs[idx - 1].focus();
+      } else if (e.key === 'Enter') {
+        submitOtpVerification();
+      }
+    });
+
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+      if (pasteData.length >= 6) {
+        for (let i = 0; i < 6; i++) {
+          if (digitInputs[i]) digitInputs[i].value = pasteData[i];
+        }
+        digitInputs[5].focus();
+      }
+    });
+  });
+
+  function quickFillDevOtp() {
+    const devCode = document.getElementById('devOtpDisplay').innerText.trim();
+    if (devCode && devCode.length === 6) {
+      for (let i = 0; i < 6; i++) {
+        if (digitInputs[i]) digitInputs[i].value = devCode[i];
+      }
+      digitInputs[5].focus();
+    }
+  }
+
+  let countdownInterval = null;
+  function startOtpTimer(seconds) {
+    clearInterval(countdownInterval);
+    const timerSecondsEl = document.getElementById('timerSeconds');
+    const timerTextEl = document.getElementById('timerText');
+    const resendBtn = document.getElementById('resendOtpBtn');
+
+    resendBtn.disabled = true;
+    let remaining = seconds;
+
+    timerSecondsEl.innerText = `00:${remaining < 10 ? '0' : ''}${remaining}`;
+    timerTextEl.style.display = 'inline';
+
+    countdownInterval = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        timerTextEl.style.display = 'none';
+        resendBtn.disabled = false;
+      } else {
+        timerSecondsEl.innerText = `00:${remaining < 10 ? '0' : ''}${remaining}`;
+      }
+    }, 1000);
+  }
+
+  function resendOtp() {
+    const resendBtn = document.getElementById('resendOtpBtn');
+    resendBtn.disabled = true;
+    resendBtn.innerText = 'Dispatching...';
+
+    fetch("{% url 'public_portal:api_resend_signup_otp' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCsrfToken()
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      resendBtn.innerText = 'Resend Code';
+      if (data.status === 'otp_resent') {
+        document.getElementById('devOtpDisplay').innerText = data.dev_otp || '';
+        startOtpTimer(60);
+      } else {
+        alert(data.message || 'Error resending OTP');
+        resendBtn.disabled = false;
+      }
+    })
+    .catch(err => {
+      resendBtn.innerText = 'Resend Code';
+      resendBtn.disabled = false;
+    });
+  }
+
+  function submitOtpVerification() {
+    let otpVal = '';
+    digitInputs.forEach(inp => otpVal += inp.value.trim());
+
+    const errorBadge = document.getElementById('otpErrorBadge');
+    const errorMsg = document.getElementById('otpErrorMsg');
+    errorBadge.style.display = 'none';
+
+    if (otpVal.length !== 6) {
+      errorMsg.innerText = 'Please enter the complete 6-digit verification code.';
+      errorBadge.style.display = 'flex';
+      return;
+    }
+
+    const btn = document.getElementById('verifyOtpBtn');
+    const btnText = document.getElementById('verifyBtnText');
+    btn.disabled = true;
+    btnText.innerText = 'Verifying Code & Creating Account...';
+
+    // If Firebase Confirmation Result is active, verify with Google Firebase
+    if (window.confirmationResult) {
+      window.confirmationResult.confirm(otpVal)
+        .then(function(result) {
+          result.user.getIdToken().then(function(idToken) {
+            sendVerificationToBackend(otpVal, idToken);
+          }).catch(function() {
+            sendVerificationToBackend(otpVal);
+          });
+        })
+        .catch(function(err) {
+          console.warn('[Firebase Confirm Failed, Checking Gmail OTP]', err);
+          sendVerificationToBackend(otpVal);
+        });
+    } else {
+      sendVerificationToBackend(otpVal);
+    }
+  }
+
+  function sendVerificationToBackend(otpVal, firebaseToken) {
+    const btn = document.getElementById('verifyOtpBtn');
+    const btnText = document.getElementById('verifyBtnText');
+    const errorBadge = document.getElementById('otpErrorBadge');
+    const errorMsg = document.getElementById('otpErrorMsg');
+
+    const formData = new FormData();
+    formData.append('otp', otpVal);
+    if (firebaseToken) {
+      formData.append('firebase_token', firebaseToken);
+    }
+
+    fetch("{% url 'public_portal:api_verify_signup_otp' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCsrfToken()
+      },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        btnText.innerText = '✓ Verified! Directing you in...';
+        btn.style.background = '#059669';
+        setTimeout(() => {
+          window.location.href = data.redirect_url || '{% url "public_portal:home" %}';
+        }, 600);
+      } else {
+        btn.disabled = false;
+        btnText.innerText = 'Verify & Complete Account Creation';
+        errorMsg.innerText = data.message || 'Incorrect verification code. Please try again.';
+        errorBadge.style.display = 'flex';
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btnText.innerText = 'Verify & Complete Account Creation';
+      errorMsg.innerText = 'Network connection issue. Please retry.';
+      errorBadge.style.display = 'flex';
+    });
+  }
+
+  function editRegistrationDetails() {
+    clearInterval(countdownInterval);
+    const otpContainer = document.getElementById('otpContainer');
+    otpContainer.style.display = 'none';
+    const signupForm = document.getElementById('signupForm');
+    signupForm.style.display = 'block';
+  }
+</script>
+{% endblock %}

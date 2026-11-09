@@ -1,0 +1,866 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}KiraayaGrid — Staff & Marketplace Admin{% endblock %}</title>
+  
+  <!-- Base Master CSS -->
+  <link rel="stylesheet" href="{% static 'admin_portal/css/base.css' %}">
+  
+  <!-- Page-specific extra CSS -->
+  {% block extra_css %}{% endblock %}
+
+  <style id="topbarUserDropdownStyles">
+    /* ==============================================================
+       TOPBAR USER PROFILE DROPDOWN (PREMIUM EXECUTIVE UI)
+       ============================================================== */
+    .user-dropdown-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .user-dropdown-wrapper .user-pill-dropdown {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 4px 10px 4px 4px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      outline: none;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      font-family: inherit;
+    }
+
+    .user-dropdown-wrapper .user-pill-dropdown:hover,
+    .user-dropdown-wrapper.active .user-pill-dropdown {
+      background: #F8FAFC;
+      border-color: #CBD5E1;
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+    }
+
+    .user-dropdown-wrapper .user-avatar-sm {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1C5D99 0%, #0F355C 100%);
+      color: #FFFFFF;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(28, 93, 153, 0.25);
+    }
+
+    .user-dropdown-wrapper .avatar-online-dot {
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 8.5px;
+      height: 8.5px;
+      background: #10B981;
+      border: 1.5px solid #FFFFFF;
+      border-radius: 50%;
+    }
+
+    .user-dropdown-wrapper .user-name-sm {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0F172A;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .user-dropdown-wrapper .dropdown-chevron-icon {
+      color: #94A3B8;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .user-dropdown-wrapper.active .dropdown-chevron-icon {
+      transform: rotate(180deg);
+      color: #1C5D99;
+    }
+
+    /* DROPDOWN MENU CARD */
+    .user-profile-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 285px;
+      background: #FFFFFF;
+      border-radius: 14px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.15), 0 6px 14px -3px rgba(15, 23, 42, 0.08);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px) scale(0.97);
+      transform-origin: top right;
+      transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                  visibility 0.18s;
+      z-index: 9999;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .user-dropdown-wrapper.active .user-profile-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    /* HEADER */
+    .user-menu-header {
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+    }
+
+    .user-menu-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .user-menu-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1C5D99 0%, #0F355C 100%);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(28, 93, 153, 0.25);
+    }
+
+    .user-menu-online-indicator {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: #10B981;
+      border: 2px solid #FFFFFF;
+      border-radius: 50%;
+    }
+
+    .user-menu-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-menu-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    .user-menu-email {
+      font-size: 11.5px;
+      color: #64748B;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .user-menu-tags {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .user-role-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #EEF2FF;
+      color: #4F46E5;
+      padding: 1.5px 7px;
+      border-radius: 9999px;
+      letter-spacing: 0.02em;
+    }
+
+    .user-status-tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 9.5px;
+      font-weight: 600;
+      background: #ECFDF5;
+      color: #059669;
+      padding: 1.5px 6px;
+      border-radius: 4px;
+    }
+
+    .user-menu-divider {
+      height: 1px;
+      background: #F1F5F9;
+      margin: 0;
+    }
+
+    /* NAV LINKS */
+    .user-menu-nav {
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .user-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      text-decoration: none;
+      color: #1E293B;
+      transition: all 0.15s ease;
+    }
+
+    .user-menu-item:hover {
+      background: #F8FAFC;
+      transform: translateX(2px);
+    }
+
+    .menu-icon-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s ease;
+    }
+
+    .menu-icon-box.blue {
+      background: #EFF6FF;
+      color: #2563EB;
+    }
+    .menu-icon-box.purple {
+      background: #FAF5FF;
+      color: #9333EA;
+    }
+    .menu-icon-box.amber {
+      background: #FFFBEB;
+      color: #D97706;
+    }
+    .menu-icon-box.teal {
+      background: #F0FDFA;
+      color: #0D9488;
+    }
+
+    .user-menu-item:hover .menu-icon-box.blue { background: #DBEAFE; }
+    .user-menu-item:hover .menu-icon-box.purple { background: #F3E8FF; }
+    .user-menu-item:hover .menu-icon-box.amber { background: #FEF3C7; }
+    .user-menu-item:hover .menu-icon-box.teal { background: #CCFBF1; }
+
+    .menu-text-wrap {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .menu-item-title {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #1E293B;
+      line-height: 1.25;
+    }
+
+    .menu-item-subtitle {
+      font-size: 10.5px;
+      color: #64748B;
+      line-height: 1.25;
+      margin-top: 1px;
+    }
+
+    /* FOOTER LOGOUT */
+    .user-menu-footer {
+      padding: 6px;
+      background: #FAFAFA;
+      border-top: 1px solid #F1F5F9;
+    }
+
+    .user-menu-logout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #DC2626;
+      background: #FFFFFF;
+      border: 1px solid #FEE2E2;
+      transition: all 0.15s ease;
+    }
+
+    .user-menu-logout:hover {
+      background: #FEF2F2;
+      border-color: #FCA5A5;
+      color: #B91C1C;
+      box-shadow: 0 1px 3px rgba(220, 38, 38, 0.12);
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-container">
+
+    <!-- MASTER SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+          <div class="kg-logo-badge" style="width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #183B3B 0%, #0E2424 100%); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(24,59,59,0.35); border: 1px solid rgba(221,237,170,0.35); flex-shrink: 0;">
+            <svg width="20" height="20" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="6" width="9" height="9" rx="2.5" fill="#DDEDAA" />
+              <rect x="19" y="6" width="9" height="9" rx="2.5" fill="#93B5C6" />
+              <rect x="6" y="19" width="9" height="9" rx="2.5" fill="#F0CF65" />
+              <path d="M19 21.5C19 20.12 20.12 19 21.5 19H25.5C26.88 19 28 20.12 28 21.5V28H19V21.5Z" fill="#D7816A" />
+              <path d="M22 28V24C22 23.45 22.45 23 23 23H24C24.55 23 25 23.45 25 24V28H22Z" fill="#FFFFFF" />
+            </svg>
+          </div>
+          <span class="brand-name" style="font-size: 18px; font-weight: 800; letter-spacing: -0.03em; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;">Kiraaya<span style="color: #DDEDAA;">Grid</span></span>
+        </div>
+      </div>
+
+      <div class="workspace-pill-wrap">
+        <div class="workspace-pill">
+          <div class="ws-icon">IN</div>
+          <div class="ws-text">
+            <span class="ws-title">India marketplace</span>
+            <span class="ws-subtitle">Admin workspace</span>
+          </div>
+          <div class="ws-caret">⇅</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- GROUP 1: WORKSPACE -->
+        <div class="nav-group">
+          <div class="nav-group-title">WORKSPACE</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:marketplace_overview' %}" class="nav-link {% if request.resolver_match.url_name == 'marketplace_overview' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></span>
+                <span class="nav-label">Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:owner_verification' %}" class="nav-link {% if request.resolver_match.url_name == 'owner_verification' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg></span>
+                <span class="nav-label">Owner verification</span>
+                {% if global_pending_kyc > 0 %}
+                  <span class="badge-count">{{ global_pending_kyc }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:property_verification' %}" class="nav-link {% if request.resolver_match.url_name == 'property_verification' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path></svg></span>
+                <span class="nav-label">Property verification</span>
+                {% if global_pending_properties > 0 %}
+                  <span class="badge-count">{{ global_pending_properties }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:listing_management' %}" class="nav-link {% if request.resolver_match.url_name == 'listing_management' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></span>
+                <span class="nav-label">Listing management</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:user_management' %}" class="nav-link {% if request.resolver_match.url_name == 'user_management' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></span>
+                <span class="nav-label">User management</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:reports_complaints' %}" class="nav-link {% if request.resolver_match.url_name == 'reports_complaints' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></span>
+                <span class="nav-label">Reports & complaints</span>
+                {% if global_open_complaints > 0 %}
+                  <span class="badge-count">{{ global_open_complaints }}</span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:change_requests' %}" class="nav-link {% if request.resolver_match.url_name == 'change_requests' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg></span>
+                <span class="nav-label">Change requests</span>
+                {% if global_pending_changes > 0 %}
+                  <span class="badge-count">{{ global_pending_changes }}</span>
+                {% endif %}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- GROUP 2: MARKETPLACE -->
+        <div class="nav-group">
+          <div class="nav-group-title">MARKETPLACE</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:location_management' %}" class="nav-link {% if request.resolver_match.url_name == 'location_management' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+                <span class="nav-label">Location management</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:amenities_management' %}" class="nav-link {% if request.resolver_match.url_name == 'amenities_management' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg></span>
+                <span class="nav-label">Amenities management</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:monetization' %}" class="nav-link {% if request.resolver_match.url_name == 'monetization' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></span>
+                <span class="nav-label">Monetization</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:review_moderation' %}" class="nav-link {% if request.resolver_match.url_name == 'review_moderation' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+                <span class="nav-label">Review moderation</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:support_center' %}" class="nav-link {% if request.resolver_match.url_name == 'support_center' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg></span>
+                <span class="nav-label">Support center</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:notifications' %}" class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>
+                <span class="nav-label">Notifications</span>
+                {% if global_unread_notifications > 0 %}
+                  <span class="badge-count">{{ global_unread_notifications }}</span>
+                {% endif %}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- GROUP 3: ADMINISTRATION -->
+        <div class="nav-group">
+          <div class="nav-group-title">ADMINISTRATION</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:marketplace_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'marketplace_analytics' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg></span>
+                <span class="nav-label">Analytics</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:audit_logs' %}" class="nav-link {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
+                <span class="nav-label">Audit logs</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'admin_portal:staff_settings' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_settings' %}active{% endif %}">
+                <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
+                <span class="nav-label">Staff & settings</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="#" class="help-link">
+          <span class="help-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
+          <span>Help & documentation</span>
+          <span class="ext-icon">↗</span>
+        </a>
+        <div class="admin-profile-pill">
+          <div class="admin-avatar">
+            {% if request.user.is_authenticated and request.user.first_name %}
+              {{ request.user.first_name|first }}{{ request.user.last_name|first }}
+            {% else %}
+              {{ request.user.username|slice:":2"|upper|default:"AS" }}
+            {% endif %}
+          </div>
+          <div class="admin-meta">
+            <div class="admin-name">
+              {% if request.user.is_authenticated %}
+                {{ request.user.get_full_name|default:request.user.username }}
+              {% else %}
+                Ananya Shah
+              {% endif %}
+            </div>
+            <div class="admin-role">
+              {% if request.user.is_authenticated %}
+                {{ request.user.get_admin_sub_role_display|default:request.user.get_role_display }}
+              {% else %}
+                Super Admin
+              {% endif %}
+            </div>
+          </div>
+          <a href="/admin/logout/" class="logout-btn" title="Sign out">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Toggle navigation">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <nav class="breadcrumb-trail">
+            <span class="crumb root">Administration</span>
+            <span class="crumb-separator">/</span>
+            <span class="crumb current">{% block breadcrumb %}Dashboard{% endblock %}</span>
+          </nav>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-search" id="topbarSearchWrapper">
+            <span class="search-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+            <input type="text" id="globalSearchInput" placeholder="Search properties, owners, tickets..." class="search-input-field" autocomplete="off">
+            <kbd class="kbd-shortcut" id="searchKbdShortcut">⌘ K</kbd>
+            <div class="search-results-dropdown" id="searchResultsDropdown" style="display: none;"></div>
+          </div>
+          <a href="{% url 'admin_portal:notifications' %}" class="icon-action-btn" title="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            {% if global_unread_notifications > 0 %}
+              <span class="notification-badge">{{ global_unread_notifications }}</span>
+            {% endif %}
+          </a>
+          <!-- USER PROFILE DROPDOWN WRAPPER -->
+          <div class="user-dropdown-wrapper" id="userDropdownWrapper">
+            <button type="button" class="user-pill-dropdown" id="userProfileToggleBtn" aria-haspopup="true" aria-expanded="false" title="Account & Preferences">
+              <div class="user-avatar-sm">
+                {% if request.user.is_authenticated and request.user.first_name %}
+                  {{ request.user.first_name|first }}{{ request.user.last_name|first }}
+                {% else %}
+                  {{ request.user.username|slice:":2"|upper|default:"AS" }}
+                {% endif %}
+                <span class="avatar-online-dot"></span>
+              </div>
+              <span class="user-name-sm">
+                {% if request.user.is_authenticated %}
+                  {{ request.user.get_full_name|default:request.user.username }}
+                {% else %}
+                  Ananya Shah
+                {% endif %}
+              </span>
+              <svg class="dropdown-chevron-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+
+            <!-- PREMIUM DROPDOWN CARD -->
+            <div class="user-profile-menu" id="userProfileMenu" role="menu">
+              <!-- USER META HEADER -->
+              <div class="user-menu-header">
+                <div class="user-menu-avatar-wrap">
+                  <div class="user-menu-avatar">
+                    {% if request.user.is_authenticated and request.user.first_name %}
+                      {{ request.user.first_name|first }}{{ request.user.last_name|first }}
+                    {% else %}
+                      {{ request.user.username|slice:":2"|upper|default:"AS" }}
+                    {% endif %}
+                  </div>
+                  <span class="user-menu-online-indicator" title="Active Session"></span>
+                </div>
+                <div class="user-menu-info">
+                  <div class="user-menu-name">
+                    {% if request.user.is_authenticated %}
+                      {{ request.user.get_full_name|default:request.user.username }}
+                    {% else %}
+                      Ananya Shah
+                    {% endif %}
+                  </div>
+                  <div class="user-menu-email">
+                    {% if request.user.is_authenticated and request.user.email %}
+                      {{ request.user.email }}
+                    {% else %}
+                      ananya.shah@kiraayagrid.in
+                    {% endif %}
+                  </div>
+                  <div class="user-menu-tags">
+                    <span class="user-role-tag">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                      {% if request.user.is_authenticated %}
+                        {{ request.user.get_admin_sub_role_display|default:request.user.get_role_display }}
+                      {% else %}
+                        Super Admin
+                      {% endif %}
+                    </span>
+                    <span class="user-status-tag">Verified</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="user-menu-divider"></div>
+
+              <!-- MENU ITEMS -->
+              <div class="user-menu-nav">
+                <a href="{% url 'admin_portal:staff_settings' %}" class="user-menu-item" role="menuitem">
+                  <div class="menu-icon-box blue">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </div>
+                  <div class="menu-text-wrap">
+                    <span class="menu-item-title">Admin Profile & Access</span>
+                    <span class="menu-item-subtitle">Identity, permissions & team</span>
+                  </div>
+                </a>
+
+                <a href="{% url 'admin_portal:staff_settings' %}#workspace" class="user-menu-item" role="menuitem">
+                  <div class="menu-icon-box purple">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                  </div>
+                  <div class="menu-text-wrap">
+                    <span class="menu-item-title">Workspace Settings</span>
+                    <span class="menu-item-subtitle">Security, 2FA & policies</span>
+                  </div>
+                </a>
+
+                <a href="{% url 'admin_portal:audit_logs' %}" class="user-menu-item" role="menuitem">
+                  <div class="menu-icon-box amber">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  </div>
+                  <div class="menu-text-wrap">
+                    <span class="menu-item-title">Audit Trail & Activity</span>
+                    <span class="menu-item-subtitle">Security events & action traces</span>
+                  </div>
+                </a>
+
+                <a href="{% url 'admin_portal:support_center' %}" class="user-menu-item" role="menuitem">
+                  <div class="menu-icon-box teal">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  </div>
+                  <div class="menu-text-wrap">
+                    <span class="menu-item-title">Help & Support Desk</span>
+                    <span class="menu-item-subtitle">Operator assistance & docs</span>
+                  </div>
+                </a>
+              </div>
+
+              <div class="user-menu-divider"></div>
+
+              <!-- FOOTER LOGOUT -->
+              <div class="user-menu-footer">
+                <a href="/admin/logout/" class="user-menu-logout" role="menuitem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  <span>Log Out of Admin</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- DYNAMIC CONTENT BLOCK -->
+      <main class="content-area">
+        {% block content %}
+        {% endblock %}
+      </main>
+
+      <!-- FOOTER -->
+      <footer class="admin-page-footer">
+        <div class="footer-left">
+          <span class="brand-text">KIRAAYAGRID</span>
+          <span class="dot">·</span>
+          <span class="workspace-text">Admin workspace</span>
+        </div>
+        <div class="footer-right">
+          <span>All times in IST</span>
+          <span class="dot">·</span>
+          <span>Live Database Connected</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Mobile Toggle Script -->
+  <script>
+    const toggle = document.getElementById('menuToggleBtn');
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (toggle && sidebar && backdrop) {
+      toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        backdrop.classList.toggle('active');
+      });
+      backdrop.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('active');
+      });
+    }
+  </script>
+  <!-- Global Search & Keyboard Shortcut Script -->
+  <script>
+    const searchInput = document.getElementById('globalSearchInput');
+    const searchDropdown = document.getElementById('searchResultsDropdown');
+    let searchDebounceTimer = null;
+
+    if (searchInput && searchDropdown) {
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchDebounceTimer);
+        const q = e.target.value.trim();
+        if (q.length < 2) {
+          searchDropdown.style.display = 'none';
+          searchDropdown.innerHTML = '';
+          return;
+        }
+
+        searchDebounceTimer = setTimeout(() => {
+          fetch(`/api/search/?q=${encodeURIComponent(q)}`)
+            .then(res => res.json())
+            .then(data => {
+              if (!data.results || data.results.length === 0) {
+                searchDropdown.innerHTML = `<div class="search-empty-state">No matching records found for "${q}"</div>`;
+                searchDropdown.style.display = 'block';
+                return;
+              }
+
+              let html = '';
+              data.results.forEach(item => {
+                html += `
+                  <a href="${item.url}" class="search-result-row">
+                    <div class="search-result-info">
+                      <div class="search-result-title">${item.title}</div>
+                      <div class="search-result-subtitle">${item.subtitle}</div>
+                    </div>
+                    <span class="search-result-badge">${item.type}</span>
+                  </a>
+                `;
+              });
+              searchDropdown.innerHTML = html;
+              searchDropdown.style.display = 'block';
+            })
+            .catch(err => {
+              console.error('Search error:', err);
+            });
+        }, 250);
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#topbarSearchWrapper')) {
+          searchDropdown.style.display = 'none';
+        }
+      });
+
+      // Keyboard Shortcut: Cmd + K or Ctrl + K
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+        if (e.key === 'Escape') {
+          searchDropdown.style.display = 'none';
+          searchInput.blur();
+        }
+      });
+    }
+
+    // ==============================================================
+    // TOPBAR USER PROFILE DROPDOWN CONTROLLER
+    // ==============================================================
+    (function() {
+      const userDropdownWrapper = document.getElementById('userDropdownWrapper');
+      const userProfileToggleBtn = document.getElementById('userProfileToggleBtn');
+      const userProfileMenu = document.getElementById('userProfileMenu');
+
+      if (!userDropdownWrapper || !userProfileToggleBtn || !userProfileMenu) return;
+
+      userProfileToggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const willOpen = !userDropdownWrapper.classList.contains('active');
+        userDropdownWrapper.classList.toggle('active', willOpen);
+        userProfileToggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!userDropdownWrapper.contains(e.target)) {
+          userDropdownWrapper.classList.remove('active');
+          userProfileToggleBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      // Close dropdown when pressing Escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && userDropdownWrapper.classList.contains('active')) {
+          userDropdownWrapper.classList.remove('active');
+          userProfileToggleBtn.setAttribute('aria-expanded', 'false');
+          userProfileToggleBtn.focus();
+        }
+      });
+    })();
+
+    // ==============================================================
+    // SEAMLESS PAGINATION SCROLL POSITION PERSISTENCE
+    // Ensures clicking Next / Prev keeps the viewport exactly in place
+    // ==============================================================
+    (function() {
+      // Allow manual scroll restoration
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+
+      // Check for saved scroll position from a pagination click
+      const savedY = sessionStorage.getItem('paginationScrollY');
+      const savedPath = sessionStorage.getItem('paginationPath');
+
+      if (savedY !== null && savedPath === window.location.pathname) {
+        sessionStorage.removeItem('paginationScrollY');
+        sessionStorage.removeItem('paginationPath');
+        const targetY = parseInt(savedY, 10);
+        if (!isNaN(targetY)) {
+          // Instant scroll
+          window.scrollTo(0, targetY);
+          requestAnimationFrame(() => {
+            window.scrollTo(0, targetY);
+          });
+          setTimeout(() => {
+            window.scrollTo(0, targetY);
+          }, 30);
+        }
+      }
+
+      // Intercept any pagination clicks
+      document.addEventListener('click', function(e) {
+        const link = e.target.closest('a.page-btn, a.arrow-btn, .pagination-wrap a, .pagination-arrows a, .queue-footer-pagination a, [href*="page="]');
+        if (link && !link.classList.contains('disabled')) {
+          sessionStorage.setItem('paginationScrollY', window.scrollY);
+          sessionStorage.setItem('paginationPath', window.location.pathname);
+        }
+      }, true);
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

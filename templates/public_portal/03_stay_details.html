@@ -1,0 +1,925 @@
+{% extends 'public_portal/base.html' %}
+{% load static %}
+
+{% block title %}{{ prop.title }} · Verified Zero Brokerage Stay in {{ locality_name }}, {{ city_name }} · KiraayaGrid{% endblock %}
+
+{% block meta_description %}Explore {{ prop.title }} in {{ locality_name }}, {{ city_name }}. 100% physically inspected rooms, zero brokerage, transparent deposits, and direct landlord chat.{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     APPLE OFFICIAL WEBSITE DESIGN LANGUAGE — STAY DETAILS DOSSIER
+     ========================================================================== */
+
+  :root {
+    --apple-bg: #F5F5F7;
+    --apple-card-bg: #FFFFFF;
+    --apple-text-dark: #1D1D1F;
+    --apple-text-secondary: #86868B;
+    --apple-text-tertiary: #6E6E73;
+    --apple-border: rgba(0, 0, 0, 0.08);
+    --apple-border-light: rgba(0, 0, 0, 0.04);
+    --apple-emerald: #10B981;
+    --apple-deep-forest: #183B3B;
+  }
+
+  body {
+    background-color: var(--apple-bg);
+  }
+
+  .stay-details-page {
+    max-width: 1320px;
+    margin: 120px auto 96px;
+    padding: 0 24px;
+  }
+
+  /* Breadcrumbs Nav */
+  .apple-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--apple-text-tertiary);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .apple-breadcrumbs a {
+    color: var(--apple-text-tertiary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .apple-breadcrumbs a:hover {
+    color: var(--apple-text-dark);
+  }
+
+  /* Title Row */
+  .stay-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .stay-verified-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .stay-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10B981;
+  }
+
+  .stay-display-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-size: clamp(26px, 3.2vw, 36px);
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .stay-address-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--apple-text-tertiary);
+    font-weight: 500;
+  }
+
+  .btn-apple-share {
+    padding: 10px 18px;
+    border-radius: 9999px;
+    background: #FFFFFF;
+    border: 1px solid var(--apple-border);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+  }
+
+  .btn-apple-share:hover {
+    background: #F8FAFC;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Apple Mosaic Photo Gallery */
+  .apple-gallery-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.1fr;
+    gap: 16px;
+    border-radius: 32px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    aspect-ratio: 16 / 8.5;
+    position: relative;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+  }
+
+  .gallery-hero-img-wrap {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .gallery-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .gallery-hero-img-wrap:hover .gallery-hero-img {
+    transform: scale(1.03);
+  }
+
+  .gallery-side-stack {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .gallery-sub-img-wrap {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .gallery-sub-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .gallery-sub-img-wrap:hover .gallery-sub-img {
+    transform: scale(1.04);
+  }
+
+  .floating-photos-counter {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 9999px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  /* Quick-Specs Bento Bar */
+  .apple-specs-ribbon {
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: 1px solid var(--apple-border);
+    padding: 18px 28px;
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  }
+
+  .spec-item-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .spec-icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .spec-label-sub {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--apple-text-tertiary);
+  }
+
+  .spec-value-main {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    margin-top: 2px;
+  }
+
+  /* 2-Column Content Layout */
+  .apple-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 390px;
+    gap: 48px;
+    align-items: flex-start;
+  }
+
+  /* Section Cards */
+  .apple-dossier-card {
+    background: #FFFFFF;
+    border-radius: 26px;
+    border: 1px solid var(--apple-border);
+    padding: 36px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  }
+
+  .dossier-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    margin-bottom: 18px;
+    letter-spacing: -0.02em;
+  }
+
+  .dossier-paragraph {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #475569;
+    margin-bottom: 24px;
+  }
+
+  /* Walking Distance Transit Highlights */
+  .transit-pills-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 16px;
+    background: var(--apple-bg);
+    border-radius: 18px;
+  }
+
+  .transit-pill-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--apple-text-dark);
+  }
+
+  /* Amenities Grid */
+  .apple-amenities-bento {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .amenity-bento-tile {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    transition: all 0.2s ease;
+  }
+
+  .amenity-bento-tile:hover {
+    background: #FFFFFF;
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Room Configurations */
+  .room-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .room-config-box {
+    background: #FDFBF7;
+    border: 1px solid #E5E0D8;
+    border-radius: 20px;
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+  }
+
+  .room-config-box:hover {
+    border-color: var(--color-deep-forest);
+    background: #FFFFFF;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  }
+
+  .room-name-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+  }
+
+  .room-specs-line {
+    font-size: 13px;
+    color: var(--apple-text-tertiary);
+    margin-top: 4px;
+  }
+
+  .room-rent-val {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--apple-text-dark);
+  }
+
+  /* Verified Homeowner Box */
+  .owner-apple-profile {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background: #F8FAFC;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid #E2E8F0;
+  }
+
+  .owner-avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--color-deep-forest);
+    color: #DDEDAA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  /* Reviews Block */
+  .review-quote-card {
+    background: #F8FAFC;
+    border-radius: 18px;
+    padding: 20px 24px;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 14px;
+  }
+
+  /* Sticky Right Booking Card */
+  .apple-sticky-booking {
+    position: sticky;
+    top: 96px;
+    background: #FFFFFF;
+    border-radius: 28px;
+    border: 1px solid var(--apple-border);
+    padding: 32px;
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.08);
+  }
+
+  .booking-price-header-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #F1F5F9;
+    margin-bottom: 20px;
+  }
+
+  .booking-rent-number {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--apple-text-dark);
+  }
+
+  .booking-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 10px;
+  }
+
+  .btn-booking-primary {
+    width: 100%;
+    padding: 15px;
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(24, 59, 59, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  .btn-booking-primary:hover {
+    background: #0F172A;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(24, 59, 59, 0.3);
+  }
+
+  .btn-booking-chat {
+    width: 100%;
+    padding: 13px;
+    background: #F8FAFC;
+    color: var(--apple-text-dark);
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 14px;
+    border: 1px solid #CBD5E1;
+    cursor: pointer;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-booking-chat:hover {
+    background: #F1F5F9;
+  }
+
+  /* =========================================================================
+     RESPONSIVE BREAKPOINTS (4K, Laptop L, Laptop, Tablet, Mobile L/M/S)
+     ========================================================================= */
+  @media (min-width: 1920px) {
+    .stay-details-page {
+      max-width: 1440px !important;
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .apple-details-grid { grid-template-columns: 1fr; }
+    .apple-gallery-grid { grid-template-columns: 1fr; aspect-ratio: auto; }
+    .gallery-side-stack { display: none; }
+    .apple-specs-ribbon { grid-template-columns: 1fr 1fr; }
+    .apple-booking-sticky { position: static; width: 100%; margin-top: 32px; }
+  }
+
+  @media (max-width: 768px) {
+    .stay-details-page {
+      padding: 95px 16px 48px;
+    }
+    .apple-display-title {
+      font-size: clamp(24px, 5vw, 30px);
+    }
+    .apple-specs-ribbon {
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px;
+    }
+    .apple-amenities-bento {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .rooms-available-grid {
+      grid-template-columns: 1fr;
+    }
+    .transit-pills-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 425px) {
+    .stay-details-page {
+      padding: 85px 12px 36px;
+    }
+    .apple-display-title {
+      font-size: 22px;
+    }
+    .apple-specs-ribbon {
+      grid-template-columns: 1fr;
+    }
+    .apple-amenities-bento {
+      grid-template-columns: 1fr;
+    }
+    .apple-booking-card {
+      padding: 22px 18px;
+      border-radius: 20px;
+    }
+    .gallery-main-hero img {
+      height: 250px;
+      object-fit: cover;
+    }
+  }
+
+  @media (max-width: 340px) {
+    .stay-details-page {
+      padding: 80px 10px 30px;
+    }
+    .apple-display-title {
+      font-size: 20px;
+    }
+    .apple-booking-card {
+      padding: 18px 14px;
+    }
+    .btn-booking-primary {
+      font-size: 13.5px;
+      padding: 12px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="stay-details-page">
+
+  <!-- Breadcrumbs Navigation -->
+  <nav class="apple-breadcrumbs">
+    <a href="{% url 'public_portal:home' %}">Home</a>
+    <span>/</span>
+    <a href="{% url 'public_portal:explore_stays' %}">Stays</a>
+    <span>/</span>
+    <a href="{% url 'public_portal:explore_stays' %}?city={{ city_name }}">{{ city_name }}</a>
+    <span>/</span>
+    <span style="color: var(--apple-text-dark); font-weight: 600;">{{ prop.title }}</span>
+  </nav>
+
+  <!-- Title & Action Header -->
+  <div class="stay-header-row">
+    <div>
+      <div class="stay-verified-pill">
+        <span class="stay-pulse-dot"></span>
+        ✓ KiraayaGrid Ground-Truth Verified Stay
+      </div>
+      <h1 class="stay-display-title">{{ prop.title }}</h1>
+      <div class="stay-address-strip">
+        <span>📍 {{ prop.address_line }}, {{ locality_name }}, {{ city_name }}</span>
+        <span>·</span>
+        <span style="color: #F59E0B; font-weight: 700;">★ {{ avg_rating }} ({{ reviews_count }} verified reviews)</span>
+        <span>·</span>
+        <span style="color: #059669; font-weight: 700;">Zero Brokerage Guaranteed</span>
+      </div>
+    </div>
+
+    <!-- Quick Action Share & Wishlist -->
+    <div style="display: flex; gap: 10px;">
+      <button type="button" class="btn-apple-share" onclick="openAuthModal('login')">
+        <span>♡</span> Save Stay
+      </button>
+      <button type="button" class="btn-apple-share" onclick="navigator.clipboard.writeText(window.location.href); alert('Stay link copied to clipboard!');">
+        <span>↗</span> Share
+      </button>
+    </div>
+  </div>
+
+  <!-- Apple Mosaic Gallery -->
+  <div class="apple-gallery-grid">
+    <!-- Big Hero Photo -->
+    <div class="gallery-hero-img-wrap">
+      <img src="{{ cover_photo }}" alt="{{ prop.title }}" class="gallery-hero-img">
+    </div>
+
+    <!-- Right Side Stack -->
+    <div class="gallery-side-stack">
+      {% for img in sub_photos|slice:":2" %}
+      <div class="gallery-sub-img-wrap">
+        <img src="{{ img }}" alt="Room view" class="gallery-sub-img">
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Floating Photos Counter -->
+    <div class="floating-photos-counter">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+      <span>{{ gallery_urls|length }} Verified Photos</span>
+    </div>
+  </div>
+
+  <!-- Quick-Specs Bento Bar -->
+  <div class="apple-specs-ribbon">
+    <div class="spec-item-box">
+      <div class="spec-icon-circle">🏠</div>
+      <div>
+        <div class="spec-label-sub">Accommodation</div>
+        <div class="spec-value-main">{{ prop.get_property_type_display }}</div>
+      </div>
+    </div>
+    <div class="spec-item-box">
+      <div class="spec-icon-circle">👥</div>
+      <div>
+        <div class="spec-label-sub">Resident Category</div>
+        <div class="spec-value-main">{{ prop.get_gender_category_display|default:'Unisex / Open to All' }}</div>
+      </div>
+    </div>
+    <div class="spec-item-box">
+      <div class="spec-icon-circle">⚡</div>
+      <div>
+        <div class="spec-label-sub">Power & Water</div>
+        <div class="spec-value-main">24/7 DG Backup & RO</div>
+      </div>
+    </div>
+    <div class="spec-item-box">
+      <div class="spec-icon-circle">📶</div>
+      <div>
+        <div class="spec-label-sub">High-Speed Wi-Fi</div>
+        <div class="spec-value-main">300 Mbps Fiber Optic</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main 2-Column Content Layout -->
+  <div class="apple-details-grid">
+    
+    <!-- Left Column: Dossier -->
+    <div>
+
+      <!-- 1. About This Residence -->
+      <section class="apple-dossier-card">
+        <h2 class="dossier-title">About this residence</h2>
+        <p class="dossier-paragraph">
+          Welcome to {{ prop.title }}, located in the vibrant neighborhood of {{ locality_name }}. 
+          Every room has been physically audited by our on-ground verification engineers. The residence offers generous natural daylight, sound insulation, high-speed fiber internet with backup lines, and professional daily housekeeping to ensure an immaculate living environment for working professionals and university scholars.
+        </p>
+
+        <!-- Walking Transit Distance Highlights -->
+        <div class="transit-pills-row">
+          <div class="transit-pill-item">
+            <span>🚇</span>
+            <span>4 mins walk to Metro</span>
+          </div>
+          <div class="transit-pill-item">
+            <span>💻</span>
+            <span>8 mins to Coworking Hub</span>
+          </div>
+          <div class="transit-pill-item">
+            <span>🛒</span>
+            <span>2 mins to Supermarket</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Premium Amenities Bento -->
+      <section class="apple-dossier-card">
+        <h2 class="dossier-title">Included amenities & privileges</h2>
+        <div class="apple-amenities-bento">
+          <div class="amenity-bento-tile"><span>📶</span> 300 Mbps Wi-Fi</div>
+          <div class="amenity-bento-tile"><span>❄️</span> Split Inverter AC</div>
+          <div class="amenity-bento-tile"><span>🍲</span> 3 Healthy Meals Daily</div>
+          <div class="amenity-bento-tile"><span>⚡</span> 100% Power Backup</div>
+          <div class="amenity-bento-tile"><span>🧺</span> Automatic Laundry</div>
+          <div class="amenity-bento-tile"><span>🧹</span> Daily Housekeeping</div>
+          <div class="amenity-bento-tile"><span>🛡️</span> Biometric Smart Lock</div>
+          <div class="amenity-bento-tile"><span>🚿</span> 24/7 Geyser Hot Water</div>
+          <div class="amenity-bento-tile"><span>💧</span> RO Mineral Water</div>
+        </div>
+      </section>
+
+      <!-- 3. Available Room Configurations & Live Availability -->
+      <section class="apple-dossier-card">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px;">
+          <h2 class="dossier-title" style="margin-bottom: 0;">Room configurations & pricing</h2>
+          <span style="font-size: 13px; color: #059669; font-weight: 700;">● Zero Brokerage Applicable</span>
+        </div>
+
+        <div class="room-cards-list">
+          {% for r in display_rooms %}
+          <div class="room-config-box">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="room-name-title">{{ r.name }}</span>
+                <span style="font-size: 12px; font-weight: 700; color: #065F46; background: #D1FAE5; padding: 2px 8px; border-radius: 9999px;">
+                  {{ r.badge }}
+                </span>
+              </div>
+              <div class="room-specs-line">{{ r.furnishing }} · {{ r.ac }}</div>
+            </div>
+
+            <div style="text-align: right;">
+              <div class="room-rent-val">₹{{ r.rent_formatted }} <span style="font-size: 12px; font-weight: 500; color: #64748B;">/ mo</span></div>
+              <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Deposit: ₹{{ r.deposit_formatted }} (Refundable)</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- 4. House Rules & Living Etiquette -->
+      <section class="apple-dossier-card">
+        <h2 class="dossier-title">House policies & guidelines</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="background: #F8FAFC; border-radius: 14px; padding: 16px; border: 1px solid #E2E8F0;">
+            <div style="font-size: 12px; font-weight: 700; color: #0F172A; margin-bottom: 4px;">🕒 Entry & Gate Hours</div>
+            <div style="font-size: 13px; color: #64748B;">Biometric access 24/7. No punitive gate curfews.</div>
+          </div>
+          <div style="background: #F8FAFC; border-radius: 14px; padding: 16px; border: 1px solid #E2E8F0;">
+            <div style="font-size: 12px; font-weight: 700; color: #0F172A; margin-bottom: 4px;">👥 Visitors Policy</div>
+            <div style="font-size: 13px; color: #64748B;">Friends & family welcome in common lounge and private room.</div>
+          </div>
+          <div style="background: #F8FAFC; border-radius: 14px; padding: 16px; border: 1px solid #E2E8F0;">
+            <div style="font-size: 12px; font-weight: 700; color: #0F172A; margin-bottom: 4px;">📜 Notice Period</div>
+            <div style="font-size: 13px; color: #64748B;">Standard 30-day notice with full deposit refund.</div>
+          </div>
+          <div style="background: #F8FAFC; border-radius: 14px; padding: 16px; border: 1px solid #E2E8F0;">
+            <div style="font-size: 12px; font-weight: 700; color: #0F172A; margin-bottom: 4px;">🔒 Lock-in Period</div>
+            <div style="font-size: 13px; color: #64748B;">Flexible 3-month agreement with automatic renewal option.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Homeowner & Resident Safety -->
+      <section class="apple-dossier-card">
+        <h2 class="dossier-title">Meet your verified homeowner</h2>
+        <div class="owner-apple-profile">
+          <div class="owner-avatar-circle">
+            {{ owner.first_name|first|default:'H' }}
+          </div>
+          <div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--apple-text-dark);">
+              {{ owner.get_full_name|default:owner.username }}
+            </div>
+            <div style="font-size: 13px; color: #64748B; margin-top: 2px;">
+              KiraayaGrid Verified Homeowner · Responsive (< 15 mins) · 100% Aadhaar KYC
+            </div>
+            <div style="font-size: 13px; color: #475569; margin-top: 8px; font-style: italic;">
+              "I take pride in providing a clean, quiet, and secure home for every resident with zero broker hassles."
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Verified Resident Reviews -->
+      <section class="apple-dossier-card">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px;">
+          <h2 class="dossier-title" style="margin-bottom: 0;">Resident reviews</h2>
+          <div style="font-size: 16px; font-weight: 800; color: #0F172A;">
+            <span style="color: #F59E0B;">★</span> {{ avg_rating }} / 5.0
+          </div>
+        </div>
+
+        <div>
+          {% for rev in sample_reviews %}
+          <div class="review-quote-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #183B3B;">
+                  {{ rev.avatar }}
+                </div>
+                <div>
+                  <div style="font-size: 13px; font-weight: 700; color: #0F172A;">{{ rev.author }}</div>
+                  <div style="font-size: 11px; color: #64748B;">{{ rev.role }}</div>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: #F59E0B; font-weight: 700;">★★★★★</div>
+            </div>
+            <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
+              "{{ rev.comment }}"
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Right Column: Apple Sticky Booking & Concierge -->
+    <aside>
+      <div class="apple-sticky-booking">
+        
+        <div class="booking-price-header-strip">
+          <div>
+            <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--apple-text-tertiary);">Starting From</div>
+            <div class="booking-rent-number">
+              ₹{{ min_rent_formatted }} <span style="font-size: 13px; font-weight: 500; color: var(--apple-text-tertiary);">/ month</span>
+            </div>
+          </div>
+          <span style="font-size: 12px; font-weight: 700; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 4px 10px; border-radius: 9999px;">
+            Zero Brokerage
+          </span>
+        </div>
+
+        <div class="booking-row">
+          <span>Monthly Rent</span>
+          <span style="font-weight: 700; color: var(--apple-text-dark);">₹{{ min_rent_formatted }}</span>
+        </div>
+        <div class="booking-row">
+          <span>Security Deposit</span>
+          <span style="font-weight: 700; color: var(--apple-text-dark);">₹{{ security_deposit_formatted }} (100% Refundable)</span>
+        </div>
+        <div class="booking-row">
+          <span>Brokerage / Agent Fee</span>
+          <span style="font-weight: 800; color: #059669;">₹0 (Free Forever)</span>
+        </div>
+
+        <div style="background: #ECFDF5; border: 1px dashed #10B981; border-radius: 12px; padding: 10px 14px; font-size: 12px; font-weight: 700; color: #065F46; text-align: center; margin: 16px 0;">
+          🎉 You save {{ brokerage_saved }} in broker commissions!
+        </div>
+
+        <!-- Schedule Visit Form -->
+        <div style="margin-top: 18px;">
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--apple-text-dark); margin-bottom: 6px;">
+            Select Preferred Walkthrough Date
+          </label>
+          <input type="date" style="width: 100%; padding: 12px 14px; border: 1px solid #CBD5E1; border-radius: 12px; font-size: 13px; outline: none; font-family: -apple-system, sans-serif; background: #F8FAFC;">
+        </div>
+
+        <div style="margin-top: 12px;">
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--apple-text-dark); margin-bottom: 6px;">
+            Preferred Time Slot
+          </label>
+          <select style="width: 100%; padding: 12px 14px; border: 1px solid #CBD5E1; border-radius: 12px; font-size: 13px; outline: none; font-family: -apple-system, sans-serif; background: #F8FAFC;">
+            <option>Morning (10:00 AM - 1:00 PM)</option>
+            <option selected>Afternoon (2:00 PM - 5:00 PM)</option>
+            <option>Evening (5:30 PM - 8:00 PM)</option>
+          </select>
+        </div>
+
+        <!-- Safe Action Buttons -->
+        <button type="button" class="btn-booking-primary" onclick="openAuthModal('login')">
+          <span>📅</span> Schedule Free Walkthrough
+        </button>
+
+        <button type="button" class="btn-booking-chat" onclick="openAuthModal('login')">
+          <span>💬</span> Chat Directly with Landlord
+        </button>
+
+        <div style="font-size: 11px; color: #94A3B8; text-align: center; margin-top: 16px; line-height: 1.4;">
+          🔒 Free cancellation on all visit requests. No advance credit card required.
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Bottom Recommendations: Similar Verified Stays -->
+  {% if similar_stays %}
+  <section style="margin-top: 80px; padding-top: 48px; border-top: 1px solid var(--apple-border);">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 28px;">
+      <div>
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--apple-text-tertiary); letter-spacing: 0.06em;">Nearby Residences</div>
+        <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 28px; font-weight: 700; color: var(--apple-text-dark);">
+          More verified stays in <span class="apple-gradient-warm">{{ city_name }}</span>
+        </h2>
+      </div>
+      <a href="{% url 'public_portal:explore_stays' %}?city={{ city_name }}" style="font-size: 14px; font-weight: 700; color: var(--color-deep-forest); text-decoration: none;">
+        View all in {{ city_name }} ↗
+      </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;">
+      {% for sim in similar_stays %}
+      <div style="background: #FFFFFF; border-radius: 20px; overflow: hidden; border: 1px solid var(--apple-border); box-shadow: 0 4px 14px rgba(0,0,0,0.03); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='none'">
+        <img src="{{ sim.display_photo }}" alt="{{ sim.title }}" style="width: 100%; height: 180px; object-fit: cover;">
+        <div style="padding: 20px;">
+          <div style="font-size: 12px; color: #64748B;">📍 {{ sim.locality.name|default:sim.city.name }}</div>
+          <div style="font-size: 17px; font-weight: 700; color: #0F172A; margin: 4px 0 12px;">{{ sim.title }}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 12px;">
+            <div style="font-size: 18px; font-weight: 800; color: #0F172A;">₹{{ sim.display_price }}<span style="font-size: 12px; font-weight: 500; color: #64748B;">/mo</span></div>
+            <a href="{% url 'public_portal:stay_details' sim.id %}" style="padding: 6px 14px; background: var(--color-deep-forest); color: white; border-radius: 9999px; font-size: 12px; font-weight: 700; text-decoration: none;">View ↗</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</main>
+{% endblock %}

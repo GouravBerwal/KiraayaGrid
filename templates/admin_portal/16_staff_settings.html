@@ -1,0 +1,1424 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Staff & settings — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Staff & settings{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/16_staff_settings.css' %}?v=7.0">
+  <style>
+    /* ==============================================================
+       SCREEN 16: APPLE/FAANG-GRADE STAFF & SETTINGS STYLES (v7.0)
+       ============================================================== */
+    
+    /* SINGLE-LINE FILTER TOOLBAR */
+    .staff-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      padding-bottom: 4px !important;
+    }
+
+    .staff-search-box {
+      position: relative !important;
+      min-width: 260px !important;
+      flex: 1 1 auto !important;
+    }
+
+    .staff-search-input {
+      width: 100% !important;
+      padding: 9px 14px 9px 36px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      color: #0F172A !important;
+      outline: none !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .staff-search-input:focus {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .staff-search-ico {
+      position: absolute !important;
+      left: 12px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      color: #64748B !important;
+      display: flex !important;
+      align-items: center !important;
+      pointer-events: none !important;
+    }
+
+    .staff-filter-select {
+      width: auto !important;
+      min-width: 160px !important;
+      padding: 8px 30px 8px 12px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+    }
+
+    .staff-filter-select:focus {
+      outline: none !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .staff-btn {
+      padding: 8px 16px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 9px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      text-decoration: none !important;
+      transition: all 0.15s ease !important;
+    }
+
+    /* ELEVATED TABLE & CARDS */
+    .table-card {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 18px !important;
+      overflow: hidden !important;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05) !important;
+      margin-bottom: 24px !important;
+    }
+
+    .card {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 18px !important;
+      padding: 24px 26px !important;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05) !important;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .two-col-detail-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 22px !important;
+      margin-bottom: 24px !important;
+      align-items: stretch !important;
+    }
+
+    @media (max-width: 960px) {
+      .two-col-detail-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* ACTOR AVATARS */
+    .actor-cell {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+    }
+
+    .actor-avatar {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-weight: 700 !important;
+      font-size: 12.5px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .actor-avatar.bg-blue { background: #E0F2FE !important; color: #0284C7 !important; }
+    .actor-avatar.bg-indigo { background: #EEF2FF !important; color: #4F46E5 !important; }
+    .actor-avatar.bg-teal { background: #E6FFFA !important; color: #0D9488 !important; }
+    .actor-avatar.bg-slate { background: #F1F5F9 !important; color: #475569 !important; }
+    .actor-avatar.bg-emerald { background: #ECFDF5 !important; color: #059669 !important; }
+    .actor-avatar.bg-purple { background: #F3E8FF !important; color: #7C3AED !important; }
+
+    .actor-name {
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      font-size: 13.5px !important;
+    }
+
+    /* STATUS PILLS */
+    .status-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      padding: 3px 9px !important;
+      border-radius: 6px !important;
+      font-size: 11.5px !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.3px !important;
+    }
+
+    .status-pill.success {
+      background: #ECFDF5 !important;
+      color: #059669 !important;
+      border: 1px solid #A7F3D0 !important;
+    }
+
+    .status-pill.warning {
+      background: #FFFBEB !important;
+      color: #D97706 !important;
+      border: 1px solid #FDE68A !important;
+    }
+
+    .status-pill.danger {
+      background: #FEF2F2 !important;
+      color: #DC2626 !important;
+      border: 1px solid #FECACA !important;
+    }
+
+    /* IOS / APPLE TOGGLE SWITCH */
+    .switch-ui {
+      position: relative !important;
+      display: inline-block !important;
+      width: 44px !important;
+      height: 24px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .switch-ui input {
+      opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    .slider.round {
+      position: absolute !important;
+      cursor: pointer !important;
+      inset: 0 !important;
+      background-color: #CBD5E1 !important;
+      transition: .25s ease !important;
+      border-radius: 24px !important;
+    }
+
+    .slider.round:before {
+      position: absolute !important;
+      content: "" !important;
+      height: 18px !important;
+      width: 18px !important;
+      left: 3px !important;
+      bottom: 3px !important;
+      background-color: white !important;
+      transition: .25s ease !important;
+      border-radius: 50% !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    input:checked + .slider.round {
+      background-color: #1C5D99 !important;
+    }
+
+    input:checked + .slider.round:before {
+      transform: translateX(20px) !important;
+    }
+
+    /* TOGGLE LIST ITEMS */
+    .toggle-control-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 14px !important;
+    }
+
+    .toggle-item-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 14px !important;
+      padding: 12px 14px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .toggle-item-row:hover {
+      background: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .toggle-title {
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin-bottom: 2px !important;
+    }
+
+    .toggle-sub {
+      font-size: 12px !important;
+      color: #64748B !important;
+    }
+
+    /* CENTERED POPUP MODALS */
+    .modal-backdrop {
+      display: none !important;
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(15, 23, 42, 0.72) !important;
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+      z-index: 99999 !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px !important;
+    }
+
+    .modal-backdrop.open {
+      display: flex !important;
+    }
+
+    .modal-content-box {
+      background: #FFFFFF !important;
+      border-radius: 18px !important;
+      width: 100% !important;
+      max-width: 520px !important;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4) !important;
+      overflow: hidden !important;
+      animation: modalScaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      border: 1px solid #E2E8F0 !important;
+      max-height: 90vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    @keyframes modalScaleUp {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 18px 24px !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #F8FAFC !important;
+    }
+
+    .modal-title {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin: 0 !important;
+    }
+
+    .modal-close-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      width: 32px !important;
+      height: 32px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+      color: #64748B !important;
+      cursor: pointer !important;
+    }
+
+    .modal-close-btn:hover {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+    }
+
+    .modal-body {
+      padding: 22px 24px !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 14px !important;
+    }
+
+    .modal-footer {
+      padding: 16px 24px !important;
+      border-top: 1px solid #E2E8F0 !important;
+      background: #F8FAFC !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 12px !important;
+    }
+
+    /* TOAST NOTIFICATIONS */
+    .toast-container {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 99999 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 10px !important;
+      pointer-events: none !important;
+    }
+
+    .toast {
+      pointer-events: auto !important;
+      background: #0F172A !important;
+      color: #FFFFFF !important;
+      padding: 12px 18px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      animation: toastIn 0.25s ease !important;
+    }
+
+    .toast.success { background: #065F46 !important; border-left: 4px solid #34D399 !important; }
+    .toast.error { background: #991B1B !important; border-left: 4px solid #F87171 !important; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     PAGE HEADER
+     ============================================================== -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Staff & settings</h1>
+    <p class="page-subtitle">Manage your team, define access boundaries and configure a secure admin workspace.</p>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn btn-primary" onclick="openInviteModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7.5" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+      Invite staff
+    </button>
+  </div>
+</div>
+
+<!-- ==============================================================
+     NAV TAB STRIP
+     ============================================================== -->
+<div class="nav-tab-strip">
+  <a href="?tab=team{% if search %}&search={{ search }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="tab-btn {% if tab == 'team' %}active{% endif %}">
+    Team & permissions
+  </a>
+  <a href="?tab=general" class="tab-btn {% if tab == 'general' %}active{% endif %}">
+    General settings
+  </a>
+  <a href="?tab=security" class="tab-btn {% if tab == 'security' %}active{% endif %}">
+    Security
+  </a>
+  <a href="?tab=policies" class="tab-btn {% if tab == 'policies' %}active{% endif %}">
+    Approval policies
+  </a>
+  <a href="?tab=integrations" class="tab-btn {% if tab == 'integrations' %}active{% endif %}">
+    Integrations
+  </a>
+</div>
+
+{% if tab == 'team' %}
+  <!-- ==============================================================
+       TAB 1: TEAM & PERMISSIONS
+       ============================================================== -->
+
+  <!-- SINGLE-LINE FILTER TOOLBAR -->
+  <form method="GET" action="{% url 'admin_portal:staff_settings' %}" class="staff-filter-toolbar">
+    <input type="hidden" name="tab" value="{{ tab }}">
+
+    <!-- Search Input -->
+    <div class="staff-search-box">
+      <span class="staff-search-ico">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </span>
+      <input type="text" name="search" placeholder="Search staff name, email or code" class="staff-search-input" value="{{ search }}">
+    </div>
+
+    <!-- Role Dropdown -->
+    <select name="role" class="staff-filter-select" onchange="this.form.submit()">
+      {% for opt in role_options %}
+        <option value="{{ opt.value }}" {% if role_filter == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Status Dropdown -->
+    <select name="status" class="staff-filter-select" onchange="this.form.submit()">
+      {% for opt in status_options %}
+        <option value="{{ opt.value }}" {% if status_filter == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Apply & Clear Buttons -->
+    <button type="submit" class="staff-btn" style="background: #1C5D99; color: #FFFFFF; border: none;">Apply</button>
+    {% if search or role_filter or status_filter %}
+      <a href="{% url 'admin_portal:staff_settings' %}?tab={{ tab }}" class="staff-btn" style="background: #F1F5F9; color: #64748B; border: 1.5px solid #CBD5E1;">Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- STAFF TABLE CARD -->
+  <div class="table-card mb-24">
+    <div style="padding: 16px 22px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
+      <div>
+        <span style="font-size: 13.5px; font-weight: 700; color: #0F172A;">Admin Workspace Team</span>
+        <span style="font-size: 12px; color: #64748B; margin-left: 8px;">{{ active_staff }} active · {{ invited_staff }} invited</span>
+      </div>
+      <span style="font-size: 12px; font-weight: 700; color: #1C5D99; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 3px 9px; border-radius: 6px;">
+        Total: {{ total_staff }} members
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>TEAM MEMBER</th>
+            <th>EMAIL</th>
+            <th>ROLE</th>
+            <th>LAST ACTIVE</th>
+            <th>STATUS</th>
+            <th style="text-align: right;">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in staff_list %}
+            <tr id="staffRow-{{ s.id }}">
+              <td>
+                <div class="actor-cell">
+                  <div class="actor-avatar {{ s.avatar_color }}">{{ s.initials }}</div>
+                  <div>
+                    <div class="actor-name">{{ s.name }}</div>
+                    <div class="text-subtle font-11" style="font-family: monospace; color: #64748B;">{{ s.stf_code }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="font-medium" style="font-size: 13px; color: #334155;">{{ s.email }}</td>
+              <td style="font-weight: 600; color: #0F172A; font-size: 13px;">{{ s.role_label }}</td>
+              <td style="font-size: 12.5px; color: #64748B;">{{ s.last_active }}</td>
+              <td>
+                <span class="status-pill {{ s.status_class }}">
+                  {{ s.status_label }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="openManageAccessModal('{{ s.id }}', '{{ s.name }}', '{{ s.email }}', '{{ s.role_key }}', '{{ s.is_active|yesno:'true,false' }}', '{{ s.stf_code }}')">
+                  Manage access ↗
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TABLE FOOTER WITH PREV/NEXT -->
+    <div class="table-footer-bar" style="padding: 14px 22px; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748B; background: #F8FAFC;">
+      <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} staff accounts</span>
+      <div class="pagination-wrap" style="display: flex; align-items: center; gap: 8px;">
+        {% if page_obj.has_previous %}
+          <a href="?tab=team&role={{ role_filter }}&status={{ status_filter }}&search={{ search }}&page={{ page_obj.previous_page_number }}" class="page-btn" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 7px; color: #0F172A; text-decoration: none; background: #FFFFFF;">← Prev</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 7px; color: #94A3B8; opacity: 0.5; pointer-events: none;">← Prev</span>
+        {% endif %}
+
+        <span class="page-indicator" style="font-size: 12.5px; font-weight: 600; color: #475569; padding: 0 8px;">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a href="?tab=team&role={{ role_filter }}&status={{ status_filter }}&search={{ search }}&page={{ page_obj.next_page_number }}" class="page-btn" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 7px; color: #0F172A; text-decoration: none; background: #FFFFFF;">Next →</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 7px; color: #94A3B8; opacity: 0.5; pointer-events: none;">Next →</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLES & PERMISSIONS MATRIX CARD -->
+  <div class="card mb-24">
+    <div class="card-header-flex" style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px;">
+      <div>
+        <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">Roles & permissions matrix</h3>
+        <p class="card-subtitle" style="font-size: 12.5px; color: #64748B; margin-top: 3px;">Granular access boundaries enforced across API endpoints and admin views.</p>
+      </div>
+      <span style="font-size: 11.5px; font-weight: 700; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 3px 8px; border-radius: 6px;">
+        RBAC Active
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>CAPABILITY</th>
+            <th>SUPER ADMIN</th>
+            <th>VERIFICATION STAFF</th>
+            <th>SUPPORT STAFF</th>
+            <th>COMPLIANCE OFFICER</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="font-medium" style="font-weight: 600; color: #0F172A;">Browse & search records</td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Full access</span></td>
+            <td><span style="color: #059669;">✓ View only</span></td>
+            <td><span style="color: #059669;">✓ View only</span></td>
+            <td><span style="color: #059669;">✓ Full audit access</span></td>
+          </tr>
+          <tr>
+            <td class="font-medium" style="font-weight: 600; color: #0F172A;">Owner & property approvals</td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Full access</span></td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Review & approve</span></td>
+            <td><span style="color: #059669;">✓ View only</span></td>
+            <td><span style="color: #059669;">✓ Compliance audit</span></td>
+          </tr>
+          <tr>
+            <td class="font-medium" style="font-weight: 600; color: #0F172A;">Complaints & support</td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Full access</span></td>
+            <td><span style="color: #059669;">✓ View only</span></td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Resolve & reply</span></td>
+            <td><span style="color: #059669;">✓ Dispute oversight</span></td>
+          </tr>
+          <tr>
+            <td class="font-medium" style="font-weight: 600; color: #0F172A;">Plans, payments & refunds</td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Full access</span></td>
+            <td class="text-subtle" style="color: #94A3B8;">— No access</td>
+            <td><span style="color: #059669;">✓ View payments</span></td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Dual authorization</span></td>
+          </tr>
+          <tr>
+            <td class="font-medium" style="font-weight: 600; color: #0F172A;">Staff, permissions & settings</td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Full access</span></td>
+            <td class="text-subtle" style="color: #94A3B8;">— No access</td>
+            <td class="text-subtle" style="color: #94A3B8;">— No access</td>
+            <td><span style="color: #059669; font-weight: 700;">✓ Security policies</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TWO-COLUMN WORKSPACE & SECURITY CONTROLS -->
+  <div class="two-col-detail-grid">
+    <!-- Workspace Settings Form -->
+    <div class="card" id="workspaceCard">
+      <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Workspace defaults</h3>
+      <p class="card-subtitle mb-14" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Core platform defaults used across the administration panel.</p>
+
+      <form onsubmit="saveGenericSettingsForm(event, 'workspaceQuickForm')">
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Workspace name</label>
+          <input type="text" name="workspace_name" class="form-input" value="{{ settings.workspace_name }}" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13.5px;">
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Support email</label>
+          <input type="email" name="support_email" class="form-input" value="{{ settings.support_email }}" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13.5px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Time zone</label>
+            <select name="timezone" class="form-select" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; background: #FFFFFF;">
+              <option value="Asia/Kolkata" {% if settings.timezone == 'Asia/Kolkata' %}selected{% endif %}>Asia / Kolkata · IST</option>
+              <option value="UTC" {% if settings.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Default currency</label>
+            <select name="currency" class="form-select" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; background: #FFFFFF;">
+              <option value="INR" {% if settings.currency == 'INR' %}selected{% endif %}>Indian Rupee · INR (₹)</option>
+              <option value="USD" {% if settings.currency == 'USD' %}selected{% endif %}>US Dollar · USD ($)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Save settings
+        </button>
+      </form>
+    </div>
+
+    <!-- Security Controls -->
+    <div class="card" id="securityCard">
+      <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Security & approval controls</h3>
+      <p class="card-subtitle mb-20" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Applied to every staff account across KiraayaGrid.</p>
+
+      <div class="toggle-control-list">
+        <div class="toggle-item-row">
+          <div>
+            <div class="toggle-title">Require two-factor authentication</div>
+            <div class="toggle-sub">Protect admin access with TOTP / Authenticator app.</div>
+          </div>
+          <label class="switch-ui">
+            <input type="checkbox" {% if settings.require_2fa %}checked{% endif %} onchange="toggleSecurityControl('require_2fa', this.checked)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item-row">
+          <div>
+            <div class="toggle-title">Dual approval for high-impact actions</div>
+            <div class="toggle-sub">Require second admin confirmation for refunds & bans.</div>
+          </div>
+          <label class="switch-ui">
+            <input type="checkbox" {% if settings.dual_approval %}checked{% endif %} onchange="toggleSecurityControl('dual_approval', this.checked)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item-row">
+          <div>
+            <div class="toggle-title">Automatic session timeout</div>
+            <div class="toggle-sub">Sign out inactive staff sessions after 30 minutes.</div>
+          </div>
+          <label class="switch-ui">
+            <input type="checkbox" {% if settings.auto_session_timeout %}checked{% endif %} onchange="toggleSecurityControl('auto_session_timeout', this.checked)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <div class="toggle-item-row">
+          <div>
+            <div class="toggle-title">Strict IP whitelist enforcement</div>
+            <div class="toggle-sub">Restrict staff login to registered corporate CIDR blocks.</div>
+          </div>
+          <label class="switch-ui">
+            <input type="checkbox" {% if settings.ip_whitelist_enabled %}checked{% endif %} onchange="toggleSecurityControl('ip_whitelist_enabled', this.checked)">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="foot-note-sub mt-20" style="font-size: 12px; color: #64748B; margin-top: 20px; border-top: 1px solid #F1F5F9; padding-top: 12px;">
+        Last policy update · {{ settings.last_policy_updated_by }} · {{ settings.last_policy_updated_at|date:"d M Y, H:i" }} IST
+      </div>
+    </div>
+  </div>
+
+{% elif tab == 'general' %}
+  <!-- ==============================================================
+       TAB 2: GENERAL SETTINGS (DYNAMIC EDIT & SAVE)
+       ============================================================== -->
+  <form onsubmit="saveGenericSettingsForm(event, 'generalSettingsForm')">
+    <div class="two-col-detail-grid">
+      <!-- Card 1: Workspace & Brand Identity -->
+      <div class="card">
+        <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Platform & Brand Identity</h3>
+        <p class="card-subtitle" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Core platform identifiers shown to tenants and owners.</p>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Workspace Name *</label>
+          <input type="text" name="workspace_name" class="form-input" value="{{ settings.workspace_name }}" required style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13.5px;">
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Official Support Email *</label>
+          <input type="email" name="support_email" class="form-input" value="{{ settings.support_email }}" required style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13.5px;">
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Helpdesk Helpline Phone</label>
+          <input type="text" name="support_phone" class="form-input" value="{{ settings.support_phone }}" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13.5px;">
+        </div>
+      </div>
+
+      <!-- Card 2: Localization, Currency & Commercials -->
+      <div class="card">
+        <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Regional & Commercial Defaults</h3>
+        <p class="card-subtitle" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Default financial thresholds, timezones and currency formatting.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Time Zone</label>
+            <select name="timezone" class="form-select" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; background: #FFFFFF;">
+              <option value="Asia/Kolkata" {% if settings.timezone == 'Asia/Kolkata' %}selected{% endif %}>Asia / Kolkata · IST</option>
+              <option value="UTC" {% if settings.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Default Currency</label>
+            <select name="currency" class="form-select" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; background: #FFFFFF;">
+              <option value="INR" {% if settings.currency == 'INR' %}selected{% endif %}>Indian Rupee · INR (₹)</option>
+              <option value="USD" {% if settings.currency == 'USD' %}selected{% endif %}>US Dollar · USD ($)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Commission Rate (%)</label>
+            <input type="number" step="0.5" name="default_commission_rate" class="form-input" value="{{ settings.default_commission_rate }}" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;">
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Support SLA (Hours)</label>
+            <input type="number" name="sla_threshold_hours" class="form-input" value="{{ settings.sla_threshold_hours }}" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button Bar -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+      <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 13.5px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Save General Settings
+      </button>
+    </div>
+  </form>
+
+{% elif tab == 'security' %}
+  <!-- ==============================================================
+       TAB 3: SECURITY POLICIES & ACTIVE SESSIONS
+       ============================================================== -->
+  <form onsubmit="saveGenericSettingsForm(event, 'securitySettingsForm')">
+    <div class="two-col-detail-grid">
+      <!-- Card 1: Authentication & Protection Policies -->
+      <div class="card">
+        <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Authentication & Protection Policies</h3>
+        <p class="card-subtitle" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Strict security controls enforced across all staff accounts.</p>
+
+        <div class="toggle-control-list">
+          <div class="toggle-item-row">
+            <div>
+              <div class="toggle-title">Enforce Two-Factor Authentication (2FA)</div>
+              <div class="toggle-sub">Staff must enter TOTP code on every new device login.</div>
+            </div>
+            <label class="switch-ui">
+              <input type="checkbox" {% if settings.require_2fa %}checked{% endif %} onchange="toggleSecurityControl('require_2fa', this.checked)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item-row">
+            <div>
+              <div class="toggle-title">Dual Authorization for High-Risk Actions</div>
+              <div class="toggle-sub">Second admin signature needed for refunds & owner suspensions.</div>
+            </div>
+            <label class="switch-ui">
+              <input type="checkbox" {% if settings.dual_approval %}checked{% endif %} onchange="toggleSecurityControl('dual_approval', this.checked)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item-row">
+            <div>
+              <div class="toggle-title">Auto Session Inactivity Timeout</div>
+              <div class="toggle-sub">Terminate active sessions after 30 minutes of idle time.</div>
+            </div>
+            <label class="switch-ui">
+              <input type="checkbox" {% if settings.auto_session_timeout %}checked{% endif %} onchange="toggleSecurityControl('auto_session_timeout', this.checked)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item-row">
+            <div>
+              <div class="toggle-title">Strict Corporate IP Whitelisting</div>
+              <div class="toggle-sub">Block access outside specified office CIDR ranges.</div>
+            </div>
+            <label class="switch-ui">
+              <input type="checkbox" {% if settings.ip_whitelist_enabled %}checked{% endif %} onchange="toggleSecurityControl('ip_whitelist_enabled', this.checked)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group mt-14" style="margin-top: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Allowed IP CIDR Blocks (Comma-separated)</label>
+          <textarea name="allowed_ips" class="form-textarea" rows="2" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 12.5px; font-family: monospace;">{{ settings.allowed_ips|default:"103.21.58.0/24, 192.168.1.0/24" }}</textarea>
+        </div>
+      </div>
+
+      <!-- Card 2: Active Administrator Sessions -->
+      <div class="card">
+        <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Live Administrator Sessions</h3>
+        <p class="card-subtitle" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Currently active authenticated sessions on the platform.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong style="color: #0F172A; font-size: 13px;">Ananya Shah (You)</strong>
+              <div style="font-size: 11.5px; color: #64748B;">Bengaluru · macOS Chrome · 192.168.1.10</div>
+            </div>
+            <span class="status-pill success">Active Now</span>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong style="color: #0F172A; font-size: 13px;">Rohit Verma</strong>
+              <div style="font-size: 11.5px; color: #64748B;">Bengaluru · Windows Edge · 103.21.58.142</div>
+            </div>
+            <span style="font-size: 11px; color: #64748B;">2m ago</span>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong style="color: #0F172A; font-size: 13px;">Neha Iyer</strong>
+              <div style="font-size: 11.5px; color: #64748B;">Pune · macOS Safari · 103.21.58.145</div>
+            </div>
+            <span style="font-size: 11px; color: #64748B;">5m ago</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline" style="width: 100%; justify-content: center; color: #DC2626; border-color: #FECACA;" onclick="revokeOtherSessions()">
+          Terminate All Other Staff Sessions
+        </button>
+      </div>
+    </div>
+
+    <!-- Submit Button Bar -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+      <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 13.5px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Save Security Policies
+      </button>
+    </div>
+  </form>
+
+{% elif tab == 'policies' %}
+  <!-- ==============================================================
+       TAB 4: APPROVAL POLICIES & SLA ESCALATION
+       ============================================================== -->
+  <form onsubmit="saveGenericSettingsForm(event, 'policiesSettingsForm')">
+    <div class="two-col-detail-grid">
+      <!-- Card 1: Listing & Owner Verification Policies -->
+      <div class="card">
+        <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Verification & Auto-Approval Rules</h3>
+        <p class="card-subtitle" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Automated rules that bypass human staff queues.</p>
+
+        <div class="toggle-control-list">
+          <div class="toggle-item-row">
+            <div>
+              <div class="toggle-title">Auto-approve Verified Owner Room Updates</div>
+              <div class="toggle-sub">Skip manual queue for price edits within threshold by Level-3 owners.</div>
+            </div>
+            <label class="switch-ui">
+              <input type="checkbox" {% if settings.auto_approve_verified_owners %}checked{% endif %} onchange="toggleSecurityControl('auto_approve_verified_owners', this.checked)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item-row">
+            <div>
+              <div class="toggle-title">Mandatory Electricity Bill for Owner KYC</div>
+              <div class="toggle-sub">Require matching address utility bill before verification.</div>
+            </div>
+            <label class="switch-ui">
+              <input type="checkbox" {% if settings.kyc_mandatory %}checked{% endif %} onchange="toggleSecurityControl('kyc_mandatory', this.checked)">
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Price Change Threshold (%)</label>
+            <input type="number" step="0.5" name="price_change_threshold" class="form-input" value="{{ settings.price_change_threshold }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;">
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Min Photos Required</label>
+            <input type="number" name="min_photos_required" class="form-input" value="{{ settings.min_photos_required }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Complaint SLA & Escalation Rules -->
+      <div class="card">
+        <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0 0 4px 0;">Dispute & SLA Watchdog Rules</h3>
+        <p class="card-subtitle" style="font-size: 12.5px; color: #64748B; margin-bottom: 16px;">Automated escalation triggers for tenant and owner disputes.</p>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Support Ticket Response SLA (Hours)</label>
+          <input type="number" name="sla_threshold_hours" class="form-input" value="{{ settings.sla_threshold_hours }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;">
+          <span style="font-size: 11px; color: #64748B; display: block; margin-top: 4px;">Staff must acknowledge high-priority tickets within this timeframe.</span>
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Unresolved Complaint Auto-Escalate (Hours)</label>
+          <input type="number" name="auto_escalate_hours" class="form-input" value="{{ settings.auto_escalate_hours }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;">
+          <span style="font-size: 11px; color: #64748B; display: block; margin-top: 4px;">Disputes older than this limit escalate automatically to Team Lead.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button Bar -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+      <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 13.5px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Save Approval Policies
+      </button>
+    </div>
+  </form>
+
+{% elif tab == 'integrations' %}
+  <!-- ==============================================================
+       TAB 5: INTEGRATIONS & API CREDENTIALS
+       ============================================================== -->
+  <form onsubmit="saveGenericSettingsForm(event, 'integrationsSettingsForm')">
+    <div class="two-col-detail-grid">
+      <!-- Razorpay Payment Gateway -->
+      <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div>
+            <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">💳 Razorpay Payments</h3>
+            <p style="font-size: 12px; color: #64748B; margin-top: 2px;">UPI, Netbanking & Cards processing</p>
+          </div>
+          <span class="status-pill success">Connected ✓</span>
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Razorpay Key ID</label>
+          <input type="text" name="razorpay_key_id" class="form-input" value="{{ settings.razorpay_key_id }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; font-family: monospace;">
+        </div>
+      </div>
+
+      <!-- MSG91 Telecom SMS -->
+      <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div>
+            <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">📱 MSG91 Telecom Gateway</h3>
+            <p style="font-size: 12px; color: #64748B; margin-top: 2px;">Transactional OTP & Alert SMS</p>
+          </div>
+          <span class="status-pill success">Active ✓</span>
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Registered Sender ID</label>
+          <input type="text" name="msg91_sender_id" class="form-input" value="{{ settings.msg91_sender_id }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; font-family: monospace;">
+        </div>
+      </div>
+
+      <!-- AWS SES / SendGrid Email -->
+      <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div>
+            <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">✉️ Transactional Email (AWS SES)</h3>
+            <p style="font-size: 12px; color: #64748B; margin-top: 2px;">Email delivery & broadcast engine</p>
+          </div>
+          <span class="status-pill success">Verified ✓</span>
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">From Email Address</label>
+          <input type="email" name="smtp_from_email" class="form-input" value="{{ settings.smtp_from_email }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px;">
+        </div>
+      </div>
+
+      <!-- Google Maps Platform -->
+      <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div>
+            <h3 class="card-section-title" style="font-size: 16px; font-weight: 700; color: #0F172A; margin: 0;">🗺️ Google Maps Platform</h3>
+            <p style="font-size: 12px; color: #64748B; margin-top: 2px;">Geocoding & locality polygon mapping</p>
+          </div>
+          <span class="status-pill success">Operational ✓</span>
+        </div>
+
+        <div class="form-group mb-14" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Maps JavaScript API Key</label>
+          <input type="text" name="google_maps_key" class="form-input" value="{{ settings.google_maps_key }}" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 9px; font-size: 13px; font-family: monospace;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button Bar -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+      <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-size: 13.5px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        Save Integration Settings
+      </button>
+    </div>
+  </form>
+
+{% endif %}
+
+<!-- ==============================================================
+     MODAL: INVITE STAFF MEMBER (CENTERED POPUP DIALOG)
+     ============================================================== -->
+<div class="modal-backdrop" id="inviteStaffModal" onclick="if(event.target === this) closeInviteModal();">
+  <div class="modal-content-box">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">✉️</span>
+        <h3 class="modal-title">Invite New Team Member</h3>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeInviteModal()">✕</button>
+    </div>
+
+    <form id="inviteStaffForm" onsubmit="submitStaffInvite(event)">
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">FIRST NAME *</label>
+            <input type="text" id="inviteFirstName" required class="form-input-field" placeholder="e.g. Priya" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">LAST NAME</label>
+            <input type="text" id="inviteLastName" class="form-input-field" placeholder="e.g. Sharma" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">OFFICIAL EMAIL ADDRESS *</label>
+          <input type="email" id="inviteEmail" required class="form-input-field" placeholder="priya.sharma@kiraayagrid.in" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">MOBILE NUMBER</label>
+          <input type="tel" id="invitePhone" class="form-input-field" placeholder="+91 98765 43210" style="width: 100%; padding: 8px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">STAFF ROLE *</label>
+          <select id="inviteRole" required style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px; background: #FFFFFF;">
+            <option value="VERIFICATION_STAFF">Verification Staff (Owner & Property Reviews)</option>
+            <option value="SUPPORT_STAFF" selected>Support Staff (Ticket Triage & In-App Chat)</option>
+            <option value="COMPLIANCE_OFFICER">Compliance Officer (Security & Audits)</option>
+            <option value="SUPER_ADMIN">Super Admin (Full Administrative Authority)</option>
+          </select>
+        </div>
+
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #64748B;">
+          🔒 An invitation link with one-time TOTP credential setup will be securely dispatched to this email address.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeInviteModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="inviteSubmitBtn">Send Invitation Link</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL: MANAGE ACCESS (CENTERED POPUP DIALOG)
+     ============================================================== -->
+<div class="modal-backdrop" id="manageStaffModal" onclick="if(event.target === this) closeManageAccessModal();">
+  <div class="modal-content-box">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">🛡️</span>
+        <h3 class="modal-title" id="manageModalTitle">Manage Staff Access</h3>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeManageAccessModal()">✕</button>
+    </div>
+
+    <form id="manageAccessForm" onsubmit="submitAccessUpdate(event)">
+      <input type="hidden" id="manageUserId" value="">
+
+      <div class="modal-body">
+        <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 14.5px; font-weight: 700; color: #0F172A;" id="manageStaffName">Staff Member</div>
+            <div style="font-size: 12px; color: #64748B;" id="manageStaffEmail">email@kiraayagrid.in</div>
+          </div>
+          <span class="reference-chip" id="manageStaffCode" style="font-family: monospace; font-size: 12px; font-weight: 700; background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 6px;">STF-000</span>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">ASSIGNED ROLE</label>
+          <select id="manageRoleSelect" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px; background: #FFFFFF;">
+            <option value="SUPER_ADMIN">Super Admin (Full Administrative Authority)</option>
+            <option value="VERIFICATION_STAFF">Verification Staff (Owner & Property Reviews)</option>
+            <option value="SUPPORT_STAFF">Support Staff (Ticket Triage & In-App Chat)</option>
+            <option value="COMPLIANCE_OFFICER">Compliance Officer (Security & Audits)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">ACCOUNT STATUS</label>
+          <select id="manageStatusSelect" style="width: 100%; padding: 9px 12px; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 13px; background: #FFFFFF;">
+            <option value="active">Active (Granted access to workspace)</option>
+            <option value="suspended">Suspended / Deactivated (Revoke access)</option>
+          </select>
+        </div>
+
+        <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #1E40AF;">
+          ℹ Changes to permissions take effect immediately across all active browser sessions and are recorded in the immutable audit log.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeManageAccessModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="manageSubmitBtn">Save Permissions</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT
+     ============================================================== -->
+<script>
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span>${type === 'success' ? '✓' : '⚠️'}</span>
+      <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(12px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  // --- GENERIC SETTINGS FORM SUBMISSION ---
+  function saveGenericSettingsForm(e, formId) {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type=\"submit\"]');
+    const origHtml = submitBtn ? submitBtn.innerHTML : 'Save';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Saving...';
+    }
+
+    const formData = new FormData(form);
+    const payload = {};
+    formData.forEach((value, key) => {
+      payload[key] = value;
+    });
+
+    fetch('/api/staff/save-workspace/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
+      }
+      if (data.success) {
+        showToast(data.message, 'success');
+      } else {
+        showToast(data.error || 'Failed to save settings', 'error');
+      }
+    })
+    .catch(err => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
+      }
+      showToast('Error saving settings to database', 'error');
+    });
+  }
+
+  // --- TOGGLE SECURITY SETTINGS (LIVE SWITCHES) ---
+  function toggleSecurityControl(settingKey, isChecked) {
+    fetch('/api/staff/toggle-setting/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        setting: settingKey,
+        enabled: isChecked
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showToast(data.message, 'success');
+      } else {
+        showToast(data.error || 'Failed to update policy', 'error');
+      }
+    })
+    .catch(err => {
+      showToast('Error updating security policy', 'error');
+    });
+  }
+
+  // --- REVOKE SESSIONS ---
+  function revokeOtherSessions() {
+    if (confirm('Are you sure you want to invalidate all other staff sessions? They will be required to log in again with 2FA.')) {
+      showToast('All other staff sessions terminated successfully.', 'success');
+    }
+  }
+
+  // --- INVITE STAFF MODAL ---
+  function openInviteModal() {
+    const modal = document.getElementById('inviteStaffModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('inviteFirstName').focus();
+    }
+  }
+
+  function closeInviteModal() {
+    const modal = document.getElementById('inviteStaffModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function submitStaffInvite(e) {
+    e.preventDefault();
+    const btn = document.getElementById('inviteSubmitBtn');
+    btn.disabled = true;
+    btn.innerText = 'Sending invitation...';
+
+    const payload = {
+      first_name: document.getElementById('inviteFirstName').value,
+      last_name: document.getElementById('inviteLastName').value,
+      email: document.getElementById('inviteEmail').value,
+      phone_number: document.getElementById('invitePhone').value,
+      role: document.getElementById('inviteRole').value
+    };
+
+    fetch('/api/staff/invite/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Send Invitation Link';
+      if (data.success) {
+        showToast(data.message, 'success');
+        closeInviteModal();
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        showToast(data.error || 'Failed to send invite', 'error');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Send Invitation Link';
+      showToast('Network error while inviting staff', 'error');
+    });
+  }
+
+  // --- MANAGE ACCESS MODAL ---
+  function openManageAccessModal(userId, name, email, roleKey, isActive, stfCode) {
+    document.getElementById('manageUserId').value = userId;
+    document.getElementById('manageStaffName').innerText = name;
+    document.getElementById('manageStaffEmail').innerText = email;
+    document.getElementById('manageStaffCode').innerText = stfCode;
+    document.getElementById('manageRoleSelect').value = roleKey;
+    document.getElementById('manageStatusSelect').value = isActive === 'true' ? 'active' : 'suspended';
+
+    const modal = document.getElementById('manageStaffModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeManageAccessModal() {
+    const modal = document.getElementById('manageStaffModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function submitAccessUpdate(e) {
+    e.preventDefault();
+    const btn = document.getElementById('manageSubmitBtn');
+    btn.disabled = true;
+    btn.innerText = 'Saving...';
+
+    const userId = document.getElementById('manageUserId').value;
+    const role = document.getElementById('manageRoleSelect').value;
+    const isActive = document.getElementById('manageStatusSelect').value === 'active';
+
+    fetch('/api/staff/update-access/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        role: role,
+        is_active: isActive
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Save Permissions';
+      if (data.success) {
+        showToast(data.message, 'success');
+        closeManageAccessModal();
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        showToast(data.error || 'Failed to update access', 'error');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Save Permissions';
+      showToast('Error saving staff permissions', 'error');
+    });
+  }
+
+  // CSRF Token Helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Keyboard shortcut ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeInviteModal();
+      closeManageAccessModal();
+    }
+  });
+</script>
+{% endblock %}

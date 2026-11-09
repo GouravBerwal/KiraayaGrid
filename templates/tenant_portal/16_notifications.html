@@ -1,0 +1,285 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Notifications Center — KiraayaGrid{% endblock %}
+
+{% block content %}
+<!-- HEADER ROW -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+      Notifications Center
+    </h1>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Real-time activity alerts on host messages, walkthrough approvals, and booking updates.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    {% if count_unread > 0 %}
+      <button type="button" onclick="handleMarkAllRead()" id="markAllBtn" style="padding: 9px 18px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; font-size: 12.5px; font-weight: 700; color: var(--color-text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); transition: all 0.2s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Mark All as Read ({{ count_unread }})</span>
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- SEGMENTED TABS & SEARCH ROW -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+  <!-- Tabs -->
+  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: #FFFFFF; padding: 6px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+    <a href="?tab=ALL" class="enq-tab {% if active_tab == 'ALL' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if active_tab == 'ALL' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      All ({{ count_all }})
+    </a>
+    <a href="?tab=UNREAD" class="enq-tab {% if active_tab == 'UNREAD' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if active_tab == 'UNREAD' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Unread (<span id="unreadCountBadge">{{ count_unread }}</span>)
+    </a>
+    <a href="?tab=ENQUIRIES" class="enq-tab {% if active_tab == 'ENQUIRIES' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if active_tab == 'ENQUIRIES' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Enquiries &amp; Chat ({{ count_enquiries }})
+    </a>
+    <a href="?tab=VISITS" class="enq-tab {% if active_tab == 'VISITS' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if active_tab == 'VISITS' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Walkthroughs ({{ count_visits }})
+    </a>
+    <a href="?tab=BOOKINGS" class="enq-tab {% if active_tab == 'BOOKINGS' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if active_tab == 'BOOKINGS' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Bookings &amp; System ({{ count_bookings }})
+    </a>
+  </div>
+
+  <!-- Search Filter -->
+  <form method="GET" action="{% url 'tenant_portal:notifications' %}" style="display: flex; align-items: center; gap: 8px;">
+    {% if active_tab != 'ALL' %}
+      <input type="hidden" name="tab" value="{{ active_tab }}">
+    {% endif %}
+    <input type="text" name="q" value="{{ search_query }}" placeholder="Search notifications..." style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 12.5px; outline: none; width: 200px; background: #FFFFFF;">
+    <button type="submit" class="btn-search-primary" style="padding: 8px 14px; font-size: 12.5px;">
+      Search
+    </button>
+  </form>
+</div>
+
+<!-- NOTIFICATIONS CONTAINER -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card);">
+  <div style="display: flex; flex-direction: column;" id="notifListContainer">
+
+    {% for notif in notifications %}
+      <div id="notif-row-{{ notif.id }}" class="tenant-notif-item" style="padding: 20px 24px; border-bottom: 1px solid var(--color-border-subtle); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; {% if not notif.is_read %}background: #F8FAFC;{% else %}background: #FFFFFF;{% endif %} transition: background 0.2s;">
+        
+        <!-- Left: Category Icon + Content -->
+        <div style="display: flex; align-items: flex-start; gap: 16px; flex: 1;">
+          
+          <!-- Category Icon -->
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: {{ notif.icon_bg }}; color: {{ notif.icon_color }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+            {% if notif.icon_type == 'chat' %}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            {% elif notif.icon_type == 'calendar' %}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            {% elif notif.icon_type == 'booking' %}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            {% else %}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            {% endif %}
+          </div>
+
+          <!-- Notification Text Body -->
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h4 style="font-size: 15px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+                {{ notif.title }}
+              </h4>
+              
+              {% if not notif.is_read %}
+                <span id="unread-dot-{{ notif.id }}" style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-rose-wine); display: inline-block;"></span>
+              {% endif %}
+
+              <span style="font-size: 10.5px; font-weight: 700; background: {{ notif.icon_bg }}; color: {{ notif.icon_color }}; padding: 2px 8px; border-radius: 4px;">
+                {{ notif.category_label }}
+              </span>
+            </div>
+
+            <p style="font-size: 13.5px; color: var(--color-text-muted); margin: 4px 0 8px 0; line-height: 1.5;">
+              {{ notif.message }}
+            </p>
+
+            <div style="font-size: 11.5px; color: var(--color-text-dim); display: flex; align-items: center; gap: 10px;">
+              <span>🕒 {{ notif.time_ago }}</span>
+              <span>&bull;</span>
+              <span>{{ notif.created_at|date:"d M Y, h:i A" }}</span>
+              <span>&bull;</span>
+              <span style="text-transform: uppercase;">{{ notif.channel }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Actions -->
+        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+          <a href="{{ notif.button_url }}" onclick="markReadQuick('{{ notif.id }}')" class="btn-search-primary" style="padding: 7px 16px; font-size: 12px; text-decoration: none; white-space: nowrap;">
+            <span>{{ notif.button_label }}</span>
+          </a>
+
+          {% if not notif.is_read %}
+            <button type="button" onclick="markReadManual('{{ notif.id }}')" id="read-btn-{{ notif.id }}" title="Mark as read" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-border); background: #FFFFFF; color: #059669; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+              ✓
+            </button>
+          {% endif %}
+
+          <button type="button" onclick="deleteNotification('{{ notif.id }}')" title="Dismiss" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-border); background: #FFFFFF; color: #94A3B8; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='#94A3B8'">
+            ✕
+          </button>
+        </div>
+
+      </div>
+    {% empty %}
+      <!-- Empty State -->
+      <div style="padding: 60px 24px; text-align: center;">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: #F1F5F9; color: #64748B; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px auto;">
+          🔔
+        </div>
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">All Caught Up!</h3>
+        <p style="font-size: 13.5px; color: var(--color-text-muted); margin: 0;">
+          No notifications found in this category. You're completely up to date.
+        </p>
+      </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- PAGINATION (MAX 5 PER PAGE) -->
+  {% if count_all > 0 %}
+  <div style="margin-top: 24px; padding: 14px 20px; border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);">
+    <div>
+      Showing <strong>{{ page_obj.start_index }}</strong> to <strong>{{ page_obj.end_index }}</strong> of <strong>{{ paginator.count }}</strong> notifications (Limit 5 per page)
+    </div>
+
+    <div style="display: flex; gap: 6px; align-items: center;">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </span>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+      <span style="padding: 6px 12px; border-radius: var(--radius-pill); background: var(--color-powder-blue); color: #0F172A; font-weight: 800;">
+        {{ num }}
+      </span>
+      {% else %}
+      <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 600; text-decoration: none;">
+        {{ num }}
+      </a>
+      {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  // Mark Single Notification Read
+  function markReadManual(notifId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/notification/mark-read/' + notifId + '/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const row = document.getElementById('notif-row-' + notifId);
+        if (row) row.style.backgroundColor = '#FFFFFF';
+        const dot = document.getElementById('unread-dot-' + notifId);
+        if (dot) dot.remove();
+        const btn = document.getElementById('read-btn-' + notifId);
+        if (btn) btn.remove();
+        
+        // Decrement badge
+        const badge = document.getElementById('unreadCountBadge');
+        if (badge) {
+          let c = parseInt(badge.innerText) || 0;
+          if (c > 0) badge.innerText = c - 1;
+        }
+      }
+    });
+  }
+
+  function markReadQuick(notifId) {
+    // Fire and forget when clicking CTA
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    fetch('/tenant/api/notification/mark-read/' + notifId + '/', {
+      method: 'POST',
+      body: formData
+    });
+  }
+
+  // Mark All Notifications Read
+  function handleMarkAllRead() {
+    const btn = document.getElementById('markAllBtn');
+    if (btn) btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_mark_all_notifications_read" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        document.querySelectorAll('.tenant-notif-item').forEach(row => row.style.backgroundColor = '#FFFFFF');
+        document.querySelectorAll('span[id^="unread-dot-"]').forEach(d => d.remove());
+        document.querySelectorAll('button[id^="read-btn-"]').forEach(b => b.remove());
+        const badge = document.getElementById('unreadCountBadge');
+        if (badge) badge.innerText = '0';
+        if (btn) btn.remove();
+        showTenantToast('All notifications marked as read.');
+      }
+    });
+  }
+
+  // Delete notification
+  function deleteNotification(notifId) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/notification/delete/' + notifId + '/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const row = document.getElementById('notif-row-' + notifId);
+        if (row) {
+          row.style.transition = 'all 0.3s';
+          row.style.opacity = '0';
+          row.style.transform = 'translateY(-8px)';
+          setTimeout(() => row.remove(), 300);
+        }
+        showTenantToast('Notification removed.');
+      }
+    });
+  }
+</script>
+{% endblock %}

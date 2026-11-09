@@ -1,0 +1,368 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}KiraayaGrid — Host Console{% endblock %}</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Owner Portal Theme CSS -->
+  <link rel="stylesheet" href="{% static 'owner_portal/css/owner_theme.css' %}">
+
+  {% block extra_css %}{% endblock %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Mobile Sidebar Backdrop -->
+  <div class="owner-sidebar-backdrop" id="ownerSidebarBackdrop"></div>
+
+  <div class="owner-app-container">
+
+    <!-- OWNER SIDEBAR (#344966) -->
+    <aside class="owner-sidebar" id="ownerSidebar">
+      <!-- Close Button for Mobile Drawer -->
+      <button class="owner-sidebar-close-btn" id="ownerSidebarCloseBtn" aria-label="Close sidebar">✕</button>
+
+      <!-- BRAND LOGO -->
+      <a href="{% url 'owner_portal:dashboard' %}" class="owner-brand-wrap" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+        <div class="kg-logo-badge">
+          <svg width="28" height="28" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="34" height="34" rx="10" fill="url(#kgOwnerGrad)"/>
+            <rect x="6.5" y="6.5" width="9" height="9" rx="3" fill="#DDEDAA"/>
+            <rect x="18.5" y="6.5" width="9" height="9" rx="3" fill="#93B5C6"/>
+            <rect x="6.5" y="18.5" width="9" height="9" rx="3" fill="#F0CF65"/>
+            <path d="M18.5 22C18.5 20.067 20.067 18.5 22 18.5H25C26.933 18.5 28.5 20.067 28.5 22V27.5H18.5V22Z" fill="#D7816A"/>
+            <circle cx="23.5" cy="22.5" r="1.5" fill="#FFFFFF"/>
+            <defs>
+              <linearGradient id="kgOwnerGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#183B3B"/>
+                <stop offset="1" stop-color="#0E2424"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="brand-name" style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 19px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;">Kiraaya<span style="color: #DDEDAA;">Grid</span></span>
+      </a>
+
+      <div class="sidebar-category-title">OWNER WORKSPACE</div>
+
+      <!-- NAVIGATION LINKS -->
+      <ul class="sidebar-nav-list">
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name in 'dashboard,dashboard_alt' %}active{% endif %}">
+          <a href="{% url 'owner_portal:dashboard' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </span>
+            <span>Overview</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name in 'my_properties,manage_property' %}active{% endif %}">
+          <a href="{% url 'owner_portal:my_properties' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M9 9h1"></path><path d="M9 13h1"></path><path d="M9 17h1"></path><path d="M14 9h1"></path><path d="M14 13h1"></path><path d="M14 17h1"></path></svg>
+            </span>
+            <span>My Properties</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if 'add_property' in request.resolver_match.url_name %}active{% endif %}">
+          <a href="{% url 'owner_portal:add_property' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            </span>
+            <span>Add Property</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if 'rooms' in request.resolver_match.url_name or request.resolver_match.url_name == 'all_rooms' %}active{% endif %}">
+          <a href="{% url 'owner_portal:all_rooms' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path><path d="M2 17h20"></path><path d="M6 8v9"></path></svg>
+            </span>
+            <span>Rooms & Beds</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name in 'enquiries,enquiry_details' %}active{% endif %}">
+          <a href="{% url 'owner_portal:enquiries' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </span>
+            <span>Enquiries</span>
+            <span class="nav-count-badge">2</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name in 'booking_requests,booking_request_details' %}active{% endif %}">
+          <a href="{% url 'owner_portal:booking_requests' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </span>
+            <span>Booking Requests</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name == 'pricing_availability' %}active{% endif %}">
+          <a href="{% url 'owner_portal:pricing_availability' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </span>
+            <span>Pricing & Availability</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}">
+          <a href="{% url 'owner_portal:reviews' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </span>
+            <span>Reviews</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name == 'subscription' %}active{% endif %}">
+          <a href="{% url 'owner_portal:subscription' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            </span>
+            <span>Subscription & Billing</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name == 'support' %}active{% endif %}">
+          <a href="{% url 'owner_portal:support' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </span>
+            <span>Help & Support</span>
+          </a>
+        </li>
+
+        <li class="sidebar-nav-item {% if request.resolver_match.url_name == 'profile_settings' %}active{% endif %}">
+          <a href="{% url 'owner_portal:profile_settings' %}">
+            <span class="nav-ico">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </span>
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- SIDEBAR PROMO CARD -->
+      <div class="sidebar-promo-card">
+        <div class="promo-title-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+          <span>A little more possibility.</span>
+        </div>
+        <p class="promo-desc">Reach more seekers with KiraayaGrid Plus.</p>
+        <a href="{% url 'owner_portal:subscription' %}" class="promo-link">Explore Plus &nearr;</a>
+      </div>
+
+      <!-- SIDEBAR USER PROFILE -->
+      <div class="sidebar-user-profile">
+        <div class="user-avatar-badge">
+          {% if owner_user and owner_user.first_name %}
+            {{ owner_user.first_name|first }}{{ owner_user.last_name|first }}
+          {% else %}
+            AM
+          {% endif %}
+        </div>
+        <div class="user-meta">
+          <div class="user-name">{{ owner_user.get_full_name|default:"Arjun Mehta" }}</div>
+          <div class="user-subrole">Property owner</div>
+        </div>
+        <a href="/admin/logout/" style="color: rgba(255,255,255,0.6); text-decoration: none;" title="Sign out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN PAGE WRAPPER -->
+    <div class="owner-main-wrap">
+
+      <!-- TOPBAR -->
+      <header class="owner-topbar">
+        <div class="topbar-left">
+          <button class="owner-mobile-menu-btn" id="ownerMobileMenuBtn" aria-label="Toggle owner menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="topbar-breadcrumb-title">{% block page_title %}Overview{% endblock %}</div>
+          <span style="color: #CBD5E1;">•</span>
+          <div class="topbar-breadcrumb-sub">{% block page_subtitle %}Welcome to your owner workspace{% endblock %}</div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="topbar-date">{{ current_date_display|default:"Friday, 6 Nov 2026" }}</div>
+
+          <div class="topbar-search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Search your workspace</span>
+            <kbd>⌘ K</kbd>
+          </div>
+
+          <a href="{% url 'owner_portal:notifications' %}" class="topbar-icon-btn" title="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="topbar-unread-dot"></span>
+          </a>
+
+          <a href="{% url 'owner_portal:support' %}" class="topbar-icon-btn" title="Help & Support">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </a>
+
+          <!-- TOPBAR USER DROPDOWN (Apple Glassmorphism) -->
+          <div class="topbar-user-wrap" style="position: relative;">
+            <button class="topbar-avatar-btn" id="topbarAvatarBtn" title="Account Menu" aria-haspopup="true" aria-expanded="false">
+              {{ owner_user.first_name|first|default:"A" }}{{ owner_user.last_name|first|default:"M" }}
+            </button>
+
+            <div class="topbar-dropdown-menu" id="topbarDropdownMenu" style="display: none;">
+              <div class="dropdown-header">
+                <div class="dropdown-user-avatar">
+                  {{ owner_user.first_name|first|default:"A" }}{{ owner_user.last_name|first|default:"M" }}
+                </div>
+                <div class="dropdown-user-info">
+                  <div class="dropdown-user-name">{{ owner_user.get_full_name|default:"Arjun Mehta" }}</div>
+                  <div class="dropdown-user-phone">{{ owner_user.phone_number|default:"+91 99887 76655" }}</div>
+                  <div class="dropdown-user-status">
+                    <span class="status-dot-green"></span>
+                    <span>Verified Owner</span>
+                  </div>
+                </div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <ul class="dropdown-links-list">
+                <li>
+                  <a href="{% url 'owner_portal:profile_settings' %}" class="dropdown-link-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span>Profile & Account Settings</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'owner_portal:my_properties' %}" class="dropdown-link-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path></svg>
+                    <span>My Properties ({{ total_properties|default:"3" }})</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'owner_portal:subscription' %}" class="dropdown-link-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    <span>Subscription & Billing</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'owner_portal:support' %}" class="dropdown-link-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span>Help & Support</span>
+                  </a>
+                </li>
+              </ul>
+              <div class="dropdown-divider"></div>
+              <div style="padding: 6px;">
+                <a href="/admin/logout/" class="dropdown-logout-item">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  <span>Logout from Workspace</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- DYNAMIC CONTENT AREA -->
+      <main class="owner-content-body">
+        {% block content %}{% endblock %}
+      </main>
+
+      <!-- FOOTER BRANDING -->
+      <footer class="owner-page-footer">
+        <div>KiraayaGrid for owners · Direct living platform.</div>
+        <div class="footer-status-pill">
+          <span class="footer-green-dot"></span>
+          <span>All systems operational · Live sync active</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- DROPDOWN & MOBILE SIDEBAR SCRIPT -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mobile Sidebar Toggle
+    const mobileMenuBtn = document.getElementById('ownerMobileMenuBtn');
+    const sidebar = document.getElementById('ownerSidebar');
+    const backdrop = document.getElementById('ownerSidebarBackdrop');
+    const closeBtn = document.getElementById('ownerSidebarCloseBtn');
+
+    function openOwnerSidebar() {
+      if (sidebar) sidebar.classList.add('mobile-open');
+      if (backdrop) backdrop.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeOwnerSidebar() {
+      if (sidebar) sidebar.classList.remove('mobile-open');
+      if (backdrop) backdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (sidebar && sidebar.classList.contains('mobile-open')) {
+          closeOwnerSidebar();
+        } else {
+          openOwnerSidebar();
+        }
+      });
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeOwnerSidebar);
+    if (backdrop) backdrop.addEventListener('click', closeOwnerSidebar);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && sidebar && sidebar.classList.contains('mobile-open')) {
+        closeOwnerSidebar();
+      }
+    });
+
+    const avatarBtn = document.getElementById('topbarAvatarBtn');
+    const dropdown = document.getElementById('topbarDropdownMenu');
+
+    if (avatarBtn && dropdown) {
+      avatarBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = dropdown.style.display === 'block';
+        dropdown.style.display = isOpen ? 'none' : 'block';
+        avatarBtn.setAttribute('aria-expanded', !isOpen);
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!dropdown.contains(e.target) && e.target !== avatarBtn) {
+          dropdown.style.display = 'none';
+          avatarBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && dropdown.style.display === 'block') {
+          dropdown.style.display = 'none';
+          avatarBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+  });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

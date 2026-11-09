@@ -1,0 +1,386 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Profile &amp; Living Preferences — KiraayaGrid{% endblock %}
+
+{% block content %}
+<!-- HEADER ROW -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+      Profile &amp; Living Preferences
+    </h1>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Help hosts understand your stay requirements and receive tailored home recommendations.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <a href="{% url 'tenant_portal:account_settings' %}" class="btn-outline-pill" style="padding: 9px 16px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span>Security &amp; Password</span>
+    </a>
+    <button type="button" onclick="triggerProfileSave()" id="topSaveBtn" class="btn-search-primary" style="padding: 9px 22px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+      <span>Save Preferences</span>
+    </button>
+  </div>
+</div>
+
+<!-- HERO TENANT IDENTITY BANNER -->
+<div style="background: linear-gradient(135deg, #0F3E4D 0%, #1E293B 100%); border-radius: var(--radius-xl); padding: 28px 34px; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 25px rgba(15, 62, 77, 0.2); margin-bottom: 28px;">
+  <div style="display: flex; align-items: center; gap: 20px;">
+    <div id="bannerInitials" style="width: 76px; height: 76px; border-radius: 50%; background: #F0CF65; color: #5D430A; font-size: 26px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.4);">
+      {{ initials }}
+    </div>
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <h2 id="bannerFullName" style="font-size: 24px; font-weight: 800; margin: 0; color: #FFFFFF;">{{ full_name }}</h2>
+        <span style="font-size: 11px; font-weight: 800; background: #A7F3D0; color: #064E3B; padding: 4px 10px; border-radius: var(--radius-pill); letter-spacing: 0.5px;">
+          &check; VERIFIED SEEKER
+        </span>
+      </div>
+      <div id="bannerProfession" style="font-size: 13px; opacity: 0.9; margin: 4px 0 8px 0;">
+        {{ profile.get_profession_display|default:"Working Professional" }} &bull; {{ profile.company_or_college|default:"TechCorp Solutions" }}
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; opacity: 0.85; flex-wrap: wrap;">
+        <span id="bannerEmail">{{ active_tenant.email }}</span> &bull;
+        <span id="bannerPhone">{{ active_tenant.phone_number }}</span> &bull;
+        <span id="bannerCity">Preferred: {{ profile.preferred_city.name|default:"Bengaluru" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Statistics Counters -->
+  <div style="display: flex; gap: 18px; background: rgba(255, 255, 255, 0.1); padding: 14px 24px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);">
+    <div style="text-align: center;">
+      <div style="font-size: 22px; font-weight: 800;">{{ saved_count }}</div>
+      <div style="font-size: 10.5px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Saved</div>
+    </div>
+    <div style="width: 1px; height: 32px; background: rgba(255,255,255,0.25);"></div>
+    <div style="text-align: center;">
+      <div style="font-size: 22px; font-weight: 800;">{{ enquiries_count }}</div>
+      <div style="font-size: 10.5px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Enquiries</div>
+    </div>
+    <div style="width: 1px; height: 32px; background: rgba(255,255,255,0.25);"></div>
+    <div style="text-align: center;">
+      <div style="font-size: 22px; font-weight: 800;">{{ visits_count }}</div>
+      <div style="font-size: 10.5px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Visits</div>
+    </div>
+    <div style="width: 1px; height: 32px; background: rgba(255,255,255,0.25);"></div>
+    <div style="text-align: center;">
+      <div style="font-size: 22px; font-weight: 800;">{{ bookings_count }}</div>
+      <div style="font-size: 10.5px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">Bookings</div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM CARD: PERSONAL DETAILS & LIVING PREFERENCES -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 34px 38px; box-shadow: var(--shadow-card);">
+  <form id="tenantProfileForm" onsubmit="handleProfileSubmit(event)">
+    {% csrf_token %}
+    <input type="hidden" name="is_ajax" value="true">
+
+    <!-- SECTION 1: PERSONAL INFORMATION -->
+    <div style="margin-bottom: 30px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+        <h3 style="font-size: 16.5px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+          1. Personal Contact Information
+        </h3>
+        <span style="font-size: 11.5px; color: #059669; font-weight: 700; background: #DCFCE7; padding: 2px 8px; border-radius: 4px;">
+          Shield Protected
+        </span>
+      </div>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 20px 0;">
+        Official information used for verified landlord discussions and digital tenancy contracts.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">First Name *</label>
+          <input type="text" name="first_name" id="field_first_name" value="{{ active_tenant.first_name }}" required style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Last Name *</label>
+          <input type="text" name="last_name" id="field_last_name" value="{{ active_tenant.last_name }}" required style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Email Address *</label>
+          <input type="email" name="email" id="field_email" value="{{ active_tenant.email }}" required style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Phone Number *</label>
+          <input type="text" name="phone_number" id="field_phone" value="{{ active_tenant.phone_number }}" required style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: SEARCH & ACCOMMODATION CRITERIA -->
+    <div style="border-top: 1px solid var(--color-border-subtle); padding-top: 26px; margin-bottom: 30px;">
+      <h3 style="font-size: 16.5px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">
+        2. Stay Search &amp; Locality Criteria
+      </h3>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 20px 0;">
+        Preferences used to power your default home feed and match properties within budget.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+        <!-- Preferred City -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Preferred City *</label>
+          <select name="preferred_city" id="citySelect" onchange="handleCityChange(this.value)" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for c in cities %}
+              <option value="{{ c.id }}" {% if profile.preferred_city_id == c.id %}selected{% endif %}>
+                {{ c.name }}, {{ c.state }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Preferred Locality -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Primary Preferred Locality</label>
+          <select name="preferred_locality" id="localitySelect" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for loc in localities %}
+              <option value="{{ loc.id }}" {% if profile.preferred_locality_id == loc.id %}selected{% endif %}>
+                {{ loc.name }} ({{ loc.pincode }})
+              </option>
+            {% empty %}
+              <option value="">Select City First</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Accommodation Type -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Preferred Accommodation Type</label>
+          <select name="preferred_accommodation_type" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for code, label in accommodation_types %}
+              <option value="{{ code }}" {% if profile.preferred_accommodation_type == code %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Occupancy Preference -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Room Occupancy Preference</label>
+          <select name="occupancy_preference" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for code, label in occupancy_choices %}
+              <option value="{{ code }}" {% if profile.occupancy_preference == code %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Max Monthly Budget -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Maximum Monthly Budget (₹)</label>
+          <input type="number" name="monthly_budget" value="{{ profile.monthly_budget|floatformat:0 }}" step="500" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <!-- Min Budget -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Minimum Monthly Budget (₹)</label>
+          <input type="number" name="min_budget" value="{{ profile.min_budget|floatformat:0 }}" step="500" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <!-- Target Move-in Date -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Target Move-in Date</label>
+          <input type="date" name="target_move_in_date" value="{{ profile.target_move_in_date|date:'Y-m-d' }}" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <!-- Gender Category -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Gender Policy</label>
+          <select name="gender_preference" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for code, label in gender_choices %}
+              <option value="{{ code }}" {% if profile.gender_preference == code %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: LIVING HABITS & PROFESSIONAL INFO -->
+    <div style="border-top: 1px solid var(--color-border-subtle); padding-top: 26px; margin-bottom: 30px;">
+      <h3 style="font-size: 16.5px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">
+        3. Profession &amp; Living Habits
+      </h3>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 20px 0;">
+        Background details shared with landlords to accelerate approval and lease issuance.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 18px;">
+        <!-- Profession -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Profession / Occupation *</label>
+          <select name="profession" id="field_profession" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for code, label in profession_choices %}
+              <option value="{{ code }}" {% if profile.profession == code %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Company or College -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Company or College Name</label>
+          <input type="text" name="company_or_college" id="field_company" value="{{ profile.company_or_college }}" placeholder="e.g. TechCorp Solutions, IIT Bangalore" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <!-- Food Preference -->
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Food Preference</label>
+          <select name="food_preference" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for code, label in food_choices %}
+              <option value="{{ code }}" {% if profile.food_preference == code %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Bio / Notes -->
+      <div>
+        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Personal Bio / Notes for Landlords</label>
+        <textarea rows="3" name="bio" style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none; resize: vertical;">{{ profile.bio }}</textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 4: ALERT DELIVERY CHANNELS -->
+    <div style="border-top: 1px solid var(--color-border-subtle); padding-top: 26px; margin-bottom: 30px;">
+      <h3 style="font-size: 16.5px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">
+        4. Notification &amp; Alert Delivery Channels
+      </h3>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 20px 0;">
+        Instant notification delivery channels for new landlord replies and visit updates.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 14px 20px; border-radius: 12px; cursor: pointer;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);">Instant WhatsApp Alerts ({{ active_tenant.phone_number }})</div>
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">Real-time notifications whenever a landlord replies to your enquiry or accepts a walkthrough.</div>
+          </div>
+          <input type="checkbox" name="whatsapp_notifications" {% if profile.whatsapp_notifications %}checked{% endif %} style="width: 18px; height: 18px; accent-color: #059669;">
+        </label>
+
+        <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 14px 20px; border-radius: 12px; cursor: pointer;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);">SMS Walkthrough Reminders</div>
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">Dispatched 2 hours prior to scheduled property walkthroughs with on-site manager direct contact.</div>
+          </div>
+          <input type="checkbox" name="sms_notifications" {% if profile.sms_notifications %}checked{% endif %} style="width: 18px; height: 18px; accent-color: #059669;">
+        </label>
+
+        <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 14px 20px; border-radius: 12px; cursor: pointer;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);">Email Tenancy Documents &amp; Invoices</div>
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">Digital rental agreement copies, deposit receipts, and verified gate pass slips.</div>
+          </div>
+          <input type="checkbox" name="email_notifications" {% if profile.email_notifications %}checked{% endif %} style="width: 18px; height: 18px; accent-color: #059669;">
+        </label>
+      </div>
+    </div>
+
+    <!-- BOTTOM SAVE BUTTON ROW -->
+    <div style="display: flex; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--color-border);">
+      <button type="submit" id="bottomSaveBtn" class="btn-search-primary" style="padding: 12px 32px; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        <span>Save All Preferences</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function triggerProfileSave() {
+    document.getElementById('tenantProfileForm').requestSubmit();
+  }
+
+  // Dependent Locality Loader when City changes
+  function handleCityChange(cityId) {
+    if (!cityId) return;
+    const localitySelect = document.getElementById('localitySelect');
+    localitySelect.innerHTML = '<option value="">Loading localities...</option>';
+
+    fetch('/tenant/api/city-localities/' + cityId + '/')
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          let html = '';
+          data.localities.forEach(loc => {
+            html += `<option value="${loc.id}">${loc.name} (${loc.pincode})</option>`;
+          });
+          localitySelect.innerHTML = html;
+        }
+      })
+      .catch(err => {
+        localitySelect.innerHTML = '<option value="">Error loading localities</option>';
+      });
+  }
+
+  // Handle Form Submit via AJAX
+  function handleProfileSubmit(e) {
+    e.preventDefault();
+    const topBtn = document.getElementById('topSaveBtn');
+    const bottomBtn = document.getElementById('bottomSaveBtn');
+    if (topBtn) topBtn.disabled = true;
+    if (bottomBtn) bottomBtn.innerText = 'Saving Changes...';
+
+    const form = document.getElementById('tenantProfileForm');
+    const formData = new FormData(form);
+
+    fetch('{% url "tenant_portal:profile_preferences" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (topBtn) topBtn.disabled = false;
+      if (bottomBtn) bottomBtn.innerHTML = '<span>Save All Preferences</span>';
+
+      if (data.status === 'success') {
+        // Update hero banner dynamically
+        const firstName = document.getElementById('field_first_name').value;
+        const lastName = document.getElementById('field_last_name').value;
+        const email = document.getElementById('field_email').value;
+        const phone = document.getElementById('field_phone').value;
+        const company = document.getElementById('field_company').value;
+        const profession = document.getElementById('field_profession').options[document.getElementById('field_profession').selectedIndex].text;
+        const city = document.getElementById('citySelect').options[document.getElementById('citySelect').selectedIndex].text;
+
+        document.getElementById('bannerFullName').innerText = `${firstName} ${lastName}`;
+        document.getElementById('bannerInitials').innerText = (firstName[0] || 'A') + (lastName[0] || 'S');
+        document.getElementById('bannerEmail').innerText = email;
+        document.getElementById('bannerPhone').innerText = phone;
+        document.getElementById('bannerProfession').innerText = `${profession} • ${company}`;
+        document.getElementById('bannerCity').innerText = `Preferred: ${city}`;
+
+        showTenantToast('Profile details and living preferences updated successfully!');
+      } else {
+        alert(data.message || 'Error updating profile');
+      }
+    })
+    .catch(err => {
+      if (topBtn) topBtn.disabled = false;
+      if (bottomBtn) bottomBtn.innerText = 'Save All Preferences';
+      alert('Network error while saving profile');
+    });
+  }
+</script>
+{% endblock %}

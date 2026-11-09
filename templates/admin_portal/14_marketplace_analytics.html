@@ -1,0 +1,1467 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Marketplace analytics — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Analytics{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/14_marketplace_analytics.css' %}?v=7.0">
+  <style>
+    /* ==============================================================
+       SCREEN 14: APPLE/FAANG-GRADE ANALYTICS STYLES (v7.0)
+       ============================================================== */
+    
+    /* SINGLE-LINE FILTER TOOLBAR */
+    .analytics-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      padding-bottom: 4px !important;
+    }
+
+    .analytics-filter-select {
+      width: auto !important;
+      min-width: 150px !important;
+      padding: 8px 30px 8px 12px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+    }
+
+    .analytics-filter-select:focus {
+      outline: none !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .analytics-btn {
+      padding: 8px 16px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 9px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      text-decoration: none !important;
+      transition: all 0.15s ease !important;
+    }
+
+    /* TOP 4 ELEVATED KPI CARDS */
+    .stats-grid-4 {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 18px !important;
+      margin-bottom: 22px !important;
+    }
+
+    @media (max-width: 1080px) {
+      .stats-grid-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    .stats-grid-4 .stat-box {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 16px !important;
+      padding: 22px 24px !important;
+      position: relative !important;
+      overflow: hidden !important;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .stats-grid-4 .stat-box:hover {
+      transform: translateY(-3px) !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .stats-grid-4 .stat-box::before {
+      content: "" !important;
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      right: 0 !important;
+      height: 4px !important;
+      background: #1C5D99 !important;
+    }
+
+    .stats-grid-4 .stat-box:nth-child(2)::before { background: #639FAB !important; }
+    .stats-grid-4 .stat-box:nth-child(3)::before { background: #059669 !important; }
+    .stats-grid-4 .stat-box:nth-child(4)::before { background: #D97706 !important; }
+
+    /* DASHBOARD TWO-COLUMN CARDS GRID */
+    .analytics-dashboard-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 22px !important;
+      margin-bottom: 24px !important;
+      align-items: stretch !important;
+    }
+
+    @media (max-width: 1080px) {
+      .analytics-dashboard-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* ALL-PURPOSE HIGH-END ANALYTICS CARD */
+    .analytics-card {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 18px !important;
+      padding: 24px !important;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02) !important;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      position: relative !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+
+    .analytics-card:hover {
+      box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    .analytics-card.accent-blue { border-top: 4px solid #1C5D99 !important; }
+    .analytics-card.accent-teal { border-top: 4px solid #639FAB !important; }
+    .analytics-card.accent-green { border-top: 4px solid #059669 !important; }
+    .analytics-card.accent-amber { border-top: 4px solid #D97706 !important; }
+
+    /* SINGLE-LINE CARD HEADER ROW */
+    .analytics-card-header-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 16px !important;
+      flex-wrap: nowrap !important;
+      margin-bottom: 16px !important;
+      width: 100% !important;
+    }
+
+    .header-title-block {
+      min-width: 0 !important;
+      flex: 1 1 auto !important;
+    }
+
+    .analytics-card-title {
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin: 0 0 3px 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      letter-spacing: -0.2px !important;
+    }
+
+    .analytics-card-sub {
+      font-size: 12px !important;
+      color: #64748B !important;
+      margin: 0 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    /* SINGLE-LINE TIMEFRAME SELECTOR & CONTROLS */
+    .header-controls-group {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+    }
+
+    /* Apple-style Segmented Pill Control */
+    .segmented-pill-control {
+      display: inline-flex !important;
+      align-items: center !important;
+      background: #F1F5F9 !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 9px !important;
+      padding: 3px !important;
+      gap: 2px !important;
+    }
+
+    .seg-pill-btn {
+      padding: 5px 12px !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      color: #64748B !important;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 7px !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      line-height: 1.2 !important;
+    }
+
+    .seg-pill-btn:hover {
+      color: #0F172A !important;
+    }
+
+    .seg-pill-btn.active {
+      background: #FFFFFF !important;
+      color: #1C5D99 !important;
+      font-weight: 700 !important;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    /* Professional Single-Line Dropdown Container */
+    .timeframe-select-container {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      padding: 5px 10px !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .timeframe-select-container:focus-within {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .timeframe-icon {
+      color: #64748B !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .timeframe-dropdown-field {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      color: #0F172A !important;
+      cursor: pointer !important;
+      padding-right: 18px !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right center !important;
+    }
+
+    /* INLINE LEGEND CHIPS */
+    .chart-legend-strip {
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      margin-bottom: 14px !important;
+      padding-bottom: 10px !important;
+      border-bottom: 1px solid #F1F5F9 !important;
+    }
+
+    .legend-chip {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      color: #334155 !important;
+    }
+
+    .legend-dot-marker {
+      width: 10px !important;
+      height: 10px !important;
+      border-radius: 50% !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* INTERACTIVE SVG CHART & TOOLTIP */
+    .interactive-chart-wrapper {
+      position: relative !important;
+      width: 100% !important;
+      height: 220px !important;
+    }
+
+    .chart-tooltip-floating {
+      position: absolute !important;
+      display: none;
+      background: #0F172A !important;
+      color: #FFFFFF !important;
+      padding: 10px 14px !important;
+      border-radius: 10px !important;
+      font-size: 12px !important;
+      box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.45) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      pointer-events: none !important;
+      z-index: 50 !important;
+      min-width: 180px !important;
+      transition: all 0.1s ease !important;
+      transform: translate(-50%, -120%) !important;
+    }
+
+    .chart-tooltip-floating::after {
+      content: "" !important;
+      position: absolute !important;
+      left: 50% !important;
+      bottom: -6px !important;
+      transform: translateX(-50%) !important;
+      border-width: 6px 6px 0 6px !important;
+      border-style: solid !important;
+      border-color: #0F172A transparent transparent transparent !important;
+    }
+
+    .chart-tooltip-title {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #94A3B8 !important;
+      margin-bottom: 6px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.4px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding-bottom: 4px !important;
+    }
+
+    .chart-tooltip-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin-bottom: 4px !important;
+      font-size: 12.5px !important;
+    }
+
+    .chart-tooltip-total {
+      margin-top: 6px !important;
+      padding-top: 6px !important;
+      border-top: 1px dashed rgba(255, 255, 255, 0.15) !important;
+      font-weight: 700 !important;
+      color: #38BDF8 !important;
+    }
+
+    /* MONTHLY INSPECTION BADGE */
+    .growth-inspection-box {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #F8FAFC !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      padding: 12px 18px !important;
+      margin-top: 14px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .growth-inspection-box:hover {
+      background: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .growth-stat-pill {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 2px !important;
+    }
+
+    .growth-stat-lbl {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #64748B !important;
+      text-transform: uppercase !important;
+    }
+
+    .growth-stat-val {
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+    }
+
+    /* CITY PROGRESS BARS (CARD 2) */
+    .city-card-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      margin: 10px 0 !important;
+    }
+
+    .city-bar-item {
+      cursor: pointer !important;
+      padding: 10px 12px !important;
+      border-radius: 12px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      transition: all 0.2s ease !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 6px !important;
+    }
+
+    .city-bar-item:hover {
+      background: #FFFFFF !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 4px 12px rgba(28, 93, 153, 0.08) !important;
+      transform: translateX(2px) !important;
+    }
+
+    .city-bar-header-flex {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+
+    .city-tag-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+
+    .city-badge-avatar {
+      width: 26px !important;
+      height: 26px !important;
+      border-radius: 6px !important;
+      background: #E0F2FE !important;
+      color: #0369A1 !important;
+      font-weight: 700 !important;
+      font-size: 11px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .city-name-text {
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      font-size: 13.5px !important;
+    }
+
+    .city-stats-meta {
+      font-size: 12px !important;
+      color: #64748B !important;
+    }
+
+    .stacked-bar-track-custom {
+      height: 10px !important;
+      background: #E2E8F0 !important;
+      border-radius: 10px !important;
+      display: flex !important;
+      overflow: hidden !important;
+    }
+
+    /* VERTICAL BAR HOVER & TRACKS (CARD 3) */
+    .vertical-chart-container {
+      display: flex !important;
+      align-items: flex-end !important;
+      justify-content: space-between !important;
+      height: 200px !important;
+      padding: 14px 16px 0 !important;
+      background: #F8FAFC !important;
+      border-radius: 14px !important;
+      border: 1px solid #E2E8F0 !important;
+      margin: 12px 0 !important;
+    }
+
+    .v-bar-col {
+      cursor: pointer !important;
+      padding: 6px 8px !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 8px !important;
+      height: 100% !important;
+    }
+
+    .v-bar-col:hover {
+      background: #E2E8F0 !important;
+    }
+
+    .v-bar-col:hover .v-bar-track {
+      transform: scaleY(1.02) !important;
+      filter: drop-shadow(0 4px 10px rgba(28, 93, 153, 0.35)) !important;
+    }
+
+    .v-bar-track {
+      width: 36px !important;
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-end !important;
+      border-radius: 6px 6px 0 0 !important;
+      overflow: hidden !important;
+      background: #E2E8F0 !important;
+    }
+
+    .v-segment.vacant { background: #639FAB !important; }
+    .v-segment.occupied { background: #1C5D99 !important; }
+
+    /* CONVERSION FUNNEL STEPS (CARD 4) */
+    .perf-metric-grid-custom {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+      margin-bottom: 16px !important;
+    }
+
+    .perf-metric-box {
+      background: #F8FAFC !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      padding: 14px 16px !important;
+      transition: all 0.2s ease !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 3px !important;
+    }
+
+    .perf-metric-box:hover {
+      background: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .funnel-container {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 12px !important;
+      margin-top: 14px !important;
+    }
+
+    .funnel-box {
+      background: #F8FAFC !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      padding: 14px !important;
+      position: relative !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .funnel-box:hover {
+      background: #FFFFFF !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .funnel-box-lbl {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #64748B !important;
+      text-transform: uppercase !important;
+      margin-bottom: 4px !important;
+      display: block !important;
+    }
+
+    .funnel-box-val {
+      font-size: 19px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+    }
+
+    .funnel-rate-tag {
+      font-size: 11px !important;
+      color: #059669 !important;
+      font-weight: 700 !important;
+      margin-top: 4px !important;
+      display: block !important;
+    }
+
+    /* DATA TABLE CARD */
+    .table-card-custom {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 18px !important;
+      overflow: hidden !important;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05) !important;
+      margin-bottom: 30px !important;
+    }
+
+    /* POPUP MODAL (CUSTOM DATE PICKER) */
+    .modal-backdrop {
+      display: none !important;
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(15, 23, 42, 0.72) !important;
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+      z-index: 99999 !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px !important;
+    }
+
+    .modal-backdrop.open {
+      display: flex !important;
+    }
+
+    .modal-content-box {
+      background: #FFFFFF !important;
+      border-radius: 18px !important;
+      width: 100% !important;
+      max-width: 520px !important;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4) !important;
+      overflow: hidden !important;
+      animation: modalScaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      border: 1px solid #E2E8F0 !important;
+      max-height: 90vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    @keyframes modalScaleUp {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 18px 24px !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #F8FAFC !important;
+    }
+
+    .modal-title {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin: 0 !important;
+    }
+
+    .modal-close-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      width: 32px !important;
+      height: 32px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+      color: #64748B !important;
+      cursor: pointer !important;
+    }
+
+    .modal-close-btn:hover {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+    }
+
+    .modal-body {
+      padding: 22px 24px !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 14px !important;
+    }
+
+    .modal-footer {
+      padding: 16px 24px !important;
+      border-top: 1px solid #E2E8F0 !important;
+      background: #F8FAFC !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 12px !important;
+    }
+
+    /* TOASTS */
+    .toast-container {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 99999 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 10px !important;
+      pointer-events: none !important;
+    }
+
+    .toast {
+      pointer-events: auto !important;
+      background: #0F172A !important;
+      color: #FFFFFF !important;
+      padding: 12px 18px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      animation: toastIn 0.25s ease !important;
+    }
+
+    .toast.success { background: #065F46 !important; border-left: 4px solid #34D399 !important; }
+    .toast.error { background: #991B1B !important; border-left: 4px solid #F87171 !important; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     PAGE HEADER
+     ============================================================== -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Marketplace analytics</h1>
+    <p class="page-subtitle">Measure supply, demand and business health across every market you serve.</p>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn btn-outline" onclick="openDateRangeModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span id="currentDateRangeDisplay">01–05 Nov 2026</span>
+    </button>
+    <a href="{% url 'admin_portal:analytics_export_csv' %}?city={{ city_filter }}&date_range={{ date_range }}" class="btn btn-outline" title="Export Analytics Report">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Export analysis
+    </a>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOP 4 ELEVATED KPI METRICS CARDS
+     ============================================================== -->
+<div class="stats-grid-4">
+  <div class="stat-box">
+    <div class="stat-label">Occupancy rate</div>
+    <div class="stat-value">{{ occupancy_rate }}%</div>
+    <div class="stat-trend positive">↑ 1.6 pts vs October</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Vacancy rate</div>
+    <div class="stat-value">{{ vacancy_rate }}%</div>
+    <div class="stat-trend neutral">{{ vacant_units_count }} active listings vacant</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">User growth</div>
+    <div class="stat-value">{{ user_growth_rate }}</div>
+    <div class="stat-trend positive">↑ 2,120 new this month</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Active listings</div>
+    <div class="stat-value">{{ total_listings_count }}</div>
+    <div class="stat-trend neutral">Across {{ active_cities_count }} cities</div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     NAV TAB STRIP
+     ============================================================== -->
+<div class="nav-tab-strip">
+  <a href="?tab=overview&city={{ city_filter }}" class="tab-btn {% if tab == 'overview' %}active{% endif %}">Overview</a>
+  <a href="?tab=supply&city={{ city_filter }}" class="tab-btn {% if tab == 'supply' %}active{% endif %}">Supply & occupancy</a>
+  <a href="?tab=growth&city={{ city_filter }}" class="tab-btn {% if tab == 'growth' %}active{% endif %}">User growth</a>
+  <a href="?tab=revenue&city={{ city_filter }}" class="tab-btn {% if tab == 'revenue' %}active{% endif %}">Revenue</a>
+  <a href="?tab=cities&city={{ city_filter }}" class="tab-btn {% if tab == 'cities' %}active{% endif %}">City comparison</a>
+</div>
+
+<!-- ==============================================================
+     SINGLE-LINE FILTER TOOLBAR
+     ============================================================== -->
+<form method="GET" action="{% url 'admin_portal:marketplace_analytics' %}" class="analytics-filter-toolbar">
+  <input type="hidden" name="tab" value="{{ tab }}">
+
+  <!-- City Filter -->
+  <select name="city" class="analytics-filter-select" onchange="this.form.submit()">
+    <option value="All cities" {% if city_filter == 'All cities' %}selected{% endif %}>All cities ▾</option>
+    {% for c in city_options %}
+      <option value="{{ c.name }}" {% if city_filter == c.name %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Date Range Filter -->
+  <select name="date_range" class="analytics-filter-select" onchange="this.form.submit()">
+    <option value="this_month" {% if date_range == 'this_month' %}selected{% endif %}>This month (Nov 2026) ▾</option>
+    <option value="last_month" {% if date_range == 'last_month' %}selected{% endif %}>Last month (Oct 2026)</option>
+    <option value="last_quarter" {% if date_range == 'last_quarter' %}selected{% endif %}>Last quarter (Q3 2026)</option>
+    <option value="last_year" {% if date_range == 'last_year' %}selected{% endif %}>Last 12 months</option>
+  </select>
+
+  <!-- Property Type Filter -->
+  <select name="property_type" class="analytics-filter-select" onchange="this.form.submit()">
+    <option value="All types" {% if property_type == 'All types' %}selected{% endif %}>All property types ▾</option>
+    <option value="Flat" {% if property_type == 'Flat' %}selected{% endif %}>Flats & Apartments</option>
+    <option value="PG" {% if property_type == 'PG' %}selected{% endif %}>Paying Guest (PG)</option>
+    <option value="RK" {% if property_type == 'RK' %}selected{% endif %}>1RK / Studio</option>
+  </select>
+
+  <!-- Quick Filter Buttons -->
+  <button type="submit" class="analytics-btn" style="background: #1C5D99; color: #FFFFFF; border: none;">Apply</button>
+  {% if city_filter != 'All cities' or date_range != 'this_month' %}
+    <a href="{% url 'admin_portal:marketplace_analytics' %}?tab={{ tab }}" class="analytics-btn" style="background: #F1F5F9; color: #64748B; border: 1.5px solid #CBD5E1;">Clear</a>
+  {% endif %}
+</form>
+
+<!-- ==============================================================
+     ROW 1 OF CHARTS (ELEVATED 2-COLUMN CARDS GRID)
+     ============================================================== -->
+<div class="analytics-dashboard-grid">
+  
+  <!-- ==============================================================
+       CARD 1: INTERACTIVE USER GROWTH GRAPH
+       ============================================================== -->
+  <div class="analytics-card accent-blue" id="userGrowthCard">
+    <div>
+      <!-- Single-line Card Header with Title, Subtitle, and Sleek Controls -->
+      <div class="analytics-card-header-row">
+        <div class="header-title-block">
+          <h3 class="analytics-card-title">
+            User growth
+            <span style="font-size: 11px; font-weight: 700; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 2px 7px; border-radius: 6px; letter-spacing: 0;">Live Sync</span>
+          </h3>
+          <p class="analytics-card-sub">Registered accounts · Tap points on curve for exact breakdown</p>
+        </div>
+
+        <!-- Single-line Timeframe Segmented Controls & Dropdown -->
+        <div class="header-controls-group">
+          <!-- Segmented Pill Control -->
+          <div class="segmented-pill-control">
+            <button type="button" class="seg-pill-btn active" id="segBtn6m" onclick="switchGrowthTimeframe('6m')">6M</button>
+            <button type="button" class="seg-pill-btn" id="segBtn1y" onclick="switchGrowthTimeframe('1y')">1Y</button>
+          </div>
+
+          <!-- Professional Single-line Dropdown -->
+          <div class="timeframe-select-container">
+            <span class="timeframe-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </span>
+            <select id="userGrowthTimeframe" class="timeframe-dropdown-field" onchange="switchGrowthTimeframe(this.value)">
+              <option value="6m" selected>Last 6 months</option>
+              <option value="1y">Last year</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend Row -->
+      <div class="chart-legend-strip">
+        <span class="legend-chip">
+          <span class="legend-dot-marker" style="background: #1C5D99;"></span>
+          Tenants · <span id="tenantsLegendVal" style="color: #0F172A; font-weight: 700;">{{ total_tenants_display }}</span>
+        </span>
+        <span class="legend-chip">
+          <span class="legend-dot-marker" style="background: #639FAB;"></span>
+          Owners · <span id="ownersLegendVal" style="color: #0F172A; font-weight: 700;">{{ total_owners_display }}</span>
+        </span>
+        <span style="margin-left: auto; font-size: 11.5px; color: #059669; font-weight: 700;">
+          💡 Interactive curve
+        </span>
+      </div>
+
+      <!-- Interactive SVG Container -->
+      <div class="interactive-chart-wrapper" id="growthChartWrapper">
+        <!-- Floating Glassmorphic Tooltip -->
+        <div class="chart-tooltip-floating" id="growthFloatingTooltip">
+          <div class="chart-tooltip-title" id="tooltipMonthName">November 2026</div>
+          <div class="chart-tooltip-row">
+            <span>🔵 Tenants:</span>
+            <strong id="tooltipTenantsVal">42,336</strong>
+          </div>
+          <div class="chart-tooltip-row">
+            <span>🟢 Owners:</span>
+            <strong id="tooltipOwnersVal">6,284</strong>
+          </div>
+          <div class="chart-tooltip-row chart-tooltip-total">
+            <span>Total Users:</span>
+            <strong id="tooltipTotalVal">48,620</strong>
+          </div>
+        </div>
+
+        <svg viewBox="0 0 500 200" class="revenue-chart-svg" preserveAspectRatio="none" style="width: 100%; height: 100%; cursor: crosshair;">
+          <defs>
+            <linearGradient id="tenantGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1C5D99" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#1C5D99" stop-opacity="0.0"/>
+            </linearGradient>
+            <linearGradient id="ownerGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#639FAB" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#639FAB" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Gridlines -->
+          <line x1="30" y1="20" x2="480" y2="20" stroke="#F1F5F9" stroke-width="1" />
+          <text x="25" y="24" text-anchor="end" style="font-size: 10.5px; fill: #94A3B8;">50k</text>
+          <line x1="30" y1="70" x2="480" y2="70" stroke="#F1F5F9" stroke-width="1" />
+          <text x="25" y="74" text-anchor="end" style="font-size: 10.5px; fill: #94A3B8;">37.5k</text>
+          <line x1="30" y1="120" x2="480" y2="120" stroke="#F1F5F9" stroke-width="1" />
+          <text x="25" y="124" text-anchor="end" style="font-size: 10.5px; fill: #94A3B8;">25k</text>
+          <line x1="30" y1="170" x2="480" y2="170" stroke="#E2E8F0" stroke-width="1" />
+          <text x="25" y="174" text-anchor="end" style="font-size: 10.5px; fill: #94A3B8;">0</text>
+
+          <!-- Vertical Crosshair Line (Dynamic) -->
+          <line id="svgCrosshairLine" x1="465" y1="20" x2="465" y2="170" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,3" style="display: block;" />
+
+          <!-- Gradient Area Under Curve -->
+          <path id="svgTenantArea" d="M 40 110 C 120 98, 200 86, 290 74 C 380 64, 430 58, 465 55 L 465 170 L 40 170 Z" fill="url(#tenantGrad)" />
+
+          <!-- Curves -->
+          <path id="svgCurveTenants" d="M 40 110 C 120 98, 200 86, 290 74 C 380 64, 430 58, 465 55" fill="none" stroke="#1C5D99" stroke-width="3" stroke-linecap="round" />
+          <path id="svgCurveOwners" d="M 40 160 C 120 154, 200 150, 290 146 C 380 142, 430 140, 465 138" fill="none" stroke="#639FAB" stroke-width="2.5" stroke-linecap="round" />
+
+          <!-- Interactive Data Points & Hitboxes -->
+          <g id="svgPointGroup">
+            <!-- Dynamic nodes injected via JS -->
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Live Selected Month Detail Box -->
+    <div class="growth-inspection-box" id="growthDetailBox">
+      <div class="growth-stat-pill">
+        <span class="growth-stat-lbl">SELECTED MONTH</span>
+        <span class="growth-stat-val" id="inspMonth">November 2026</span>
+      </div>
+      <div class="growth-stat-pill">
+        <span class="growth-stat-lbl">TENANTS</span>
+        <span class="growth-stat-val" style="color: #1C5D99;" id="inspTenants">42,336</span>
+      </div>
+      <div class="growth-stat-pill">
+        <span class="growth-stat-lbl">OWNERS</span>
+        <span class="growth-stat-val" style="color: #639FAB;" id="inspOwners">6,284</span>
+      </div>
+      <div class="growth-stat-pill">
+        <span class="growth-stat-lbl">RATIO</span>
+        <span class="growth-stat-val" style="color: #059669;" id="inspRatio">6.7 : 1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       CARD 2: LISTINGS BY CITY (HORIZONTAL STACKED BARS CARD)
+       ============================================================== -->
+  <div class="analytics-card accent-teal" id="listingsByCityCard">
+    <div>
+      <div class="analytics-card-header-row">
+        <div class="header-title-block">
+          <h3 class="analytics-card-title">Listings by city</h3>
+          <p class="analytics-card-sub">Live supply across top accommodation hubs · Tap to inspect</p>
+        </div>
+        <div class="chart-legend-strip" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+          <span class="legend-chip">
+            <span class="legend-dot-marker" style="background: #1C5D99;"></span>
+            Occupied
+          </span>
+          <span class="legend-chip">
+            <span class="legend-dot-marker" style="background: #639FAB;"></span>
+            Vacant
+          </span>
+        </div>
+      </div>
+
+      <!-- City Rows List -->
+      <div class="city-card-list">
+        {% for city in top_cities_bars %}
+          <div class="city-bar-item" onclick="inspectCityBar('{{ city.name }}', '{{ city.listings }}', '{{ city.occupancy }}', '{{ city.vacancy }}')">
+            <div class="city-bar-header-flex">
+              <div class="city-tag-wrap">
+                <div class="city-badge-avatar">{{ city.initial }}</div>
+                <span class="city-name-text">{{ city.name }}</span>
+              </div>
+              <div class="city-stats-meta">
+                <strong style="color: #0F172A;">{{ city.listings }}</strong> listings · <span style="color: #1C5D99; font-weight: 700;">{{ city.occupancy }}%</span> occupied
+              </div>
+            </div>
+            <div class="stacked-bar-track-custom">
+              <div style="width: {{ city.occupancy }}%; background: #1C5D99; height: 100%;" title="{{ city.name }}: {{ city.occupancy }}% Occupied"></div>
+              <div style="width: {{ city.vacancy }}%; background: #639FAB; height: 100%;" title="{{ city.name }}: {{ city.vacancy }}% Vacant"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Active City Inspector Info -->
+    <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 12px 16px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between;" id="cityBarInspector">
+      <div style="font-size: 12.5px; color: #475569;">
+        <strong id="inspCityName" style="color: #0F172A;">Bengaluru:</strong>
+        <span id="inspCityBreakdown">2,816 occupied rooms (88%) · 384 vacant rooms (12%)</span>
+      </div>
+      <a href="{% url 'admin_portal:location_management' %}?city=Bengaluru" id="inspCityLink" style="font-size: 12px; color: #1C5D99; font-weight: 700; text-decoration: none;">
+        View localities ↗
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==============================================================
+     ROW 2 OF CHARTS (ELEVATED 2-COLUMN CARDS GRID)
+     ============================================================== -->
+<div class="analytics-dashboard-grid">
+
+  <!-- ==============================================================
+       CARD 3: VERTICAL BAR OCCUPANCY TREND CARD
+       ============================================================== -->
+  <div class="analytics-card accent-green" id="occupancyTrendCard">
+    <div>
+      <div class="analytics-card-header-row">
+        <div class="header-title-block">
+          <h3 class="analytics-card-title">Occupancy & vacancy trend</h3>
+          <p class="analytics-card-sub">Active inventory · Monthly snapshot · Tap bars for exact units</p>
+        </div>
+        <div class="chart-legend-strip" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+          <span class="legend-chip">
+            <span class="legend-dot-marker" style="background: #1C5D99;"></span>
+            Occupied
+          </span>
+          <span class="legend-chip">
+            <span class="legend-dot-marker" style="background: #639FAB;"></span>
+            Vacant
+          </span>
+        </div>
+      </div>
+
+      <!-- Vertical stacked bars -->
+      <div class="vertical-chart-container">
+        {% for m in monthly_trend %}
+          <div class="v-bar-col" onclick="inspectVerticalBar('{{ m.month }}', '{{ m.occupied }}', '{{ m.vacant }}')">
+            <div class="v-bar-track">
+              <div class="v-segment vacant" style="height: {{ m.vacant }}%;" title="{{ m.month }}: {{ m.vacant }}% Vacant"></div>
+              <div class="v-segment occupied" style="height: {{ m.occupied }}%;" title="{{ m.month }}: {{ m.occupied }}% Occupied"></div>
+            </div>
+            <span class="v-label" style="font-size: 12px; color: #64748B; font-weight: 700;">{{ m.month }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 12px 16px; margin-top: 14px; font-size: 12.5px; color: #475569; display: flex; align-items: center; justify-content: space-between;" id="vBarDetailStrip">
+      <span>Snapshot: <strong id="vBarMonth" style="color: #0F172A;">November 2026</strong></span>
+      <span>Occupied: <strong id="vBarOcc" style="color: #1C5D99;">{{ occupancy_rate }}%</strong></span>
+      <span>Vacant: <strong id="vBarVac" style="color: #639FAB;">{{ vacancy_rate }}%</strong></span>
+    </div>
+  </div>
+
+  <!-- ==============================================================
+       CARD 4: BUSINESS PERFORMANCE & 3-STEP FUNNEL CARD
+       ============================================================== -->
+  <div class="analytics-card accent-amber" id="businessPerfCard">
+    <div>
+      <div class="analytics-card-header-row">
+        <div class="header-title-block">
+          <h3 class="analytics-card-title">Business performance</h3>
+          <p class="analytics-card-sub">November 2026 · Conversion efficiency & monetization</p>
+        </div>
+        <span style="font-size: 12px; font-weight: 700; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 3px 8px; border-radius: 6px;">
+          Overall: 18.2%
+        </span>
+      </div>
+
+      <!-- 4 Mini Metrics Grid -->
+      <div class="perf-metric-grid-custom">
+        <div class="perf-metric-box">
+          <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">TOTAL ENQUIRIES</span>
+          <span style="font-size: 20px; font-weight: 700; color: #0F172A;">{{ total_enquiries }}</span>
+          <span class="stat-trend positive" style="font-size: 12px; color: #059669; font-weight: 600;">↑ 16.8% MoM</span>
+        </div>
+        <div class="perf-metric-box">
+          <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">PROPERTY VISITS</span>
+          <span style="font-size: 20px; font-weight: 700; color: #0F172A;">{{ total_visits }}</span>
+          <span class="stat-trend positive" style="font-size: 12px; color: #059669; font-weight: 600;">↑ 11.3% MoM</span>
+        </div>
+        <div class="perf-metric-box">
+          <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">PLATFORM REVENUE</span>
+          <span style="font-size: 20px; font-weight: 700; color: #0F172A;">{{ monthly_revenue_display }}</span>
+          <span class="stat-trend positive" style="font-size: 12px; color: #059669; font-weight: 600;">↑ 18.6% MoM</span>
+        </div>
+        <div class="perf-metric-box">
+          <span style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">REVENUE / OWNER</span>
+          <span style="font-size: 20px; font-weight: 700; color: #0F172A;">{{ rev_per_owner_display }}</span>
+          <span class="stat-trend positive" style="font-size: 12px; color: #059669; font-weight: 600;">↑ 9.6% MoM</span>
+        </div>
+      </div>
+
+      <!-- 3-STEP CONVERSION FUNNEL -->
+      <div class="funnel-container">
+        <div class="funnel-box">
+          <span class="funnel-box-lbl">1. Enquiries</span>
+          <span class="funnel-box-val">{{ total_enquiries }}</span>
+          <span class="funnel-rate-tag">100% Demand</span>
+        </div>
+        <div class="funnel-box">
+          <span class="funnel-box-lbl">2. Physical Visits</span>
+          <span class="funnel-box-val">{{ total_visits }}</span>
+          <span class="funnel-rate-tag">40.9% Qualified</span>
+        </div>
+        <div class="funnel-box">
+          <span class="funnel-box-lbl">3. Confirmed Move-ins</span>
+          <span class="funnel-box-val">{{ total_move_ins }}</span>
+          <span class="funnel-rate-tag">44.5% Visit-to-Move</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: 11.5px; color: #64748B; margin-top: 14px; display: flex; align-items: center; justify-content: space-between;">
+      <span>Move-ins verified by platform owners</span>
+      <span style="font-weight: 700; color: #059669;">Conversion: 18.2%</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==============================================================
+     CARD 5: CITY BREAKDOWN DATA TABLE CARD
+     ============================================================== -->
+<div class="table-card-custom">
+  <div style="padding: 18px 24px; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
+    <div>
+      <h3 style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0;">Market breakdown by city</h3>
+      <p style="font-size: 12px; color: #64748B; margin-top: 2px;">Comprehensive supply & occupancy performance across regional centers</p>
+    </div>
+    <span style="font-size: 12px; font-weight: 700; color: #1C5D99; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 4px 10px; border-radius: 6px;">{{ city_breakdown|length }} active markets</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>CITY</th>
+          <th>ACTIVE LISTINGS</th>
+          <th>OCCUPANCY</th>
+          <th>VACANCY</th>
+          <th>TREND</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in city_breakdown %}
+          <tr>
+            <td>
+              <div class="actor-cell" style="display: flex; align-items: center; gap: 10px;">
+                <div class="actor-avatar bg-blue" style="width: 32px; height: 32px; border-radius: 8px; background: #E0F2FE; color: #0369A1; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">
+                  {{ c.initial }}
+                </div>
+                <div>
+                  <div class="actor-name" style="font-weight: 700; color: #0F172A; font-size: 13.5px;">{{ c.name }}</div>
+                  <div class="text-subtle font-11" style="font-size: 11.5px; color: #64748B;">{{ c.state }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="font-bold" style="font-weight: 700; color: #0F172A; font-size: 13px;">{{ c.listings }} listings</div>
+              <div class="text-subtle" style="font-size: 11.5px; color: #64748B;">{{ c.localities_count }} localities</div>
+            </td>
+            <td style="font-size: 13px; font-weight: 600; color: #0F172A;">{{ c.occupancy }}%</td>
+            <td style="font-size: 13px; color: #64748B;">{{ c.vacancy }}%</td>
+            <td>
+              <span class="stat-trend positive" style="font-size: 12px; font-weight: 700; color: #059669;">
+                ↑ {{ c.trend }}
+              </span>
+            </td>
+            <td>
+              <a href="{% url 'admin_portal:location_management' %}?city={{ c.name }}" class="table-link" style="color: #1C5D99; font-weight: 600; text-decoration: none; font-size: 12px;">
+                Explore market ↗
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer-bar" style="padding: 14px 24px; border-top: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748B; background: #F8FAFC;">
+    <span>Showing {{ city_page_obj.start_index }}–{{ city_page_obj.end_index }} of {{ city_page_obj.paginator.count }} active regional markets</span>
+    <div class="pagination-wrap" style="display: flex; align-items: center; gap: 8px;">
+      {% if city_page_obj.has_previous %}
+        <a href="?tab={{ tab }}&city={{ city_filter }}&date_range={{ date_range }}&city_page={{ city_page_obj.previous_page_number }}" class="page-btn" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 7px; color: #0F172A; text-decoration: none; background: #FFFFFF;">← Prev</a>
+      {% else %}
+        <span class="page-btn disabled" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 7px; color: #94A3B8; opacity: 0.5; pointer-events: none;">← Prev</span>
+      {% endif %}
+
+      <span class="page-indicator" style="font-size: 12.5px; font-weight: 600; color: #475569; padding: 0 8px;">
+        Page {{ city_page_obj.number }} of {{ city_page_obj.paginator.num_pages }}
+      </span>
+
+      {% if city_page_obj.has_next %}
+        <a href="?tab={{ tab }}&city={{ city_filter }}&date_range={{ date_range }}&city_page={{ city_page_obj.next_page_number }}" class="page-btn" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 7px; color: #0F172A; text-decoration: none; background: #FFFFFF;">Next →</a>
+      {% else %}
+        <span class="page-btn disabled" style="padding: 5px 12px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 7px; color: #94A3B8; opacity: 0.5; pointer-events: none;">Next →</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL: CUSTOM DATE RANGE PICKER (CENTERED POPUP DIALOG)
+     ============================================================== -->
+<div class="modal-backdrop" id="dateRangeModal" onclick="if(event.target === this) closeDateRangeModal();">
+  <div class="modal-content-box">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">📅</span>
+        <h3 class="modal-title">Select Custom Date Range</h3>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeDateRangeModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div>
+        <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">QUICK PRESETS</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="analytics-btn" style="background: #F1F5F9; border: 1px solid #CBD5E1; color: #334155;" onclick="setPresetDateRange('Last 7 Days', '29 Oct 2026', '05 Nov 2026')">Last 7 Days</button>
+          <button type="button" class="analytics-btn" style="background: #F1F5F9; border: 1px solid #CBD5E1; color: #334155;" onclick="setPresetDateRange('Last 30 Days', '06 Oct 2026', '05 Nov 2026')">Last 30 Days</button>
+          <button type="button" class="analytics-btn" style="background: #EFF6FF; border: 1px solid #1C5D99; color: #1C5D99;" onclick="setPresetDateRange('This Month', '01 Nov 2026', '05 Nov 2026')">This Month (Nov)</button>
+          <button type="button" class="analytics-btn" style="background: #F1F5F9; border: 1px solid #CBD5E1; color: #334155;" onclick="setPresetDateRange('Last Quarter', '01 Jul 2026', '30 Sep 2026')">Last Quarter (Q3)</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">START DATE</label>
+          <input type="text" id="customStartDate" class="form-input-field" value="01 Nov 2026" style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">END DATE</label>
+          <input type="text" id="customEndDate" class="form-input-field" value="05 Nov 2026" style="width: 100%; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 13px;">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" onclick="closeDateRangeModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="applyCustomDateRange()">Apply Date Range</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==============================================================
+     INTERACTIVE CHARTS & METRICS JAVASCRIPT
+     ============================================================== -->
+<script>
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span>${type === 'success' ? '✓' : '⚠️'}</span>
+      <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(12px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  // --- GROWTH DATASETS DIRECT FROM DB ---
+  const growthDatasets = {{ growth_datasets_json|safe }};
+
+  let currentGrowthTimeframe = '6m';
+
+  function renderInteractiveChartPoints() {
+    const data = growthDatasets[currentGrowthTimeframe];
+    const group = document.getElementById('svgPointGroup');
+    group.innerHTML = '';
+
+    data.forEach((d, idx) => {
+      // Invisible vertical column hit area
+      const hitRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      hitRect.setAttribute('x', d.x - 35);
+      hitRect.setAttribute('y', 20);
+      hitRect.setAttribute('width', 70);
+      hitRect.setAttribute('height', 160);
+      hitRect.setAttribute('fill', 'transparent');
+      hitRect.setAttribute('style', 'cursor: pointer;');
+      hitRect.onmouseenter = (e) => showChartPointTooltip(d, e);
+      hitRect.onclick = () => selectChartPoint(d);
+      group.appendChild(hitRect);
+
+      // Tenant Dot Circle
+      const dotT = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dotT.setAttribute('cx', d.x);
+      dotT.setAttribute('cy', d.yt);
+      dotT.setAttribute('r', idx === data.length - 1 ? 5 : 4);
+      dotT.setAttribute('fill', '#1C5D99');
+      dotT.setAttribute('stroke', '#FFFFFF');
+      dotT.setAttribute('stroke-width', 2);
+      dotT.setAttribute('class', 'chart-point-dot');
+      dotT.onmouseenter = (e) => showChartPointTooltip(d, e);
+      dotT.onclick = () => selectChartPoint(d);
+      group.appendChild(dotT);
+
+      // Owner Dot Circle
+      const dotO = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dotO.setAttribute('cx', d.x);
+      dotO.setAttribute('cy', d.yo);
+      dotO.setAttribute('r', idx === data.length - 1 ? 4.5 : 3.5);
+      dotO.setAttribute('fill', '#639FAB');
+      dotO.setAttribute('stroke', '#FFFFFF');
+      dotO.setAttribute('stroke-width', 2);
+      dotO.setAttribute('class', 'chart-point-dot');
+      dotO.onmouseenter = (e) => showChartPointTooltip(d, e);
+      dotO.onclick = () => selectChartPoint(d);
+      group.appendChild(dotO);
+    });
+  }
+
+  function showChartPointTooltip(d, event) {
+    const tooltip = document.getElementById('growthFloatingTooltip');
+    const wrapper = document.getElementById('growthChartWrapper');
+
+    // Move crosshair
+    const crosshair = document.getElementById('svgCrosshairLine');
+    crosshair.setAttribute('x1', d.x);
+    crosshair.setAttribute('x2', d.x);
+    crosshair.style.display = 'block';
+
+    // Calculate percentage coordinates
+    const leftPercent = (d.x / 500) * 100;
+    const topPercent = (d.yt / 200) * 100;
+
+    tooltip.style.left = `${leftPercent}%`;
+    tooltip.style.top = `${topPercent}%`;
+    tooltip.style.display = 'block';
+
+    document.getElementById('tooltipMonthName').innerText = d.month;
+    document.getElementById('tooltipTenantsVal').innerText = d.tenants.toLocaleString();
+    document.getElementById('tooltipOwnersVal').innerText = d.owners.toLocaleString();
+    document.getElementById('tooltipTotalVal').innerText = (d.tenants + d.owners).toLocaleString();
+  }
+
+  function selectChartPoint(d) {
+    document.getElementById('inspMonth').innerText = d.month;
+    document.getElementById('inspTenants').innerText = d.tenants.toLocaleString();
+    document.getElementById('inspOwners').innerText = d.owners.toLocaleString();
+    const ratio = (d.tenants / d.owners).toFixed(1);
+    document.getElementById('inspRatio').innerText = `${ratio} : 1`;
+
+    showToast(`Snapshot for ${d.month}: ${d.tenants.toLocaleString()} tenants, ${d.owners.toLocaleString()} owners`, 'success');
+  }
+
+  // Hide tooltip when mouse leaves wrapper
+  document.getElementById('growthChartWrapper').addEventListener('mouseleave', function() {
+    document.getElementById('growthFloatingTooltip').style.display = 'none';
+  });
+
+  // Switch between 6m and 1y timeframe
+  function switchGrowthTimeframe(val) {
+    currentGrowthTimeframe = val;
+    const curveT = document.getElementById('svgCurveTenants');
+    const curveO = document.getElementById('svgCurveOwners');
+    const areaT = document.getElementById('svgTenantArea');
+
+    // Synchronize both dropdown and segmented buttons
+    const dropdown = document.getElementById('userGrowthTimeframe');
+    if (dropdown && dropdown.value !== val) {
+      dropdown.value = val;
+    }
+    const btn6m = document.getElementById('segBtn6m');
+    const btn1y = document.getElementById('segBtn1y');
+    if (btn6m && btn1y) {
+      if (val === '6m') {
+        btn6m.classList.add('active');
+        btn1y.classList.remove('active');
+      } else {
+        btn1y.classList.add('active');
+        btn6m.classList.remove('active');
+      }
+    }
+
+    if (val === '1y') {
+      curveT.setAttribute('d', 'M 40 140 C 120 128, 200 112, 290 94 C 380 76, 430 62, 465 55');
+      curveO.setAttribute('d', 'M 40 172 C 120 166, 200 160, 290 154 C 380 146, 430 140, 465 138');
+      areaT.setAttribute('d', 'M 40 140 C 120 128, 200 112, 290 94 C 380 76, 430 62, 465 55 L 465 170 L 40 170 Z');
+      showToast('Loaded 1-Year Cumulative User Metrics', 'success');
+    } else {
+      curveT.setAttribute('d', 'M 40 110 C 120 98, 200 86, 290 74 C 380 64, 430 58, 465 55');
+      curveO.setAttribute('d', 'M 40 160 C 120 154, 200 150, 290 146 C 380 142, 430 140, 465 138');
+      areaT.setAttribute('d', 'M 40 110 C 120 98, 200 86, 290 74 C 380 64, 430 58, 465 55 L 465 170 L 40 170 Z');
+      showToast('Loaded 6-Month User Growth', 'success');
+    }
+
+    renderInteractiveChartPoints();
+    // Default select latest
+    selectChartPoint(growthDatasets[val][growthDatasets[val].length - 1]);
+  }
+
+  // --- INSPECT CITY BAR ---
+  function inspectCityBar(name, listings, occ, vac) {
+    const total = parseInt(listings.replace(',', '')) || 2000;
+    const occUnits = Math.round(total * (parseFloat(occ) / 100));
+    const vacUnits = total - occUnits;
+
+    document.getElementById('inspCityName').innerText = `${name}:`;
+    document.getElementById('inspCityBreakdown').innerText = `${occUnits.toLocaleString()} occupied rooms (${occ}%) · ${vacUnits.toLocaleString()} vacant rooms (${vac}%)`;
+    document.getElementById('inspCityLink').href = `{% url 'admin_portal:location_management' %}?city=${encodeURIComponent(name)}`;
+    document.getElementById('inspCityLink').innerText = `View ${name} localities ↗`;
+
+    showToast(`${name}: ${occ}% Occupied (${occUnits.toLocaleString()} units)`, 'success');
+  }
+
+  // --- INSPECT VERTICAL BAR ---
+  function inspectVerticalBar(month, occ, vac) {
+    document.getElementById('vBarMonth').innerText = month + ' 2026';
+    document.getElementById('vBarOcc').innerText = occ + '%';
+    document.getElementById('vBarVac').innerText = vac + '%';
+
+    showToast(`${month} 2026: ${occ}% Occupied, ${vac}% Vacant`, 'success');
+  }
+
+  // --- DATE RANGE MODAL HANDLERS ---
+  function openDateRangeModal() {
+    const modal = document.getElementById('dateRangeModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeDateRangeModal() {
+    const modal = document.getElementById('dateRangeModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function setPresetDateRange(label, start, end) {
+    document.getElementById('customStartDate').value = start;
+    document.getElementById('customEndDate').value = end;
+  }
+
+  function applyCustomDateRange() {
+    const start = document.getElementById('customStartDate').value;
+    const end = document.getElementById('customEndDate').value;
+    document.getElementById('currentDateRangeDisplay').textContent = `${start} to ${end}`;
+    closeDateRangeModal();
+    showToast(`Date range updated: ${start} to ${end}`, 'success');
+  }
+
+  // ESC key handler for modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeDateRangeModal();
+    }
+  });
+
+  // Initial Boot
+  document.addEventListener('DOMContentLoaded', function() {
+    renderInteractiveChartPoints();
+  });
+</script>
+{% endblock %}

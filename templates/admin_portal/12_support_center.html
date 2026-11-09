@@ -1,0 +1,1614 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Support center — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Support center{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/12_support_center.css' %}?v=5.0">
+  <style>
+    /* ==============================================================
+       SCREEN 12 SUPPORT CENTER - CRITICAL STYLES
+       ============================================================== */
+    
+    /* SINGLE-LINE RESPONSIVE TOOLBAR */
+    .support-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      padding-bottom: 4px !important;
+    }
+
+    .support-search-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      padding: 8px 12px !important;
+      flex: 1 !important;
+      min-width: 250px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .support-search-wrap:focus-within {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .support-search-icon {
+      color: #64748B !important;
+      flex-shrink: 0 !important;
+    }
+
+    .support-search-input {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      width: 100% !important;
+      font-size: 13px !important;
+      color: #0F172A !important;
+      font-weight: 500 !important;
+    }
+
+    .support-filter-select {
+      width: auto !important;
+      min-width: 140px !important;
+      padding: 8px 28px 8px 11px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+    }
+
+    .support-filter-select:focus {
+      outline: none !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .support-btn {
+      padding: 8px 16px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 9px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      text-decoration: none !important;
+      transition: all 0.15s ease !important;
+    }
+
+    /* MASTER-DETAIL GRID */
+    .master-detail-grid {
+      display: grid !important;
+      grid-template-columns: 390px 1fr !important;
+      gap: 24px !important;
+      align-items: start !important;
+    }
+
+    .queue-sidebar-col {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+
+    .queue-header-box {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 14px 18px !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .queue-title-bold {
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      letter-spacing: -0.2px !important;
+    }
+
+    .ticket-queue-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      max-height: calc(100vh - 340px) !important;
+      overflow-y: auto !important;
+      padding-right: 2px !important;
+    }
+
+    /* ELEVATED TICKET QUEUE CARD */
+    .ticket-queue-card {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 14px !important;
+      padding: 16px !important;
+      cursor: pointer !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      position: relative !important;
+    }
+
+    .ticket-queue-card:hover {
+      transform: translateY(-2px) !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .ticket-queue-card.selected {
+      border-color: #1C5D99 !important;
+      background: #F8FAFC !important;
+      box-shadow: 0 8px 20px -3px rgba(28, 93, 153, 0.16) !important;
+    }
+
+    .ticket-queue-card.selected::before {
+      content: "" !important;
+      position: absolute !important;
+      left: 0 !important;
+      top: 14px !important;
+      bottom: 14px !important;
+      width: 4px !important;
+      background: #1C5D99 !important;
+      border-top-right-radius: 4px !important;
+      border-bottom-right-radius: 4px !important;
+    }
+
+    .ticket-card-header {
+      display: flex !important;
+      align-items: flex-start !important;
+      justify-content: space-between !important;
+      gap: 10px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .ticket-card-title {
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      line-height: 1.4 !important;
+      flex: 1 !important;
+    }
+
+    .ticket-tag-badge {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      white-space: nowrap !important;
+      letter-spacing: 0.2px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+    }
+
+    .tag-warning {
+      background: #FEF2F2 !important;
+      color: #B91C1C !important;
+      border: 1px solid #FECACA !important;
+    }
+
+    .tag-open {
+      background: #EFF6FF !important;
+      color: #1D4ED8 !important;
+      border: 1px solid #BFDBFE !important;
+    }
+
+    .tag-awaiting {
+      background: #FFFBEB !important;
+      color: #B45309 !important;
+      border: 1px solid #FDE68A !important;
+    }
+
+    .tag-resolved {
+      background: #F0FDF4 !important;
+      color: #15803D !important;
+      border: 1px solid #BBF7D0 !important;
+    }
+
+    .ticket-card-requester {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      font-size: 12.5px !important;
+      color: #475569 !important;
+      margin-bottom: 10px !important;
+    }
+
+    .requester-avatar-mini {
+      width: 22px !important;
+      height: 22px !important;
+      border-radius: 50% !important;
+      background: #E2E8F0 !important;
+      color: #1C5D99 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      flex-shrink: 0 !important;
+    }
+
+    .ticket-card-badges-row {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      font-size: 11.5px !important;
+      color: #64748B !important;
+      flex-wrap: wrap !important;
+    }
+
+    .chip-category {
+      background: #F1F5F9 !important;
+      padding: 2px 7px !important;
+      border-radius: 4px !important;
+      font-weight: 600 !important;
+      color: #334155 !important;
+    }
+
+    .chip-channel {
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      padding: 1px 6px !important;
+      border-radius: 4px !important;
+      font-size: 11px !important;
+    }
+
+    .chip-priority-urgent {
+      background: #FEF2F2 !important;
+      color: #DC2626 !important;
+      font-weight: 700 !important;
+      border-radius: 4px !important;
+      padding: 1px 6px !important;
+    }
+
+    .chip-priority-high {
+      background: #FFFBEB !important;
+      color: #D97706 !important;
+      font-weight: 700 !important;
+      border-radius: 4px !important;
+      padding: 1px 6px !important;
+    }
+
+    /* RIGHT DETAIL WORKSPACE */
+    .detail-main-col {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 20px !important;
+    }
+
+    .detail-card {
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      overflow: hidden !important;
+    }
+
+    /* HEADER CARD */
+    .ticket-detail-header-card {
+      padding: 22px 24px !important;
+    }
+
+    .ticket-header-top-row {
+      display: flex !important;
+      align-items: flex-start !important;
+      justify-content: space-between !important;
+      gap: 16px !important;
+    }
+
+    .ticket-subject-main {
+      font-size: 20px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin-bottom: 6px !important;
+      letter-spacing: -0.3px !important;
+    }
+
+    .ticket-code-sub {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      font-size: 13px !important;
+      color: #64748B !important;
+      flex-wrap: wrap !important;
+    }
+
+    /* META CELLS GRID */
+    .ticket-meta-grid-modern {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 16px !important;
+      margin-top: 18px !important;
+      padding-top: 16px !important;
+      border-top: 1px solid #E2E8F0 !important;
+    }
+
+    .meta-info-box {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 5px !important;
+    }
+
+    .meta-info-label {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: #94A3B8 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.4px !important;
+    }
+
+    .meta-info-val {
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #0F172A !important;
+    }
+
+    .meta-select-inline {
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 7px !important;
+      padding: 4px 8px !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      color: #0F172A !important;
+      background: #FFFFFF !important;
+      outline: none !important;
+      cursor: pointer !important;
+    }
+
+    .meta-select-inline:focus {
+      border-color: #1C5D99 !important;
+    }
+
+    /* REQUESTER PROFILE BAR */
+    .requester-profile-banner {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 14px 20px !important;
+      background: #F8FAFC !important;
+      border-radius: 12px !important;
+      border: 1px solid #E2E8F0 !important;
+    }
+
+    .requester-profile-left {
+      display: flex !important;
+      align-items: center !important;
+      gap: 14px !important;
+    }
+
+    .requester-avatar-large {
+      width: 44px !important;
+      height: 44px !important;
+      border-radius: 50% !important;
+      background: #1C5D99 !important;
+      color: #FFFFFF !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-shadow: 0 2px 6px rgba(28, 93, 153, 0.25) !important;
+    }
+
+    .requester-name-line {
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+
+    .requester-contact-sub {
+      font-size: 12.5px !important;
+      color: #64748B !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      margin-top: 3px !important;
+    }
+
+    /* CONVERSATION THREAD */
+    .conversation-thread-card {
+      padding: 22px 24px !important;
+    }
+
+    .thread-messages-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 16px !important;
+      margin-top: 16px !important;
+    }
+
+    .chat-bubble-container {
+      display: flex !important;
+      gap: 12px !important;
+      align-items: flex-start !important;
+    }
+
+    .bubble-avatar {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      flex-shrink: 0 !important;
+    }
+
+    .bubble-avatar-client {
+      background: #E0F2FE !important;
+      color: #0369A1 !important;
+    }
+
+    .bubble-avatar-staff {
+      background: #EFF6FF !important;
+      color: #1C5D99 !important;
+    }
+
+    .bubble-avatar-note {
+      background: #FEF3C7 !important;
+      color: #B45309 !important;
+    }
+
+    .bubble-content-card {
+      flex: 1 !important;
+      border-radius: 14px !important;
+      padding: 14px 18px !important;
+      border: 1px solid #E2E8F0 !important;
+    }
+
+    .bubble-client {
+      background: #FFFFFF !important;
+      border-color: #E2E8F0 !important;
+    }
+
+    .bubble-staff {
+      background: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
+    }
+
+    .bubble-internal {
+      background: #FFFBEB !important;
+      border-color: #FDE68A !important;
+    }
+
+    .bubble-head-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin-bottom: 6px !important;
+    }
+
+    .bubble-author-title {
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    .bubble-timestamp-text {
+      font-size: 11.5px !important;
+      color: #94A3B8 !important;
+    }
+
+    .bubble-body-text {
+      font-size: 13.5px !important;
+      color: #334155 !important;
+      line-height: 1.55 !important;
+      white-space: pre-line !important;
+    }
+
+    /* RELATED CONTEXT BANNERS */
+    .related-context-banner {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #F8FAFC !important;
+      border: 1.5px dashed #CBD5E1 !important;
+      border-radius: 12px !important;
+      padding: 12px 18px !important;
+      margin-top: 14px !important;
+    }
+
+    .related-banner-left {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+
+    .related-banner-icon {
+      font-size: 22px !important;
+    }
+
+    /* REPLY COMPOSER */
+    .reply-composer-card {
+      padding: 22px 24px !important;
+    }
+
+    .composer-mode-tabs {
+      display: flex !important;
+      gap: 8px !important;
+      margin-bottom: 14px !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+      padding-bottom: 10px !important;
+    }
+
+    .mode-tab-btn {
+      padding: 6px 14px !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      border-radius: 7px !important;
+      border: 1px solid transparent !important;
+      cursor: pointer !important;
+      background: transparent !important;
+      color: #64748B !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .mode-tab-btn.active {
+      background: #EFF6FF !important;
+      color: #1C5D99 !important;
+      border-color: #BFDBFE !important;
+    }
+
+    .composer-to-bar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      padding: 8px 12px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 8px !important;
+      margin-bottom: 10px !important;
+    }
+
+    .composer-textarea {
+      width: 100% !important;
+      padding: 14px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 10px !important;
+      background: #FFFFFF !important;
+      font-size: 13.5px !important;
+      color: #0F172A !important;
+      outline: none !important;
+      resize: vertical !important;
+      min-height: 110px !important;
+      transition: all 0.15s ease !important;
+      box-sizing: border-box !important;
+      font-family: inherit !important;
+    }
+
+    .composer-textarea:focus {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    /* POPUP MODAL (CREATE TICKET) */
+    .modal-backdrop {
+      display: none !important;
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(15, 23, 42, 0.72) !important;
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+      z-index: 99999 !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px !important;
+    }
+
+    .modal-backdrop.open {
+      display: flex !important;
+    }
+
+    .modal-content-box {
+      background: #FFFFFF !important;
+      border-radius: 18px !important;
+      width: 100% !important;
+      max-width: 600px !important;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4) !important;
+      overflow: hidden !important;
+      animation: modalScaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      border: 1px solid #E2E8F0 !important;
+      max-height: 90vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    @keyframes modalScaleUp {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 18px 24px !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #F8FAFC !important;
+    }
+
+    .modal-title {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin: 0 !important;
+    }
+
+    .modal-close-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      width: 32px !important;
+      height: 32px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+      color: #64748B !important;
+      cursor: pointer !important;
+    }
+
+    .modal-close-btn:hover {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+    }
+
+    .modal-body {
+      padding: 22px 24px !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 14px !important;
+    }
+
+    .modal-footer {
+      padding: 16px 24px !important;
+      border-top: 1px solid #E2E8F0 !important;
+      background: #F8FAFC !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 12px !important;
+    }
+
+    /* TOASTS */
+    .toast-container {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 99999 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 10px !important;
+      pointer-events: none !important;
+    }
+
+    .toast {
+      pointer-events: auto !important;
+      background: #0F172A !important;
+      color: #FFFFFF !important;
+      padding: 12px 18px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      animation: toastIn 0.25s ease !important;
+    }
+
+    .toast.success { background: #065F46 !important; border-left: 4px solid #34D399 !important; }
+    .toast.error { background: #991B1B !important; border-left: 4px solid #F87171 !important; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 960px) {
+      .master-detail-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .support-filter-toolbar {
+        flex-wrap: wrap !important;
+      }
+      .support-search-wrap {
+        min-width: 100% !important;
+      }
+      .ticket-meta-grid-modern {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     PAGE HEADER
+     ============================================================== -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Support center</h1>
+    <p class="page-subtitle">A focused workspace for tenant questions, owner queries and timely resolutions.</p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 'admin_portal:support_export_csv' %}?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}" class="btn btn-outline" title="Export Tickets CSV">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Export CSV
+    </a>
+    <button type="button" class="btn btn-primary" onclick="openCreateTicketModal()">
+      <span style="font-size: 15px; margin-right: 4px;">+</span> Create ticket
+    </button>
+  </div>
+</div>
+
+<!-- ==============================================================
+     KPI STATS GRID
+     ============================================================== -->
+<div class="stats-grid-4">
+  <div class="stat-box">
+    <div class="stat-label">Open tickets</div>
+    <div class="stat-value">{{ total_open_count }}</div>
+    <div class="stat-trend highlight">{{ new_today_count }} new today</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">First response</div>
+    <div class="stat-value">{{ first_response_avg }}</div>
+    <div class="stat-trend neutral">Target: under 60 minutes</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Resolved today</div>
+    <div class="stat-value">{{ resolved_today_count }}</div>
+    <div class="stat-trend positive">94% within SLA</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-label">Customer satisfaction</div>
+    <div class="stat-value">{{ csat_score }}</div>
+    <div class="stat-trend neutral">Based on 186 verified reviews</div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     NAV TABS STRIP
+     ============================================================== -->
+<div class="nav-tab-strip">
+  <a href="?tab=inbox" class="tab-btn {% if tab == 'inbox' %}active{% endif %}">Inbox · {{ count_inbox }}</a>
+  <a href="?tab=assigned_to_me" class="tab-btn {% if tab == 'assigned_to_me' %}active{% endif %}">Assigned to me · {{ count_assigned }}</a>
+  <a href="?tab=awaiting_reply" class="tab-btn {% if tab == 'awaiting_reply' %}active{% endif %}">Awaiting reply · {{ count_awaiting }}</a>
+  <a href="?tab=resolved" class="tab-btn {% if tab == 'resolved' %}active{% endif %}">Resolved · {{ count_resolved }}</a>
+  <a href="?tab=all" class="tab-btn {% if tab == 'all' %}active{% endif %}">All tickets · {{ count_all }}</a>
+</div>
+
+<!-- ==============================================================
+     SINGLE-LINE FILTER TOOLBAR
+     ============================================================== -->
+<form method="GET" action="{% url 'admin_portal:support_center' %}" class="support-filter-toolbar">
+  <input type="hidden" name="tab" value="{{ tab }}">
+
+  <!-- Search Input -->
+  <div class="support-search-wrap">
+    <span class="support-search-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </span>
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Search tickets by code, subject, user, email..." class="support-search-input">
+  </div>
+
+  <!-- Category Filter -->
+  <select name="category" class="support-filter-select" onchange="this.form.submit()">
+    <option value="">All categories</option>
+    {% for cat in categories %}
+      <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Priority Filter -->
+  <select name="priority" class="support-filter-select" onchange="this.form.submit()">
+    <option value="">All priorities</option>
+    {% for prio in priorities %}
+      <option value="{{ prio }}" {% if priority_filter == prio %}selected{% endif %}>{{ prio }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Channel Filter -->
+  <select name="channel" class="support-filter-select" onchange="this.form.submit()">
+    <option value="">All channels</option>
+    {% for ch in channels %}
+      <option value="{{ ch }}" {% if channel_filter == ch %}selected{% endif %}>{{ ch }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Status Filter -->
+  <select name="status" class="support-filter-select" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    {% for s_val, s_lbl in statuses %}
+      <option value="{{ s_val }}" {% if status_filter == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+    {% endfor %}
+  </select>
+
+  <!-- Filter & Reset Buttons -->
+  <button type="submit" class="support-btn" style="background: #1C5D99; color: #FFFFFF; border: none;">Filter</button>
+  {% if search_q or category_filter or priority_filter or channel_filter or status_filter %}
+    <a href="?tab={{ tab }}" class="support-btn" style="background: #F1F5F9; color: #475569; border: 1.5px solid #CBD5E1;">Reset</a>
+  {% endif %}
+</form>
+
+<!-- ==============================================================
+     MASTER-DETAIL WORKSPACE
+     ============================================================== -->
+<div class="master-detail-grid">
+
+  <!-- LEFT QUEUE COLUMN -->
+  <div class="queue-sidebar-col">
+    <div class="queue-header-box">
+      <span class="queue-title-bold">Queue · {{ tickets|length }} ticket{{ tickets|length|pluralize }}</span>
+      <span style="font-size: 12px; color: #64748B;">Sorted by newest</span>
+    </div>
+
+    <div class="ticket-queue-list" id="ticketQueueList">
+      {% for t in tickets %}
+        <div class="ticket-queue-card {% if selected_ticket and selected_ticket.id == t.id %}selected{% endif %}" id="queueItem_{{ t.id }}" onclick="selectTicket({{ t.id }})">
+          <div class="ticket-card-header">
+            <span class="ticket-card-title">{{ t.subject }}</span>
+            <span class="ticket-tag-badge {% if t.status == 'OPEN' %}tag-open{% elif t.status == 'IN_PROGRESS' %}tag-warning{% elif t.status == 'AWAITING_REPLY' %}tag-awaiting{% elif t.status == 'RESOLVED' %}tag-resolved{% else %}tag-open{% endif %}">
+              {{ t.tag_display }}
+            </span>
+          </div>
+
+          <div class="ticket-card-requester">
+            <span class="requester-avatar-mini">{{ t.user.first_name|first|default:"U" }}{{ t.user.last_name|first|default:"S" }}</span>
+            <span style="font-family: monospace; font-weight: 700; color: #1C5D99;">{{ t.ticket_code }}</span>
+            <span>·</span>
+            <span style="font-weight: 600; color: #0F172A;">{{ t.user.get_full_name|default:t.user.username }}</span>
+            <span style="font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #E2E8F0; color: #475569;">{{ t.user.role|title|default:"User" }}</span>
+          </div>
+
+          <div class="ticket-card-badges-row">
+            <span class="chip-category">{{ t.category }}</span>
+            <span class="chip-channel">{{ t.channel }}</span>
+            {% if t.priority == 'URGENT' %}
+              <span class="chip-priority-urgent">! URGENT</span>
+            {% elif t.priority == 'HIGH' %}
+              <span class="chip-priority-high">HIGH</span>
+            {% endif %}
+            <span style="margin-left: auto;">{{ t.created_at|timesince }} ago</span>
+          </div>
+        </div>
+      {% empty %}
+        <div style="background: #FFFFFF; border: 1.5px dashed #CBD5E1; border-radius: 14px; padding: 36px 20px; text-align: center; color: #64748B;">
+          <div style="font-size: 28px; margin-bottom: 8px;">📬</div>
+          <div style="font-weight: 700; color: #0F172A; font-size: 14px; margin-bottom: 4px;">No tickets found</div>
+          <div style="font-size: 12.5px;">No support tickets match the selected filter criteria.</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- QUEUE FOOTER PAGINATION -->
+    <div class="queue-footer-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1.5px solid #CBD5E1; border-top: none; background: #FFFFFF; border-radius: 0 0 14px 14px; margin-top: -12px; margin-bottom: 20px;">
+      <span style="font-size: 11.5px; color: #64748B;">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+      <div class="pagination-arrows" style="display: flex; align-items: center; gap: 6px;">
+        {% if page_obj.has_previous %}
+          <a href="?tab={{ tab }}&category={{ category_filter }}&priority={{ priority_filter }}&channel={{ channel_filter }}&status={{ status_filter }}&q={{ search_q }}&page={{ page_obj.previous_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">← Prev</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">← Prev</span>
+        {% endif %}
+        
+        <span style="font-size: 11.5px; font-weight: 600; color: #475569;">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+          <a href="?tab={{ tab }}&category={{ category_filter }}&priority={{ priority_filter }}&channel={{ channel_filter }}&status={{ status_filter }}&q={{ search_q }}&page={{ page_obj.next_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">Next →</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">Next →</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT DETAIL WORKSPACE -->
+  <div class="detail-main-col" id="ticketDetailPane">
+    {% if selected_ticket %}
+      <input type="hidden" id="currentTicketId" value="{{ selected_ticket.id }}">
+
+      <!-- CARD 1: TICKET HEADER & LIVE CONTROLS -->
+      <div class="detail-card ticket-detail-header-card">
+        <div class="ticket-header-top-row">
+          <div>
+            <h2 class="ticket-subject-main" id="detailSubject">{{ selected_ticket.subject }}</h2>
+            <div class="ticket-code-sub" id="detailSubMeta">
+              <span style="font-family: monospace; font-weight: 700; color: #1C5D99;" id="detailCode">{{ selected_ticket.ticket_code }}</span>
+              <span>·</span>
+              <span id="detailCreatedAt">Created {{ selected_ticket.created_at|date:"M d, Y · H:i" }} IST</span>
+              <span>·</span>
+              <span id="detailChannelBadge">📡 {{ selected_ticket.channel }}</span>
+              <span>·</span>
+              <span id="detailSlaBadge" style="color: #D97706; font-weight: 600;">{{ selected_ticket.sla_due_text|default:"Within SLA" }}</span>
+            </div>
+          </div>
+          <span class="ticket-tag-badge {% if selected_ticket.status == 'OPEN' %}tag-open{% elif selected_ticket.status == 'IN_PROGRESS' %}tag-warning{% elif selected_ticket.status == 'AWAITING_REPLY' %}tag-awaiting{% elif selected_ticket.status == 'RESOLVED' %}tag-resolved{% else %}tag-open{% endif %}" id="detailStatusBadge" style="font-size: 12.5px; padding: 6px 12px;">
+            {{ selected_ticket.tag_display }}
+          </span>
+        </div>
+
+        <div class="ticket-meta-grid-modern">
+          <div class="meta-info-box">
+            <span class="meta-info-label">Requester</span>
+            <span class="meta-info-val" id="detailRequesterName">{{ selected_ticket.user.get_full_name|default:selected_ticket.user.username }} · {{ selected_ticket.user.role|title|default:"User" }}</span>
+          </div>
+
+          <div class="meta-info-box">
+            <span class="meta-info-label">Assigned Staff</span>
+            <select class="meta-select-inline" id="detailAssigneeSelect" onchange="updateTicketField('assigned_to_id', this.value)">
+              <option value="">Unassigned</option>
+              {% for s in staff_users %}
+                <option value="{{ s.id }}" {% if selected_ticket.assigned_to and selected_ticket.assigned_to.id == s.id %}selected{% endif %}>
+                  {{ s.get_full_name|default:s.username }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="meta-info-box">
+            <span class="meta-info-label">Priority Level</span>
+            <select class="meta-select-inline" id="detailPrioritySelect" onchange="updateTicketField('priority', this.value)">
+              {% for p in priorities %}
+                <option value="{{ p }}" {% if selected_ticket.priority == p %}selected{% endif %}>{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="meta-info-box">
+            <span class="meta-info-label">Status State</span>
+            <select class="meta-select-inline" id="detailStatusSelect" onchange="updateTicketField('status', this.value)">
+              {% for s_val, s_lbl in statuses %}
+                <option value="{{ s_val }}" {% if selected_ticket.status == s_val %}selected{% endif %}>{{ s_lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: REQUESTER PROFILE BANNER -->
+      <div class="requester-profile-banner">
+        <div class="requester-profile-left">
+          <div class="requester-avatar-large" id="detailBigAvatar">
+            {{ selected_ticket.user.first_name|first|default:"U" }}{{ selected_ticket.user.last_name|first|default:"S" }}
+          </div>
+          <div>
+            <div class="requester-name-line">
+              <span id="detailProfileName">{{ selected_ticket.user.get_full_name|default:selected_ticket.user.username }}</span>
+              <span style="font-size: 11px; padding: 2px 7px; border-radius: 5px; background: #E0F2FE; color: #0369A1; font-weight: 700;" id="detailProfileRole">
+                {{ selected_ticket.user.role|title|default:"User" }}
+              </span>
+            </div>
+            <div class="requester-contact-sub">
+              <span id="detailProfileEmail">✉️ {{ selected_ticket.user.email }}</span>
+              <span>·</span>
+              <span id="detailProfilePhone">📞 {{ selected_ticket.user.phone_number|default:"+91 98000 00000" }}</span>
+              <span>·</span>
+              <span id="detailProfileJoined">Member since {{ selected_ticket.user.date_joined|date:"M Y"|default:"2025" }}</span>
+            </div>
+          </div>
+        </div>
+        <a href="{% url 'admin_portal:user_management' %}?q={{ selected_ticket.user.username }}" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">
+          View profile ↗
+        </a>
+      </div>
+
+      <!-- CARD 3: CONVERSATION THREAD -->
+      <div class="detail-card conversation-thread-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <div>
+            <h3 class="card-section-title" style="margin: 0; font-size: 16px; font-weight: 700; color: #0F172A;">Conversation thread</h3>
+            <p style="font-size: 12px; color: #64748B; margin-top: 2px;" id="detailMsgCount">
+              {{ selected_messages|length }} message{{ selected_messages|length|pluralize }} · {{ selected_ticket.channel }} channel
+            </p>
+          </div>
+          <span style="font-size: 11.5px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #059669;"></span> Live sync enabled
+          </span>
+        </div>
+
+        <div class="thread-messages-list" id="threadMessagesList">
+          {% for m in selected_messages %}
+            <div class="chat-bubble-container">
+              <div class="bubble-avatar {% if m.is_internal %}bubble-avatar-note{% elif m.sender_role == 'Support Agent' %}bubble-avatar-staff{% else %}bubble-avatar-client{% endif %}">
+                {% if m.is_internal %}🔒{% elif m.sender_role == 'Support Agent' %}RS{% else %}👤{% endif %}
+              </div>
+              <div class="bubble-content-card {% if m.is_internal %}bubble-internal{% elif m.sender_role == 'Support Agent' %}bubble-staff{% else %}bubble-client{% endif %}">
+                <div class="bubble-head-row">
+                  <span class="bubble-author-title">
+                    {{ m.sender_name }}
+                    {% if m.is_internal %}
+                      <span style="font-size: 10.5px; background: #FEF3C7; color: #92400E; padding: 1px 6px; border-radius: 4px; font-weight: 700;">STAFF NOTE</span>
+                    {% elif m.sender_role == 'Support Agent' %}
+                      <span style="font-size: 10.5px; background: #DBEAFE; color: #1E40AF; padding: 1px 6px; border-radius: 4px; font-weight: 700;">AGENT</span>
+                    {% endif %}
+                  </span>
+                  <span class="bubble-timestamp-text">{{ m.created_at|date:"M d, H:i" }} IST</span>
+                </div>
+                <div class="bubble-body-text">{{ m.message }}</div>
+
+                {% if m.attachment_name %}
+                  <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; background: #F1F5F9; border: 1px solid #CBD5E1; padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #0F172A; font-weight: 600;">
+                    <span>📎 {{ m.attachment_name }}</span>
+                    {% if m.attachment_size %}<span style="color: #64748B; font-weight: 400;">({{ m.attachment_size }})</span>{% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- RELATED TRANSACTION BANNER (IF ANY) -->
+        {% if selected_ticket.related_transaction %}
+          <div class="related-context-banner" id="relatedTxnBanner">
+            <div class="related-banner-left">
+              <span class="related-banner-icon">💳</span>
+              <div>
+                <span class="meta-info-label">Linked Billing Transaction</span>
+                <div style="font-size: 13.5px; font-weight: 700; color: #0F172A;">
+                  {{ selected_ticket.related_transaction.txn_id }} · {{ selected_ticket.related_transaction.plan_name }} · ₹{{ selected_ticket.related_transaction.amount }}
+                </div>
+              </div>
+            </div>
+            <a href="{% url 'admin_portal:monetization' %}?q={{ selected_ticket.related_transaction.txn_id }}" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">
+              View transaction & invoice ↗
+            </a>
+          </div>
+        {% else %}
+          <div class="related-context-banner" id="relatedTxnBanner" style="display: none;"></div>
+        {% endif %}
+
+        <!-- RELATED PROPERTY BANNER (IF ANY) -->
+        {% if selected_ticket.related_property %}
+          <div class="related-context-banner" id="relatedPropBanner" style="margin-top: 10px;">
+            <div class="related-banner-left">
+              <span class="related-banner-icon">🏠</span>
+              <div>
+                <span class="meta-info-label">Linked Accommodation Listing</span>
+                <div style="font-size: 13.5px; font-weight: 700; color: #0F172A;">
+                  {{ selected_ticket.related_property.title }} · {{ selected_ticket.related_property.city.name }}
+                </div>
+              </div>
+            </div>
+            <a href="{% url 'admin_portal:listing_management' %}?q={{ selected_ticket.related_property.title }}" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">
+              View listing ↗
+            </a>
+          </div>
+        {% else %}
+          <div class="related-context-banner" id="relatedPropBanner" style="display: none;"></div>
+        {% endif %}
+      </div>
+
+      <!-- CARD 4: REPLY COMPOSER -->
+      <div class="detail-card reply-composer-card">
+        <div class="composer-mode-tabs">
+          <button type="button" class="mode-tab-btn active" id="tabModePublic" onclick="setComposerMode('PUBLIC')">
+            ✉️ Public reply to customer
+          </button>
+          <button type="button" class="mode-tab-btn" id="tabModeInternal" onclick="setComposerMode('INTERNAL')">
+            🔒 Internal staff note
+          </button>
+          <div style="margin-left: auto;">
+            <select class="form-select-sm" style="font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid #CBD5E1;" onchange="applyCannedTemplate(this.value); this.value='';">
+              <option value="">⚡ Quick templates ▾</option>
+              <option value="invoice">Invoice Resent & Tax Details</option>
+              <option value="visit">Walkthrough Scheduled with Caretaker</option>
+              <option value="listing">Listing Updated & Re-published</option>
+              <option value="account">Account Mobile Number Updated</option>
+              <option value="refund">Duplicate Charge Refund Initiated</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="composer-to-bar" id="composerToBar">
+          <span style="font-size: 12px; font-weight: 700; color: #64748B;">To:</span>
+          <span style="font-size: 13px; font-weight: 600; color: #0F172A;" id="composerRecipientEmail">
+            {{ selected_ticket.user.email }} ({{ selected_ticket.user.get_full_name|default:selected_ticket.user.username }})
+          </span>
+        </div>
+
+        <textarea class="composer-textarea" id="replyMessageInput" placeholder="Type your response to the customer..."></textarea>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: #64748B;" id="composerStatusLabel">
+              Public response · Email notification enabled
+            </span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="btn btn-outline" onclick="sendReply('REPLY_ONLY')">
+              Send reply
+            </button>
+            <button type="button" class="btn btn-primary" onclick="sendReply('REPLY_AND_RESOLVE')" style="background: #059669; border-color: #059669;">
+              ✓ Send & resolve ticket
+            </button>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="detail-card" style="padding: 60px 30px; text-align: center; color: #64748B;">
+        <div style="font-size: 40px; margin-bottom: 12px;">📂</div>
+        <h3 style="font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">No ticket selected</h3>
+        <p style="font-size: 13.5px; max-width: 400px; margin: 0 auto 16px;">Select a support ticket from the left queue to inspect the full conversation thread and respond.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- ==============================================================
+     MODAL: CREATE SUPPORT TICKET (CENTERED POPUP DIALOG)
+     ============================================================== -->
+<div class="modal-backdrop" id="createTicketModal" onclick="if(event.target === this) closeCreateTicketModal();">
+  <div class="modal-content-box">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 18px;">🎫</span>
+        <h3 class="modal-title">Create New Support Ticket</h3>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeCreateTicketModal()">✕</button>
+    </div>
+
+    <form id="createTicketForm" onsubmit="event.preventDefault(); submitCreateTicket();">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Requester User *</label>
+          <select class="form-select" id="newTicketUserId" required style="border-radius: 8px;">
+            <option value="">Select a platform user...</option>
+            {% for u in all_users %}
+              <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }} ({{ u.email }}) · {{ u.role|title|default:"User" }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Subject / Issue Summary *</label>
+          <input type="text" class="form-input" id="newTicketSubject" placeholder="e.g. Payment receipt not received, unable to book visit" required style="border-radius: 8px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Category</label>
+            <select class="form-select" id="newTicketCategory" style="border-radius: 8px;">
+              {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Channel</label>
+            <select class="form-select" id="newTicketChannel" style="border-radius: 8px;">
+              {% for ch in channels %}
+                <option value="{{ ch }}">{{ ch }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Priority</label>
+            <select class="form-select" id="newTicketPriority" style="border-radius: 8px;">
+              {% for prio in priorities %}
+                <option value="{{ prio }}" {% if prio == 'NORMAL' %}selected{% endif %}>{{ prio }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Assign Staff</label>
+            <select class="form-select" id="newTicketAssignee" style="border-radius: 8px;">
+              {% for s in staff_users %}
+                <option value="{{ s.id }}">{{ s.get_full_name|default:s.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Initial Message / Inquiry Details *</label>
+          <textarea class="form-textarea" id="newTicketMessage" rows="3" placeholder="Provide complete details of the customer issue..." required style="border-radius: 8px;"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeCreateTicketModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="padding: 8px 20px;">✓ Create Ticket</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOAST NOTIFICATIONS CONTAINER
+     ============================================================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT LOGIC
+     ============================================================== -->
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span>${type === 'success' ? '✓' : '⚠️'}</span>
+      <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(12px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  // --- COMPOSER MODE SWITCHER ---
+  let composerMode = 'PUBLIC';
+  function setComposerMode(mode) {
+    composerMode = mode;
+    const btnPublic = document.getElementById('tabModePublic');
+    const btnInternal = document.getElementById('tabModeInternal');
+    const toBar = document.getElementById('composerToBar');
+    const statusLabel = document.getElementById('composerStatusLabel');
+    const textarea = document.getElementById('replyMessageInput');
+
+    if (mode === 'PUBLIC') {
+      btnPublic.classList.add('active');
+      btnInternal.classList.remove('active');
+      toBar.style.display = 'flex';
+      statusLabel.innerText = 'Public response · Email notification enabled';
+      textarea.placeholder = 'Type your response to the customer...';
+      textarea.style.background = '#FFFFFF';
+    } else {
+      btnInternal.classList.add('active');
+      btnPublic.classList.remove('active');
+      toBar.style.display = 'none';
+      statusLabel.innerText = '🔒 Internal note · Only visible to platform admins';
+      textarea.placeholder = 'Add an internal observation or update for staff members...';
+      textarea.style.background = '#FFFBEB';
+    }
+  }
+
+  // --- CANNED TEMPLATES ---
+  function applyCannedTemplate(key) {
+    const textarea = document.getElementById('replyMessageInput');
+    const requesterName = document.getElementById('detailProfileName') ? document.getElementById('detailProfileName').innerText : 'Customer';
+
+    const templates = {
+      'invoice': `Hi ${requesterName},\n\nYour payment has been successfully verified. We have resent your official GST tax invoice to your registered email address.\n\nThank you for choosing KiraayaGrid.`,
+      'visit': `Hello ${requesterName},\n\nWe have coordinated your property walkthrough with the on-site caretaker. They will be waiting to greet you at the scheduled time.\n\nPlease carry a valid ID proof for society gate entry.`,
+      'listing': `Hello ${requesterName},\n\nWe have verified and applied the updated rent and pricing details for your listing. The updated terms are now live on the platform.`,
+      'account': `Hi ${requesterName},\n\nYour registered phone number has been updated successfully after secondary verification. You can now log in using your new mobile number.`,
+      'refund': `Hello ${requesterName},\n\nWe verified the duplicate payment gateway deduction. A full refund has been initiated to your source payment method via Razorpay and will credit in 2-3 business days.`
+    };
+
+    if (templates[key]) {
+      textarea.value = templates[key];
+      showToast('Template inserted into composer', 'success');
+      textarea.focus();
+    }
+  }
+
+  // --- DYNAMIC TICKET SELECTOR VIA AJAX ---
+  function selectTicket(ticketId) {
+    document.querySelectorAll('.ticket-queue-card').forEach(c => c.classList.remove('selected'));
+    const clicked = document.getElementById(`queueItem_${ticketId}`);
+    if (clicked) clicked.classList.add('selected');
+
+    fetch(`{% url 'admin_portal:support_get_ticket' %}?id=${ticketId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const t = data.ticket;
+          document.getElementById('currentTicketId').value = t.id;
+
+          // Header
+          document.getElementById('detailSubject').innerText = t.subject;
+          document.getElementById('detailCode').innerText = t.ticket_code;
+          document.getElementById('detailCreatedAt').innerText = `Created ${t.created_at}`;
+          document.getElementById('detailChannelBadge').innerText = `📡 ${t.channel}`;
+          document.getElementById('detailSlaBadge').innerText = t.sla_due_text || 'Within SLA';
+          
+          const statusBadge = document.getElementById('detailStatusBadge');
+          statusBadge.innerText = t.sla_due_text || t.status;
+          statusBadge.className = `ticket-tag-badge ${t.status === 'OPEN' ? 'tag-open' : (t.status === 'IN_PROGRESS' ? 'tag-warning' : (t.status === 'RESOLVED' ? 'tag-resolved' : 'tag-awaiting'))}`;
+
+          // Inline dropdowns
+          document.getElementById('detailRequesterName').innerText = `${t.requester.name} · ${t.requester.role}`;
+          document.getElementById('detailAssigneeSelect').value = t.assigned_to.id || '';
+          document.getElementById('detailPrioritySelect').value = t.priority;
+          document.getElementById('detailStatusSelect').value = t.status;
+
+          // Profile banner
+          document.getElementById('detailBigAvatar').innerText = t.requester.initials;
+          document.getElementById('detailProfileName').innerText = t.requester.name;
+          document.getElementById('detailProfileRole').innerText = t.requester.role;
+          document.getElementById('detailProfileEmail').innerText = `✉️ ${t.requester.email}`;
+          document.getElementById('detailProfilePhone').innerText = `📞 ${t.requester.phone}`;
+          document.getElementById('detailProfileJoined').innerText = `Member since ${t.requester.joined}`;
+
+          // Composer To
+          document.getElementById('composerRecipientEmail').innerText = `${t.requester.email} (${t.requester.name})`;
+
+          // Conversation Thread
+          document.getElementById('detailMsgCount').innerText = `${t.messages.length} message${t.messages.length !== 1 ? 's' : ''} · ${t.channel} channel`;
+          const thread = document.getElementById('threadMessagesList');
+          thread.innerHTML = '';
+
+          t.messages.forEach(m => {
+            const isInternal = m.is_internal;
+            const isStaff = m.sender_role === 'Support Agent';
+
+            const bubbleHtml = `
+              <div class="chat-bubble-container">
+                <div class="bubble-avatar ${isInternal ? 'bubble-avatar-note' : (isStaff ? 'bubble-avatar-staff' : 'bubble-avatar-client')}">
+                  ${isInternal ? '🔒' : (isStaff ? 'RS' : '👤')}
+                </div>
+                <div class="bubble-content-card ${isInternal ? 'bubble-internal' : (isStaff ? 'bubble-staff' : 'bubble-client')}">
+                  <div class="bubble-head-row">
+                    <span class="bubble-author-title">
+                      ${m.sender_name}
+                      ${isInternal ? '<span style="font-size: 10.5px; background: #FEF3C7; color: #92400E; padding: 1px 6px; border-radius: 4px; font-weight: 700;">STAFF NOTE</span>' : (isStaff ? '<span style="font-size: 10.5px; background: #DBEAFE; color: #1E40AF; padding: 1px 6px; border-radius: 4px; font-weight: 700;">AGENT</span>' : '')}
+                    </span>
+                    <span class="bubble-timestamp-text">${m.created_at}</span>
+                  </div>
+                  <div class="bubble-body-text">${m.message}</div>
+                  ${m.attachment_name ? `
+                    <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; background: #F1F5F9; border: 1px solid #CBD5E1; padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #0F172A; font-weight: 600;">
+                      <span>📎 ${m.attachment_name}</span>
+                      ${m.attachment_size ? `<span style="color: #64748B; font-weight: 400;">(${m.attachment_size})</span>` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+            thread.insertAdjacentHTML('beforeend', bubbleHtml);
+          });
+
+          // Related Transaction
+          const txnBanner = document.getElementById('relatedTxnBanner');
+          if (t.related_transaction) {
+            txnBanner.style.display = 'flex';
+            txnBanner.innerHTML = `
+              <div class="related-banner-left">
+                <span class="related-banner-icon">💳</span>
+                <div>
+                  <span class="meta-info-label">Linked Billing Transaction</span>
+                  <div style="font-size: 13.5px; font-weight: 700; color: #0F172A;">
+                    ${t.related_transaction.txn_id} · ${t.related_transaction.plan_name} · ₹${t.related_transaction.amount}
+                  </div>
+                </div>
+              </div>
+              <a href="{% url 'admin_portal:monetization' %}?q=${t.related_transaction.txn_id}" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">
+                View transaction & invoice ↗
+              </a>
+            `;
+          } else {
+            txnBanner.style.display = 'none';
+          }
+
+          // Related Property
+          const propBanner = document.getElementById('relatedPropBanner');
+          if (t.related_property) {
+            propBanner.style.display = 'flex';
+            propBanner.innerHTML = `
+              <div class="related-banner-left">
+                <span class="related-banner-icon">🏠</span>
+                <div>
+                  <span class="meta-info-label">Linked Accommodation Listing</span>
+                  <div style="font-size: 13.5px; font-weight: 700; color: #0F172A;">
+                    ${t.related_property.title} · ${t.related_property.city}
+                  </div>
+                </div>
+              </div>
+              <a href="{% url 'admin_portal:listing_management' %}?q=${encodeURIComponent(t.related_property.title)}" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;">
+                View listing ↗
+              </a>
+            `;
+          } else {
+            propBanner.style.display = 'none';
+          }
+
+          // Clear reply input
+          document.getElementById('replyMessageInput').value = '';
+        } else {
+          showToast(data.message || 'Error loading ticket details', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Network error loading ticket', 'error');
+      });
+  }
+
+  // --- UPDATE TICKET INLINE FIELD (STATUS, PRIORITY, ASSIGNEE) ---
+  function updateTicketField(field, value) {
+    const ticketId = document.getElementById('currentTicketId').value;
+    if (!ticketId) return;
+
+    const formData = new FormData();
+    formData.append('ticket_id', ticketId);
+    formData.append(field, value);
+
+    fetch(`{% url 'admin_portal:support_update_ticket' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          // Update status badge if changed
+          if (data.status_val) {
+            const badge = document.getElementById('detailStatusBadge');
+            badge.innerText = data.status_val === 'RESOLVED' ? '✓ Resolved' : data.status_val;
+            badge.className = `ticket-tag-badge ${data.status_val === 'OPEN' ? 'tag-open' : (data.status_val === 'IN_PROGRESS' ? 'tag-warning' : (data.status_val === 'RESOLVED' ? 'tag-resolved' : 'tag-awaiting'))}`;
+          }
+        } else {
+          showToast(data.message || 'Update failed', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Network error updating ticket', 'error');
+      });
+  }
+
+  // --- SEND REPLY / RESOLVE ---
+  function sendReply(actionType) {
+    const ticketId = document.getElementById('currentTicketId').value;
+    const message = document.getElementById('replyMessageInput').value.trim();
+
+    if (!ticketId) {
+      showToast('No ticket selected', 'error');
+      return;
+    }
+    if (!message) {
+      showToast('Please enter a response message', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('ticket_id', ticketId);
+    formData.append('message', message);
+    formData.append('is_internal', composerMode === 'INTERNAL' ? 'true' : 'false');
+    formData.append('action', actionType);
+
+    fetch(`{% url 'admin_portal:support_send_reply' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          document.getElementById('replyMessageInput').value = '';
+          // Reload conversation thread for current ticket
+          selectTicket(ticketId);
+        } else {
+          showToast(data.message || 'Failed to send reply', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Network error delivering reply', 'error');
+      });
+  }
+
+  // --- CREATE TICKET MODAL HANDLERS ---
+  function openCreateTicketModal() {
+    const modal = document.getElementById('createTicketModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeCreateTicketModal() {
+    const modal = document.getElementById('createTicketModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function submitCreateTicket() {
+    const userId = document.getElementById('newTicketUserId').value;
+    const subject = document.getElementById('newTicketSubject').value.trim();
+    const category = document.getElementById('newTicketCategory').value;
+    const channel = document.getElementById('newTicketChannel').value;
+    const priority = document.getElementById('newTicketPriority').value;
+    const assignee = document.getElementById('newTicketAssignee').value;
+    const message = document.getElementById('newTicketMessage').value.trim();
+
+    if (!userId || !subject || !message) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('subject', subject);
+    formData.append('category', category);
+    formData.append('channel', channel);
+    formData.append('priority', priority);
+    formData.append('assigned_to_id', assignee);
+    formData.append('message', message);
+
+    fetch(`{% url 'admin_portal:support_create_ticket' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          closeCreateTicketModal();
+          setTimeout(() => {
+            window.location.href = `{% url 'admin_portal:support_center' %}?selected_id=${data.ticket_id}`;
+          }, 600);
+        } else {
+          showToast(data.message || 'Error creating ticket', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Network error creating ticket', 'error');
+      });
+  }
+
+  // Keyboard Escape Handler
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeCreateTicketModal();
+    }
+  });
+</script>
+{% endblock %}

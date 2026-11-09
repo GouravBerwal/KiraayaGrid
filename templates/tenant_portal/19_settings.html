@@ -1,0 +1,384 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Account &amp; Privacy Settings — KiraayaGrid{% endblock %}
+
+{% block content %}
+<!-- HEADER ROW -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+      Account &amp; Privacy Settings
+    </h1>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Manage login security credentials, contact privacy, notification delivery channels, and personal data portability.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <a href="{% url 'tenant_portal:profile_preferences' %}" class="btn-outline-pill" style="padding: 9px 16px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Edit Living Preferences</span>
+    </a>
+    <a href="{% url 'tenant_portal:logout' %}" style="padding: 9px 18px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; font-size: 13px; font-weight: 700; color: #DC2626; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      <span>Sign Out</span>
+    </a>
+  </div>
+</div>
+
+<!-- STACKED ELEVATED SETTINGS CARDS -->
+<div style="display: flex; flex-direction: column; gap: 26px; max-width: 1080px;">
+
+  <!-- CARD 1: ACCOUNT SECURITY & PASSWORD ROTATION -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 30px 34px; box-shadow: var(--shadow-card);">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 16px; margin-bottom: 22px; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+          Login Security &amp; Password Rotation
+        </h3>
+        <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 3px 0 0 0;">
+          Update your account password with enterprise-grade PBKDF2 SHA-256 encryption.
+        </p>
+      </div>
+      <span style="font-size: 11px; font-family: ui-monospace, monospace; background: #F1F5F9; color: var(--color-text-muted); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--color-border);">
+        PBKDF2 SHA-256 Encrypted
+      </span>
+    </div>
+
+    <form id="passwordUpdateForm" onsubmit="handlePasswordUpdate(event)">
+      {% csrf_token %}
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 20px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Current Password (If set)</label>
+          <input type="password" id="currentPass" name="current_password" placeholder="Enter current password" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">New Password *</label>
+          <input type="password" id="newPass" name="new_password" required placeholder="Minimum 6 characters" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Confirm New Password *</label>
+          <input type="password" id="confirmPass" name="confirm_password" required placeholder="Re-enter new password" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--color-border-subtle); flex-wrap: wrap; gap: 12px;">
+        <span style="font-size: 12px; color: var(--color-text-muted);">
+          Active browser sessions will remain preserved without interruption.
+        </span>
+        <button type="submit" id="updatePassBtn" class="btn-search-primary" style="padding: 10px 24px; font-size: 13px; font-weight: 700;">
+          Update Password
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- CARD 2: NOTIFICATION PREFERENCES -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 30px 34px; box-shadow: var(--shadow-card);">
+    <div style="border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 16px; margin-bottom: 22px;">
+      <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+        Notification Delivery Channels
+      </h3>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 3px 0 0 0;">
+        Choose where you want to receive real-time host chat replies, visit approvals, and tenancy updates.
+      </p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <!-- WhatsApp Alerts -->
+      <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 16px 20px; border-radius: 12px; cursor: pointer;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">Instant WhatsApp Alerts ({{ active_tenant.phone_number }})</div>
+            <span style="font-size: 10.5px; font-weight: 700; background: #DCFCE7; color: #166534; padding: 2px 7px; border-radius: 4px;">Recommended</span>
+          </div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 3px;">
+            Receive instant messages whenever a landlord replies to your inquiry or accepts a walkthrough.
+          </div>
+        </div>
+        <input type="checkbox" id="prefWa" onchange="saveNotificationToggles()" {% if profile.whatsapp_notifications %}checked{% endif %} style="width: 20px; height: 20px; accent-color: #059669; cursor: pointer;">
+      </label>
+
+      <!-- SMS Walkthrough Reminders -->
+      <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 16px 20px; border-radius: 12px; cursor: pointer;">
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">SMS Walkthrough Reminders</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 3px;">
+            Dispatched 2 hours prior to scheduled property walkthroughs with caretaker contact and gate entry pass.
+          </div>
+        </div>
+        <input type="checkbox" id="prefSms" onchange="saveNotificationToggles()" {% if profile.sms_notifications %}checked{% endif %} style="width: 20px; height: 20px; accent-color: #059669; cursor: pointer;">
+      </label>
+
+      <!-- Email Tenancy Documents -->
+      <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 16px 20px; border-radius: 12px; cursor: pointer;">
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">Email Tenancy Documents &amp; Invoices ({{ active_tenant.email }})</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 3px;">
+            Official tenancy agreements, deposit payment receipts, and gate entry vouchers sent directly to your inbox.
+          </div>
+        </div>
+        <input type="checkbox" id="prefEmail" onchange="saveNotificationToggles()" {% if profile.email_notifications %}checked{% endif %} style="width: 20px; height: 20px; accent-color: #059669; cursor: pointer;">
+      </label>
+    </div>
+  </div>
+
+  <!-- CARD 3: PRIVACY & CONTACT VISIBILITY -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 30px 34px; box-shadow: var(--shadow-card);">
+    <div style="border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 16px; margin-bottom: 22px;">
+      <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+        Contact Privacy &amp; Landlord Visibility
+      </h3>
+      <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 3px 0 0 0;">
+        Protect your personal privacy and control when property hosts can see your contact credentials.
+      </p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 16px 20px; border-radius: 12px; cursor: pointer;">
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">Share Phone Number on Walkthrough Approval Only</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 3px;">
+            Hides your phone number during initial chat and only reveals it once a walkthrough visit is confirmed.
+          </div>
+        </div>
+        <input type="checkbox" checked onchange="savePrivacyToggles()" style="width: 20px; height: 20px; accent-color: #0F3E4D; cursor: pointer;">
+      </label>
+
+      <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 16px 20px; border-radius: 12px; cursor: pointer;">
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">Hide Profile from General Landlord Search</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 3px;">
+            Only landlords of properties you explicitly enquire about will see your profile criteria and budget.
+          </div>
+        </div>
+        <input type="checkbox" checked onchange="savePrivacyToggles()" style="width: 20px; height: 20px; accent-color: #0F3E4D; cursor: pointer;">
+      </label>
+
+      <label style="display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; border: 1px solid var(--color-border); padding: 16px 20px; border-radius: 12px; cursor: pointer;">
+        <div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">Direct In-App Messaging Permissions</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 3px;">
+            Allow verified landlords to send messages within your active enquiry threads.
+          </div>
+        </div>
+        <input type="checkbox" checked onchange="savePrivacyToggles()" style="width: 20px; height: 20px; accent-color: #0F3E4D; cursor: pointer;">
+      </label>
+    </div>
+  </div>
+
+  <!-- CARD 4: DATA PORTABILITY & ARCHIVE DOWNLOAD -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 30px 34px; box-shadow: var(--shadow-card);">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 16px; margin-bottom: 22px; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">
+          Data Portability &amp; Personal Archive
+        </h3>
+        <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 3px 0 0 0;">
+          Download a complete portable JSON export of your tenancy profile, enquiries, visits, and bookings.
+        </p>
+      </div>
+      <span style="font-size: 11px; font-weight: 700; background: #EFF6FF; color: #1E40AF; padding: 4px 10px; border-radius: 6px;">
+        DPDP &amp; GDPR Compliant
+      </span>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div style="font-size: 13px; color: var(--color-text-muted); max-width: 620px; line-height: 1.5;">
+        Your exported archive includes all personal contact details, saved properties, inquiry message logs, scheduled walkthrough visits, and tenancy booking contracts.
+      </div>
+
+      <a href="{% url 'tenant_portal:api_export_personal_data' %}" download class="btn-search-primary" style="padding: 10px 22px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Download My Data Archive (JSON)</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- CARD 5: DANGER ZONE & ACCOUNT ACTIONS -->
+  <div style="background: #FFFBFB; border: 1px solid #FECACA; border-radius: var(--radius-lg); padding: 30px 34px;">
+    <h3 style="font-size: 16px; font-weight: 800; color: #DC2626; margin: 0 0 4px 0;">
+      Account Actions &amp; Danger Zone
+    </h3>
+    <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 20px 0;">
+      Terminate your active personal login session or submit a permanent account deactivation request.
+    </p>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div style="font-size: 12.5px; color: var(--color-text-muted);">
+        Account: <strong>{{ active_tenant.username }}</strong> &bull; Member since {{ active_tenant.date_joined|date:"d M Y" }}
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <a href="{% url 'tenant_portal:logout' %}" style="padding: 10px 20px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 13px; font-weight: 700; color: #334155; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+          <span>Sign Out</span>
+        </a>
+        <button type="button" onclick="openDeleteAccountModal()" style="padding: 10px 20px; border: 1px solid #FECACA; border-radius: 8px; background: #FEF2F2; color: #DC2626; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+          <span>Delete / Deactivate Account</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: ACCOUNT DELETION CONFIRMATION -->
+<div id="deleteAccountModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 440px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1); padding: 28px;">
+    <div style="width: 50px; height: 50px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px auto;">
+      ⚠️
+    </div>
+    <h3 style="font-size: 18px; font-weight: 800; text-align: center; color: var(--color-text-main); margin: 0 0 8px 0;">
+      Deactivate Account?
+    </h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); text-align: center; margin: 0 0 20px 0; line-height: 1.5;">
+      Submitting a deactivation request will archive your saved shortlist and cancel open inquiries. Our compliance desk will finalize data erasure within 24 hours.
+    </p>
+
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Reason for leaving (Optional)</label>
+      <input type="text" id="deactReason" placeholder="e.g. Found accommodation / Relocating" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none;">
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <button type="button" onclick="closeDeleteAccountModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Keep Account
+      </button>
+      <button type="button" onclick="confirmDeleteAccount()" id="confirmDeactBtn" style="flex: 1; padding: 11px; border: none; border-radius: 10px; background: #DC2626; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Submit Request
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Handle Password Update via AJAX
+  function handlePasswordUpdate(e) {
+    e.preventDefault();
+    const p1 = document.getElementById('newPass').value;
+    const p2 = document.getElementById('confirmPass').value;
+    const cur = document.getElementById('currentPass').value;
+
+    if (p1 !== p2) {
+      alert('New password and confirmation do not match!');
+      return;
+    }
+    if (p1.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+
+    const btn = document.getElementById('updatePassBtn');
+    btn.disabled = true;
+    btn.innerText = 'Updating...';
+
+    const formData = new FormData();
+    formData.append('current_password', cur);
+    formData.append('new_password', p1);
+    formData.append('confirm_password', p2);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_update_password" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Update Password';
+      if (data.status === 'success') {
+        document.getElementById('currentPass').value = '';
+        document.getElementById('newPass').value = '';
+        document.getElementById('confirmPass').value = '';
+        showTenantToast(data.message);
+      } else {
+        alert(data.message || 'Error updating password');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Update Password';
+      alert('Network error while updating credentials');
+    });
+  }
+
+  // Save Notification Toggles
+  function saveNotificationToggles() {
+    const formData = new FormData();
+    formData.append('whatsapp_notifications', document.getElementById('prefWa').checked);
+    formData.append('sms_notifications', document.getElementById('prefSms').checked);
+    formData.append('email_notifications', document.getElementById('prefEmail').checked);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_update_notification_settings" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+      }
+    });
+  }
+
+  // Save Privacy Toggles
+  function savePrivacyToggles() {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_update_privacy_settings" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+      }
+    });
+  }
+
+  // Account Deletion Modal
+  function openDeleteAccountModal() {
+    document.getElementById('deleteAccountModal').style.display = 'flex';
+  }
+  function closeDeleteAccountModal() {
+    document.getElementById('deleteAccountModal').style.display = 'none';
+  }
+
+  function confirmDeleteAccount() {
+    const btn = document.getElementById('confirmDeactBtn');
+    btn.disabled = true;
+    btn.innerText = 'Submitting...';
+
+    const formData = new FormData();
+    formData.append('reason', document.getElementById('deactReason').value);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_delete_account" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Request';
+      if (data.status === 'success') {
+        closeDeleteAccountModal();
+        showTenantToast(data.message);
+      } else {
+        alert(data.message || 'Error processing request');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Request';
+      alert('Network error');
+    });
+  }
+</script>
+{% endblock %}

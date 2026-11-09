@@ -1,0 +1,1171 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Monetization — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Monetization{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/10_monetization.css' %}?v=3.0">
+  <style>
+    /* ==============================================================
+       SCREEN 10: CRITICAL INLINE STYLES FOR ZERO-CACHE RELIABILITY
+       ============================================================== */
+    .monetization-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      padding-bottom: 4px !important;
+    }
+
+    .monetization-search-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      padding: 8px 12px !important;
+      flex: 1 !important;
+      min-width: 250px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .monetization-search-wrap:focus-within {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .monetization-search-icon {
+      color: #64748B !important;
+      flex-shrink: 0 !important;
+    }
+
+    .monetization-search-input {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      width: 100% !important;
+      font-size: 13px !important;
+      color: #0F172A !important;
+      font-weight: 500 !important;
+    }
+
+    .monetization-filter-select {
+      width: auto !important;
+      min-width: 135px !important;
+      padding: 8px 28px 8px 11px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+    }
+
+    .monetization-filter-select:focus {
+      outline: none !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .monetization-btn {
+      padding: 8px 16px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 9px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    /* Clickable Table Rows */
+    .txn-table-row {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .txn-table-row:hover {
+      background: #F8FAFC !important;
+    }
+
+    /* Modal Backdrop & Content */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open {
+      display: flex !important;
+    }
+    .modal-content-box {
+      background: #FFFFFF;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 650px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: modalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    @keyframes modalScale {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #64748B;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    .modal-close-btn:hover {
+      color: #0F172A;
+      background: #F1F5F9;
+    }
+    .modal-body {
+      padding: 22px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-footer {
+      padding: 14px 22px;
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #F8FAFC;
+      flex-shrink: 0;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #1E293B;
+      color: #FFFFFF;
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s ease;
+    }
+    .toast.success { background: #065F46; border-left: 4px solid #34D399; }
+    .toast.error { background: #991B1B; border-left: 4px solid #F87171; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Print Invoice Styling */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #invoicePrintArea, #invoicePrintArea * {
+        visibility: visible;
+      }
+      #invoicePrintArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .monetization-filter-toolbar {
+        flex-wrap: wrap !important;
+      }
+      .monetization-search-wrap {
+        min-width: 100% !important;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     PAGE HEADER
+     ============================================================== -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Monetization</h1>
+    <p class="page-subtitle">Manage owner subscriptions, paid visibility and every rupee moving through KiraayaGrid.</p>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn btn-outline" onclick="showToast('Active billing period: November 2026', 'success')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      November 2026
+    </button>
+    <button type="button" class="btn btn-primary" onclick="openAddPaymentModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Record offline payment
+    </button>
+    <a href="{% url 'admin_portal:monetization_export_csv' %}?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if payment_method_filter %}&method={{ payment_method_filter }}{% endif %}{% if payment_status_filter %}&status={{ payment_status_filter }}{% endif %}" class="btn btn-outline" title="Export Revenue CSV">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Export revenue
+    </a>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOP 4 KPI STAT BOXES (DYNAMIC LIVE REVENUE METRICS)
+     ============================================================== -->
+<div class="stats-grid-4">
+  <div class="stat-box">
+    <div class="stat-label">Collected revenue</div>
+    <div class="stat-value">{{ kpi_stats.collected_revenue }}</div>
+    <div class="stat-trend positive">{{ kpi_stats.collected_revenue_trend }}</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-label">Subscriptions</div>
+    <div class="stat-value">{{ kpi_stats.subscriptions_revenue }}</div>
+    <div class="stat-trend highlight">{{ kpi_stats.subscriptions_pct }}</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-label">Featured listings</div>
+    <div class="stat-value">{{ kpi_stats.featured_revenue }}</div>
+    <div class="stat-trend highlight">{{ kpi_stats.featured_pct }}</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-label">Active subscribers</div>
+    <div class="stat-value">{{ kpi_stats.active_subscribers }}</div>
+    <div class="stat-trend positive">{{ kpi_stats.active_subscribers_trend }}</div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     NAV TAB STRIP (DYNAMIC COUNTS)
+     ============================================================== -->
+<div class="nav-tab-strip">
+  <a href="?tab=OVERVIEW{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'OVERVIEW' or tab == 'ALL' %}active{% endif %}">
+    Overview · {{ tab_counts.overview }}
+  </a>
+  <a href="?tab=SUBSCRIPTIONS{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'SUBSCRIPTIONS' %}active{% endif %}">
+    Subscription plans · {{ tab_counts.subscriptions }}
+  </a>
+  <a href="?tab=PAYMENTS{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'PAYMENTS' %}active{% endif %}">
+    Payments · {{ tab_counts.payments }}
+  </a>
+  <a href="?tab=FEATURED{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'FEATURED' %}active{% endif %}">
+    Featured listings · {{ tab_counts.featured }}
+  </a>
+  <a href="?tab=INVOICES{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'INVOICES' %}active{% endif %}">
+    Tax & invoices · {{ tab_counts.invoices }}
+  </a>
+  <a href="?tab=FAILED{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'FAILED' or tab == 'REFUNDS' %}active{% endif %}">
+    Refunds / Failed · {{ tab_counts.failed }}
+  </a>
+</div>
+
+<!-- ==============================================================
+     3 SUBSCRIPTION TIER CARDS (CONFIGURABLE & DYNAMIC)
+     ============================================================== -->
+<div class="subscription-plans-grid">
+  <!-- PLAN 1: STARTER -->
+  <div class="card plan-card">
+    <div class="plan-header">
+      <h3 class="plan-name">Starter</h3>
+      <p class="plan-desc">For independent property owners</p>
+    </div>
+    <div class="plan-price">₹0</div>
+    <div class="plan-features">
+      <div class="plan-feature-item">1 active listing · Standard support</div>
+      <div class="plan-stats-note">1,866 owners enrolled</div>
+    </div>
+    <button type="button" class="btn btn-outline btn-full" onclick="openEditPlanModal('Starter', 0, 1, 'Standard support')">Edit plan</button>
+  </div>
+
+  <!-- PLAN 2: GROWTH (HIGHLIGHTED) -->
+  <div class="card plan-card highlight-card">
+    <div class="plan-badge-top">Most popular</div>
+    <div class="plan-header">
+      <h3 class="plan-name">Growth</h3>
+      <p class="plan-desc">For growing rental portfolios</p>
+    </div>
+    <div class="plan-price">₹999 <span class="price-cycle">/ month</span></div>
+    <div class="plan-features">
+      <div class="plan-feature-item">10 active listings · Priority support</div>
+      <div class="plan-stats-note">1,846 subscribers active</div>
+    </div>
+    <button type="button" class="btn btn-outline btn-full" onclick="openEditPlanModal('Growth', 999, 10, 'Priority support')">Edit plan</button>
+  </div>
+
+  <!-- PLAN 3: BUSINESS -->
+  <div class="card plan-card">
+    <div class="plan-header">
+      <h3 class="plan-name">Business</h3>
+      <p class="plan-desc">For professional coliving operators</p>
+    </div>
+    <div class="plan-price">₹2,499 <span class="price-cycle">/ month</span></div>
+    <div class="plan-features">
+      <div class="plan-feature-item">Unlimited listings · Dedicated account manager</div>
+      <div class="plan-stats-note">338 subscribers active</div>
+    </div>
+    <button type="button" class="btn btn-outline btn-full" onclick="openEditPlanModal('Business', 2499, 'Unlimited', 'Dedicated account manager')">Edit plan</button>
+  </div>
+</div>
+
+<!-- ==============================================================
+     RECENT TRANSACTIONS SECTION HEADING
+     ============================================================== -->
+<div class="section-title-row mt-24">
+  <h2 class="section-heading">Recent transactions</h2>
+  <span class="status-pill success font-12">
+    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #059669; margin-right: 4px;"></span>
+    ✓ Payment gateway connected (Razorpay Live)
+  </span>
+</div>
+
+<!-- ==============================================================
+     SINGLE-LINE FILTER TOOLBAR (USER REQUIREMENT)
+     ============================================================== -->
+<form method="GET" action="" class="monetization-filter-toolbar">
+  <input type="hidden" name="tab" value="{{ tab }}">
+
+  <!-- SEARCH FIELD -->
+  <div class="monetization-search-wrap">
+    <span class="monetization-search-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </span>
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Transaction ID, owner, phone or invoice..." class="monetization-search-input">
+  </div>
+
+  <!-- PAYMENT TYPE SELECT -->
+  <select name="method" class="monetization-filter-select">
+    <option value="ALL">All payment types ▾</option>
+    <option value="UPI" {% if payment_method_filter == 'UPI' %}selected{% endif %}>UPI</option>
+    <option value="Card" {% if payment_method_filter == 'Card' %}selected{% endif %}>Card</option>
+    <option value="Net banking" {% if payment_method_filter == 'Net banking' %}selected{% endif %}>Net banking</option>
+  </select>
+
+  <!-- PAYMENT STATUS SELECT -->
+  <select name="status" class="monetization-filter-select">
+    <option value="ALL">Payment status ▾</option>
+    <option value="SUCCESS" {% if payment_status_filter == 'SUCCESS' %}selected{% endif %}>Paid / Success</option>
+    <option value="PENDING" {% if payment_status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+    <option value="FAILED" {% if payment_status_filter == 'FAILED' %}selected{% endif %}>Failed</option>
+    <option value="REFUNDED" {% if payment_status_filter == 'REFUNDED' %}selected{% endif %}>Refunded</option>
+  </select>
+
+  <!-- PRODUCT TYPE SELECT -->
+  <select name="product" class="monetization-filter-select">
+    <option value="ALL">All products ▾</option>
+    <option value="SUBSCRIPTION" {% if product_type_filter == 'SUBSCRIPTION' %}selected{% endif %}>Subscription plans</option>
+    <option value="FEATURED_LISTING" {% if product_type_filter == 'FEATURED_LISTING' %}selected{% endif %}>Featured listings</option>
+    <option value="TENANT_CONTACT" {% if product_type_filter == 'TENANT_CONTACT' %}selected{% endif %}>Tenant contact leads</option>
+  </select>
+
+  <!-- FILTER BUTTON -->
+  <button type="submit" class="btn btn-primary monetization-btn">
+    Filter
+  </button>
+
+  <!-- RESET BUTTON -->
+  {% if search_q or payment_method_filter or payment_status_filter or product_type_filter %}
+    <a href="?tab={{ tab }}" class="btn btn-outline monetization-btn" style="color: #64748B;">✕ Reset</a>
+  {% endif %}
+
+  <!-- RECONCILE PAYMENTS BUTTON -->
+  <button type="button" class="btn btn-outline monetization-btn" onclick="showToast('Payment gateway reconciliation synchronized! All Webhooks active.', 'success')" style="margin-left: auto;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+    Reconcile payments
+  </button>
+</form>
+
+<!-- ==============================================================
+     TRANSACTIONS DATA TABLE
+     ============================================================== -->
+<div class="table-card mb-24">
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>OWNER / TRANSACTION</th>
+          <th>PRODUCT</th>
+          <th>AMOUNT</th>
+          <th>PAID ON</th>
+          <th>PAYMENT</th>
+          <th style="text-align: right;">ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in transactions %}
+          <tr class="txn-table-row" id="txnRow_{{ t.id }}" onclick="openTransactionModal({{ t.id }})">
+            <!-- OWNER / TRANSACTION -->
+            <td>
+              <div class="actor-cell">
+                <div class="actor-avatar {% cycle 'bg-blue' 'bg-indigo' 'bg-teal' 'bg-slate' %}">
+                  {{ t.avatar_initial }}
+                </div>
+                <div>
+                  <div class="actor-name font-bold" style="color: #0F172A;">
+                    {{ t.user.get_full_name|default:t.user.username }}
+                  </div>
+                  <div class="text-subtle font-mono" style="font-size: 11.5px; color: #64748B;">
+                    {{ t.txn_id }} · {{ t.payment_method }}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- PRODUCT / INVOICE -->
+            <td>
+              <div style="font-weight: 600; color: #1E293B;">{{ t.plan_name }}</div>
+              <div class="text-subtle font-mono" style="font-size: 11.5px; color: #64748B;">
+                {{ t.invoice_number|default:"INV-2026-PENDING" }}
+              </div>
+            </td>
+
+            <!-- AMOUNT -->
+            <td class="font-bold" style="color: #0F172A; font-size: 14px;">
+              ₹{{ t.formatted_amount }}
+            </td>
+
+            <!-- PAID ON DATE -->
+            <td style="color: #475569; font-size: 12.5px;">
+              {{ t.created_at|date:"d M, H:i" }}
+            </td>
+
+            <!-- PAYMENT STATUS PILL -->
+            <td>
+              {% if t.payment_status == 'SUCCESS' %}
+                <span class="status-pill success" id="statusBadge_{{ t.id }}">✓ Paid</span>
+              {% elif t.payment_status == 'PENDING' %}
+                <span class="status-pill pending" id="statusBadge_{{ t.id }}">◔ Pending</span>
+              {% elif t.payment_status == 'FAILED' %}
+                <span class="status-pill danger" id="statusBadge_{{ t.id }}">✕ Failed</span>
+              {% elif t.payment_status == 'REFUNDED' %}
+                <span class="status-pill neutral" id="statusBadge_{{ t.id }}" style="background: #F1F5F9; color: #475569;">↩ Refunded</span>
+              {% endif %}
+            </td>
+
+            <!-- ACTION LINK -->
+            <td style="text-align: right;" onclick="event.stopPropagation();">
+              {% if t.payment_status == 'SUCCESS' %}
+                <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; border-radius: 6px;" onclick="openTransactionModal({{ t.id }})">
+                  Download invoice ↗
+                </button>
+              {% elif t.payment_status == 'PENDING' %}
+                <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; border-radius: 6px;" onclick="openTransactionModal({{ t.id }})">
+                  Check payment ↗
+                </button>
+              {% elif t.payment_status == 'FAILED' %}
+                <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; border-radius: 6px; color: #DC2626;" onclick="showToast('Payment link sent to {{ t.user.phone_number }}!', 'success')">
+                  Send payment link ↗
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; border-radius: 6px;" onclick="openTransactionModal({{ t.id }})">
+                  View refund ↗
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 48px 20px;">
+              <div style="font-size: 36px; margin-bottom: 12px;">💳</div>
+              <div style="font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">No transactions match your query</div>
+              <div style="font-size: 13px; color: #64748B; margin-bottom: 16px;">Try adjusting your search criteria, payment type or status filter.</div>
+              <a href="?tab=OVERVIEW" class="btn btn-primary" style="padding: 7px 16px; font-size: 12.5px;">Reset filters</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLE FOOTER BAR & PAGINATION -->
+  <div class="table-footer-bar">
+    <span>
+      Showing {{ page_obj.start_index|default:0 }}–{{ page_obj.end_index|default:0 }} of {{ total_results }} transactions · Amounts exclude GST
+    </span>
+    <div class="pagination-wrap" style="display: flex; align-items: center; gap: 8px;">
+      {% if page_obj.has_previous %}
+        <a href="?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if payment_method_filter %}&method={{ payment_method_filter }}{% endif %}{% if payment_status_filter %}&status={{ payment_status_filter }}{% endif %}{% if product_type_filter %}&product={{ product_type_filter }}{% endif %}&page={{ page_obj.previous_page_number }}" class="page-btn">← Prev</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">← Prev</span>
+      {% endif %}
+
+      <span class="page-indicator" style="font-size: 12.5px; font-weight: 600; color: #475569; padding: 0 8px;">
+        Page {{ page_obj.number|default:1 }} of {{ page_obj.paginator.num_pages|default:1 }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a href="?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if payment_method_filter %}&method={{ payment_method_filter }}{% endif %}{% if payment_status_filter %}&status={{ payment_status_filter }}{% endif %}{% if product_type_filter %}&product={{ product_type_filter }}{% endif %}&page={{ page_obj.next_page_number }}" class="page-btn">Next →</a>
+      {% else %}
+        <span class="page-btn disabled" style="opacity: 0.45; cursor: not-allowed; pointer-events: none;">Next →</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     BOTTOM METRICS SUMMARY BAR
+     ============================================================== -->
+<div class="bottom-metrics-summary-bar">
+  <div class="summary-metric">
+    <span class="summary-lbl">FEATURED INVENTORY</span>
+    <span class="summary-val">175 active placements · 12 city collections</span>
+  </div>
+  <div class="summary-metric">
+    <span class="summary-lbl">NEXT EXPIRY</span>
+    <span class="summary-val">Skyline Living · 11 Nov 2026, 17:32 IST</span>
+  </div>
+  <div class="summary-metric">
+    <span class="summary-lbl">SETTLEMENT</span>
+    <span class="summary-val">₹8,42,180 settled · Next payout 06 Nov</span>
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL 1: TRANSACTION DETAIL & OFFICIAL INVOICE POPUP
+     ============================================================== -->
+<div class="modal-backdrop" id="transactionDetailModal" onclick="if(event.target === this) closeTransactionModal();">
+  <div class="modal-content-box" style="max-width: 680px;">
+    <!-- MODAL HEADER -->
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="actor-avatar bg-blue" id="modalTxnAvatar">RM</div>
+        <div>
+          <h3 class="modal-title" id="modalTxnTitle">Transaction Details</h3>
+          <div style="font-size: 12px; color: #64748B;" id="modalTxnSubtitle">INV-2026-11041 · 05 Nov 2026</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="status-pill success" id="modalTxnStatusBadge">✓ Paid</span>
+        <button type="button" class="modal-close-btn" onclick="closeTransactionModal()">✕</button>
+      </div>
+    </div>
+
+    <!-- MODAL BODY -->
+    <div class="modal-body">
+      <!-- LOADING STATE -->
+      <div id="modalTxnLoading" style="display: none; padding: 40px; text-align: center; color: #64748B;">
+        <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
+        <div>Loading transaction records...</div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div id="modalTxnContent">
+        <input type="hidden" id="modalTxnId">
+
+        <!-- CUSTOMER INFORMATION CARD -->
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px;">
+          <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Customer Information</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #0F172A;" id="modalCustomerName">Rajesh Mehta</div>
+              <div style="font-size: 12px; color: #64748B;" id="modalCustomerPhone">+91 98201 44521</div>
+            </div>
+            <div>
+              <div style="font-size: 12.5px; color: #334155;"><strong>Email:</strong> <span id="modalCustomerEmail">rajesh.mehta@gmail.com</span></div>
+              <div style="font-size: 12px; color: #059669; font-weight: 600;">✓ Verified Property Owner</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYMENT BREAKDOWN CARD -->
+        <div style="border: 1px solid #E2E8F0; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+          <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Billing Breakdown</div>
+          
+          <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px dashed #E2E8F0; font-size: 13px;">
+            <span style="color: #475569;" id="modalProductName">Business subscription (1 Month)</span>
+            <span style="font-weight: 600; color: #0F172A;" id="modalBaseAmount">₹2,499.00</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #E2E8F0; font-size: 13px;">
+            <span style="color: #64748B;">GST (18% · SAC 998314)</span>
+            <span style="font-weight: 500; color: #475569;" id="modalGstAmount">₹449.82</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; padding-top: 10px; font-size: 15px; font-weight: 700;">
+            <span style="color: #0F172A;">Total Amount Paid</span>
+            <span style="color: #1C5D99;" id="modalTotalAmount">₹2,948.82</span>
+          </div>
+        </div>
+
+        <!-- GATEWAY & AUDIT SPECS -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px;">
+            <span style="font-size: 11px; font-weight: 600; color: #64748B; display: block;">PAYMENT METHOD</span>
+            <span style="font-size: 13px; font-weight: 700; color: #0F172A;" id="modalPaymentMethod">UPI</span>
+          </div>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px;">
+            <span style="font-size: 11px; font-weight: 600; color: #64748B; display: block;">GATEWAY REF</span>
+            <span style="font-size: 12px; font-mono; font-weight: 600; color: #0F172A;" id="modalGatewayRef">pay_NzkX92Kls</span>
+          </div>
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px;">
+            <span style="font-size: 11px; font-weight: 600; color: #64748B; display: block;">SETTLEMENT</span>
+            <span style="font-size: 12px; font-weight: 600; color: #059669;">✓ HDFC Escrow</span>
+          </div>
+        </div>
+
+        <!-- REFUND DETAIL BLOCK IF ANY -->
+        <div id="modalRefundReasonBox" style="display: none; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;">
+          <div style="font-size: 12px; font-weight: 700; color: #DC2626;">Refund Details</div>
+          <div style="font-size: 12.5px; color: #7F1D1D;" id="modalRefundReasonText"></div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" id="modalRefundBtn" onclick="initiateRefundFromModal()" style="color: #DC2626; border-color: #FECACA;">
+            Issue Refund
+          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-outline" onclick="resendReceiptFromModal()">Resend Receipt</button>
+            <button type="button" class="btn btn-primary" onclick="openInvoicePreviewFromModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              View Tax Invoice
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL 2: RECORD OFFLINE PAYMENT MODAL
+     ============================================================== -->
+<div class="modal-backdrop" id="addPaymentModal" onclick="if(event.target === this) closeAddPaymentModal();">
+  <div class="modal-content-box" style="max-width: 580px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: #EFF6FF; color: #1C5D99; display: flex; align-items: center; justify-content: center; font-weight: 700;">₹</div>
+        <div>
+          <h3 class="modal-title">Record Offline Payment</h3>
+          <div style="font-size: 12px; color: #64748B;">Manually credit bank transfers, cheques or cash settlements.</div>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeAddPaymentModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="recordPaymentForm" onsubmit="event.preventDefault(); submitRecordPayment();">
+        <!-- OWNER SELECT -->
+        <div style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Select Property Owner *</label>
+          <select class="form-select" id="payOwnerSelect" style="border-radius: 8px;" required>
+            <option value="">Choose owner...</option>
+            {% for o in all_owners %}
+              <option value="{{ o.id }}">{{ o.get_full_name|default:o.username }} ({{ o.phone_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- PRODUCT & AMOUNT -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Plan / Product *</label>
+            <select class="form-select" id="payPlanSelect" style="border-radius: 8px;" onchange="updatePayAmountFromPlan()" required>
+              <option value="Business subscription" data-amt="2499" data-type="SUBSCRIPTION">Business subscription (₹2,499)</option>
+              <option value="Growth subscription" data-amt="999" data-type="SUBSCRIPTION" selected>Growth subscription (₹999)</option>
+              <option value="Featured Listing (14 Days)" data-amt="2800" data-type="FEATURED_LISTING">Featured Listing 14-Day (₹2,800)</option>
+              <option value="Featured Listing (7 Days)" data-amt="1500" data-type="FEATURED_LISTING">Featured Listing 7-Day (₹1,500)</option>
+              <option value="Tenant Leads Pack (50 Leads)" data-amt="899" data-type="TENANT_CONTACT">Tenant Leads Pack (₹899)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Amount (₹) *</label>
+            <input type="number" step="0.01" class="form-input" id="payAmountInput" value="999" required style="border-radius: 8px;">
+          </div>
+        </div>
+
+        <!-- PAYMENT METHOD & REFERENCE -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Payment Mode</label>
+            <select class="form-select" id="payMethodSelect" style="border-radius: 8px;">
+              <option value="UPI">UPI Direct</option>
+              <option value="Bank NEFT / RTGS">Bank NEFT / RTGS</option>
+              <option value="Cheque">Bank Cheque</option>
+              <option value="Cash">Cash Deposit</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Bank UTR / Ref ID</label>
+            <input type="text" class="form-input" id="payRefInput" placeholder="e.g. UTR2026110998" style="border-radius: 8px;">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="closeAddPaymentModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="recordPaymentSubmitBtn">Record & Issue Invoice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL 3: EDIT SUBSCRIPTION PLAN MODAL
+     ============================================================== -->
+<div class="modal-backdrop" id="editPlanModal" onclick="if(event.target === this) closeEditPlanModal();">
+  <div class="modal-content-box" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="editPlanModalTitle">Edit Subscription Plan</h3>
+      <button type="button" class="modal-close-btn" onclick="closeEditPlanModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form onsubmit="event.preventDefault(); submitEditPlan();">
+        <div style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Plan Display Name</label>
+          <input type="text" class="form-input" id="editPlanNameInput" style="border-radius: 8px;" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Monthly Fee (₹)</label>
+            <input type="number" class="form-input" id="editPlanPriceInput" style="border-radius: 8px;" required>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Listing Limit</label>
+            <input type="text" class="form-input" id="editPlanLimitInput" style="border-radius: 8px;" required>
+          </div>
+        </div>
+        <div style="margin-bottom: 18px;">
+          <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Support SLA Tier</label>
+          <input type="text" class="form-input" id="editPlanSupportInput" style="border-radius: 8px;" required>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-outline" onclick="closeEditPlanModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Plan Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL 4: OFFICIAL TAX INVOICE PREVIEW MODAL
+     ============================================================== -->
+<div class="modal-backdrop" id="invoicePreviewModal" onclick="if(event.target === this) closeInvoicePreview();">
+  <div class="modal-content-box" style="max-width: 720px; background: #FFFFFF;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 18px;">📄</span>
+        <h3 class="modal-title">Tax Invoice Preview</h3>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" class="btn btn-outline" onclick="window.print();" style="padding: 5px 12px; font-size: 12px;">
+          🖨 Print Invoice
+        </button>
+        <button type="button" class="modal-close-btn" onclick="closeInvoicePreview()">✕</button>
+      </div>
+    </div>
+
+    <div class="modal-body" id="invoicePrintArea" style="padding: 28px; background: #FFFFFF;">
+      <!-- INVOICE HEADER -->
+      <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #1C5D99; padding-bottom: 16px; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 800; color: #1C5D99; letter-spacing: -0.5px;">KIRAAYAGRID PLATFORMS PVT LTD</h2>
+          <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Tower B, Cyber City, Gurugram, HR 122002</div>
+          <div style="font-size: 11.5px; color: #64748B;">GSTIN: 06AAACR1234F1Z8 · SAC: 998314</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 18px; font-weight: 800; color: #0F172A;" id="invNumber">INV-2026-11041</div>
+          <div style="font-size: 12px; color: #64748B;" id="invDate">Date: 05 Nov 2026</div>
+          <span class="status-pill success" style="margin-top: 4px; display: inline-block;">ORIGINAL FOR RECIPIENT</span>
+        </div>
+      </div>
+
+      <!-- BILLED TO -->
+      <div style="margin-bottom: 20px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 16px;">
+        <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase;">Billed To:</div>
+        <div style="font-size: 14px; font-weight: 700; color: #0F172A;" id="invCustomerName">Rajesh Mehta</div>
+        <div style="font-size: 12px; color: #475569;" id="invCustomerPhone">+91 98201 44521</div>
+        <div style="font-size: 12px; color: #475569;" id="invCustomerEmail">rajesh.mehta@gmail.com</div>
+      </div>
+
+      <!-- ITEM TABLE -->
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+        <thead>
+          <tr style="background: #F1F5F9; border-bottom: 1px solid #CBD5E1;">
+            <th style="padding: 8px 12px; text-align: left;">Description</th>
+            <th style="padding: 8px 12px; text-align: center;">SAC</th>
+            <th style="padding: 8px 12px; text-align: right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #E2E8F0;">
+            <td style="padding: 12px;" id="invItemDesc">Business subscription (1 Month Access)</td>
+            <td style="padding: 12px; text-align: center; font-family: monospace;">998314</td>
+            <td style="padding: 12px; text-align: right; font-weight: 600;" id="invItemAmt">₹2,499.00</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #E2E8F0; color: #64748B; font-size: 12px;">
+            <td style="padding: 8px 12px;">CGST (9%)</td>
+            <td style="padding: 8px 12px; text-align: center;">-</td>
+            <td style="padding: 8px 12px; text-align: right;" id="invCgstAmt">₹224.91</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #E2E8F0; color: #64748B; font-size: 12px;">
+            <td style="padding: 8px 12px;">SGST (9%)</td>
+            <td style="padding: 8px 12px; text-align: center;">-</td>
+            <td style="padding: 8px 12px; text-align: right;" id="invSgstAmt">₹224.91</td>
+          </tr>
+          <tr style="background: #F8FAFC; font-size: 14px; font-weight: 700;">
+            <td style="padding: 12px; color: #0F172A;" colspan="2">Total (INR Inclusive of Taxes)</td>
+            <td style="padding: 12px; text-align: right; color: #1C5D99;" id="invTotalAmt">₹2,948.82</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="font-size: 11.5px; color: #64748B; line-height: 1.5; border-top: 1px dashed #E2E8F0; padding-top: 12px;">
+        This is a computer-generated invoice authorized under the Information Technology Act 2000. No physical signature is required. For any billing queries, contact support@kiraayagrid.in.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOAST NOTIFICATIONS CONTAINER
+     ============================================================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT LOGIC
+     ============================================================== -->
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    toast.innerHTML = `<span style="font-weight:700;">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  let currentLoadedTxn = null;
+
+  // --- OPEN TRANSACTION DETAILS MODAL ---
+  function openTransactionModal(txnId) {
+    const modal = document.getElementById('transactionDetailModal');
+    modal.classList.add('open');
+    document.getElementById('modalTxnLoading').style.display = 'block';
+    document.getElementById('modalTxnContent').style.display = 'none';
+
+    fetch(`{% url 'admin_portal:monetization_get_transaction' %}?id=${txnId}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('modalTxnLoading').style.display = 'none';
+        if (data.status === 'success') {
+          document.getElementById('modalTxnContent').style.display = 'block';
+          const t = data.transaction;
+          currentLoadedTxn = t;
+
+          document.getElementById('modalTxnId').value = t.id;
+          document.getElementById('modalTxnAvatar').innerText = t.avatar_initial;
+          document.getElementById('modalTxnTitle').innerText = `${t.txn_id} · ${t.plan_name}`;
+          document.getElementById('modalTxnSubtitle').innerText = `${t.invoice_number} · Paid on ${t.created_at}`;
+
+          // Status Badge
+          const statusBadge = document.getElementById('modalTxnStatusBadge');
+          const refundBtn = document.getElementById('modalRefundBtn');
+          if (t.payment_status === 'SUCCESS') {
+            statusBadge.className = 'status-pill success';
+            statusBadge.innerText = '✓ Paid';
+            refundBtn.style.display = 'inline-block';
+          } else if (t.payment_status === 'PENDING') {
+            statusBadge.className = 'status-pill pending';
+            statusBadge.innerText = '◔ Pending';
+            refundBtn.style.display = 'none';
+          } else if (t.payment_status === 'FAILED') {
+            statusBadge.className = 'status-pill danger';
+            statusBadge.innerText = '✕ Failed';
+            refundBtn.style.display = 'none';
+          } else if (t.payment_status === 'REFUNDED') {
+            statusBadge.className = 'status-pill neutral';
+            statusBadge.innerText = '↩ Refunded';
+            refundBtn.style.display = 'none';
+          }
+
+          // Customer
+          document.getElementById('modalCustomerName').innerText = t.user_name;
+          document.getElementById('modalCustomerPhone').innerText = t.user_phone;
+          document.getElementById('modalCustomerEmail').innerText = t.user_email;
+
+          // Breakdown
+          document.getElementById('modalProductName').innerText = `${t.plan_name} (${t.product_type_display})`;
+          document.getElementById('modalBaseAmount').innerText = t.base_amount_display;
+          document.getElementById('modalGstAmount').innerText = t.gst_amount_display;
+          document.getElementById('modalTotalAmount').innerText = t.total_amount_display;
+
+          document.getElementById('modalPaymentMethod').innerText = t.payment_method;
+          document.getElementById('modalGatewayRef').innerText = t.gateway_ref;
+
+          // Refund reason box
+          const refBox = document.getElementById('modalRefundReasonBox');
+          if (t.payment_status === 'REFUNDED' && t.refund_reason) {
+            refBox.style.display = 'block';
+            document.getElementById('modalRefundReasonText').innerText = t.refund_reason;
+          } else {
+            refBox.style.display = 'none';
+          }
+        } else {
+          showToast(data.message || 'Error fetching transaction details', 'error');
+          closeTransactionModal();
+        }
+      })
+      .catch(err => {
+        document.getElementById('modalTxnLoading').style.display = 'none';
+        showToast('Network error loading transaction', 'error');
+        closeTransactionModal();
+      });
+  }
+
+  function closeTransactionModal() {
+    document.getElementById('transactionDetailModal').classList.remove('open');
+  }
+
+  function initiateRefundFromModal() {
+    const txnId = document.getElementById('modalTxnId').value;
+    const reason = prompt('Please specify the reason for issuing this refund:', 'Customer requested cancellation within 24 hours');
+    if (reason === null) return;
+
+    const formData = new FormData();
+    formData.append('id', txnId);
+    formData.append('reason', reason);
+
+    fetch(`{% url 'admin_portal:monetization_refund' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          // Update table row badge
+          const badge = document.getElementById(`statusBadge_${txnId}`);
+          if (badge) {
+            badge.className = 'status-pill neutral';
+            badge.innerText = '↩ Refunded';
+          }
+          closeTransactionModal();
+        } else {
+          showToast(data.message || 'Refund failed', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Network error processing refund', 'error');
+      });
+  }
+
+  function resendReceiptFromModal() {
+    if (currentLoadedTxn) {
+      showToast(`Tax invoice & payment receipt resent to ${currentLoadedTxn.user_email}!`, 'success');
+    }
+  }
+
+  function openInvoicePreviewFromModal() {
+    if (!currentLoadedTxn) return;
+    const t = currentLoadedTxn;
+
+    document.getElementById('invNumber').innerText = t.invoice_number;
+    document.getElementById('invDate').innerText = `Date: ${t.created_at}`;
+    document.getElementById('invCustomerName').innerText = t.user_name;
+    document.getElementById('invCustomerPhone').innerText = t.user_phone;
+    document.getElementById('invCustomerEmail').innerText = t.user_email;
+
+    document.getElementById('invItemDesc').innerText = `${t.plan_name} (${t.product_type_display})`;
+    document.getElementById('invItemAmt').innerText = t.base_amount_display;
+    
+    const halfGst = (t.gst_amount / 2).toFixed(2);
+    document.getElementById('invCgstAmt').innerText = `₹${halfGst}`;
+    document.getElementById('invSgstAmt').innerText = `₹${halfGst}`;
+    document.getElementById('invTotalAmt').innerText = t.total_amount_display;
+
+    closeTransactionModal();
+    document.getElementById('invoicePreviewModal').classList.add('open');
+  }
+
+  function closeInvoicePreview() {
+    document.getElementById('invoicePreviewModal').classList.remove('open');
+  }
+
+  // --- RECORD OFFLINE PAYMENT MODAL ---
+  function openAddPaymentModal() {
+    document.getElementById('addPaymentModal').classList.add('open');
+  }
+
+  function closeAddPaymentModal() {
+    document.getElementById('addPaymentModal').classList.remove('open');
+  }
+
+  function updatePayAmountFromPlan() {
+    const sel = document.getElementById('payPlanSelect');
+    const opt = sel.options[sel.selectedIndex];
+    const amt = opt.getAttribute('data-amt');
+    if (amt) {
+      document.getElementById('payAmountInput').value = amt;
+    }
+  }
+
+  function submitRecordPayment() {
+    const userId = document.getElementById('payOwnerSelect').value;
+    const planSel = document.getElementById('payPlanSelect');
+    const opt = planSel.options[planSel.selectedIndex];
+    const planName = opt.value;
+    const productType = opt.getAttribute('data-type') || 'SUBSCRIPTION';
+    const amount = document.getElementById('payAmountInput').value;
+    const method = document.getElementById('payMethodSelect').value;
+    const ref = document.getElementById('payRefInput').value;
+
+    const btn = document.getElementById('recordPaymentSubmitBtn');
+    btn.disabled = true;
+    btn.innerHTML = 'Recording...';
+
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('plan_name', planName);
+    formData.append('product_type', productType);
+    formData.append('amount', amount);
+    formData.append('payment_method', method);
+    formData.append('gateway_ref', ref);
+
+    fetch(`{% url 'admin_portal:monetization_record_payment' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = 'Record & Issue Invoice';
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          closeAddPaymentModal();
+          setTimeout(() => {
+            window.location.reload();
+          }, 600);
+        } else {
+          showToast(data.message || 'Failed to record payment', 'error');
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = 'Record & Issue Invoice';
+        showToast('Network error recording payment', 'error');
+      });
+  }
+
+  // --- EDIT PLAN MODAL ---
+  function openEditPlanModal(name, price, limit, support) {
+    document.getElementById('editPlanModalTitle').innerText = `Edit ${name} Plan`;
+    document.getElementById('editPlanNameInput').value = name;
+    document.getElementById('editPlanPriceInput').value = price;
+    document.getElementById('editPlanLimitInput').value = limit;
+    document.getElementById('editPlanSupportInput').value = support;
+    document.getElementById('editPlanModal').classList.add('open');
+  }
+
+  function closeEditPlanModal() {
+    document.getElementById('editPlanModal').classList.remove('open');
+  }
+
+  function submitEditPlan() {
+    const name = document.getElementById('editPlanNameInput').value;
+    showToast(`Subscription plan '${name}' configuration updated!`, 'success');
+    closeEditPlanModal();
+  }
+
+  // ESC key closes all modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeTransactionModal();
+      closeAddPaymentModal();
+      closeEditPlanModal();
+      closeInvoicePreview();
+    }
+  });
+</script>
+{% endblock %}

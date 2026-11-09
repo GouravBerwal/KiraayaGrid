@@ -1,0 +1,374 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}KiraayaGrid — Resident Portal{% endblock %}</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tenant Theme CSS -->
+  <link rel="stylesheet" href="{% static 'tenant_portal/css/tenant_theme.css' %}">
+
+  {% block extra_css %}{% endblock %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Mobile Sidebar Backdrop -->
+  <div class="tenant-sidebar-backdrop" id="tenantSidebarBackdrop"></div>
+
+  <div class="tenant-app-layout">
+
+    <!-- LEFT SIDEBAR (Matching Figma) -->
+    <aside class="tenant-sidebar" id="tenantSidebar">
+      <!-- Close Button for Mobile Drawer -->
+      <button class="tenant-sidebar-close-btn" id="tenantSidebarCloseBtn" aria-label="Close menu">✕</button>
+
+      <div>
+        <!-- BRAND LOGO -->
+        <a href="{% url 'tenant_portal:overview' %}" class="tenant-brand-wrap">
+          <div class="kg-logo-badge" style="width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #183B3B 0%, #0E2424 100%); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(24,59,59,0.35); border: 1px solid rgba(221,237,170,0.35); flex-shrink: 0;">
+            <svg width="22" height="22" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="6" width="9" height="9" rx="2.5" fill="#DDEDAA" />
+              <rect x="19" y="6" width="9" height="9" rx="2.5" fill="#93B5C6" />
+              <rect x="6" y="19" width="9" height="9" rx="2.5" fill="#F0CF65" />
+              <path d="M19 21.5C19 20.12 20.12 19 21.5 19H25.5C26.88 19 28 20.12 28 21.5V28H19V21.5Z" fill="#D7816A" />
+              <path d="M22 28V24C22 23.45 22.45 23 23 23H24C24.55 23 25 23.45 25 24V28H22Z" fill="#FFFFFF" />
+            </svg>
+          </div>
+          <span class="tenant-brand-name" style="letter-spacing: -0.03em;">Kiraaya<span style="color: #4A7A6E;">Grid</span></span>
+        </a>
+
+        <!-- NAV SECTION TITLE -->
+        <div class="tenant-sidebar-section-title">YOUR NEXT CHAPTER</div>
+
+        <!-- NAV LINKS LIST -->
+        <ul class="tenant-nav-list">
+          <!-- 1. Overview -->
+          <li class="tenant-nav-item {% if request.resolver_match.url_name == 'overview' or request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <a href="{% url 'tenant_portal:overview' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Overview</span>
+            </a>
+          </li>
+
+          <!-- 2. Find Accommodation -->
+          <li class="tenant-nav-item {% if request.resolver_match.url_name == 'find_accommodation' %}active{% endif %}">
+            <a href="{% url 'tenant_portal:find_accommodation' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span>Find Accommodation</span>
+            </a>
+          </li>
+
+          <!-- 3. Saved Properties -->
+          <li class="tenant-nav-item {% if request.resolver_match.url_name == 'saved_properties' %}active{% endif %}">
+            <a href="{% url 'tenant_portal:saved_properties' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              <span>Saved Properties</span>
+            </a>
+          </li>
+
+          <!-- 4. My Enquiries -->
+          <li class="tenant-nav-item {% if 'enquiries' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'tenant_portal:my_enquiries' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>My Enquiries</span>
+            </a>
+          </li>
+
+          <!-- 5. Visit Requests -->
+          <li class="tenant-nav-item {% if 'visits' in request.resolver_match.url_name %}active{% endif %}">
+            <a href="{% url 'tenant_portal:visit_requests' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Visit Requests</span>
+            </a>
+          </li>
+
+          <!-- 6. My Bookings -->
+          <li class="tenant-nav-item {% if request.resolver_match.url_name == 'my_bookings' %}active{% endif %}">
+            <a href="{% url 'tenant_portal:my_bookings' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 2l-2 2m-1-1l-3 3m2 2l2-2m-2 2l-9 9a2 2 0 0 1-1.41.59H5v-3.59a2 2 0 0 1 .59-1.41l9-9m3 3l2 2"></path>
+              </svg>
+              <span>My Bookings</span>
+            </a>
+          </li>
+
+          <!-- 7. Notifications -->
+          <li class="tenant-nav-item {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+            <a href="{% url 'tenant_portal:notifications' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <span>Notifications</span>
+            </a>
+          </li>
+
+          <!-- 8. Help & Support -->
+          <li class="tenant-nav-item {% if request.resolver_match.url_name == 'help_support' %}active{% endif %}">
+            <a href="{% url 'tenant_portal:help_support' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>Help &amp; Support</span>
+            </a>
+          </li>
+
+          <!-- 9. Profile & Settings -->
+          <li class="tenant-nav-item {% if request.resolver_match.url_name == 'profile_preferences' or request.resolver_match.url_name == 'account_settings' %}active{% endif %}">
+            <a href="{% url 'tenant_portal:profile_preferences' %}">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>Profile &amp; Settings</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- SIDEBAR BOTTOM -->
+      <div class="tenant-sidebar-bottom">
+        <!-- Help Card (Matching Figma) -->
+        <div class="tenant-help-card">
+          <div class="tenant-help-card-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="tenant-help-card-title">A little less searching.<br>A lot more living.</div>
+          <div class="tenant-help-card-subtitle">Our team is here to help you find your kind of home.</div>
+          <a href="{% url 'tenant_portal:help_support' %}" class="tenant-help-card-link">
+            <span>Let's talk</span>
+            <span>&nearr;</span>
+          </a>
+        </div>
+
+        <!-- Tenant User Pill (Matching Figma: AS Aarav Sharma / Personal account) -->
+        <div class="tenant-user-pill" onclick="window.location.href='{% url 'tenant_portal:profile_preferences' %}'">
+          <div style="display: flex; align-items: center;">
+            <div class="tenant-user-avatar">
+              {{ active_tenant.first_name|first|default:"A" }}{{ active_tenant.last_name|first|default:"S" }}
+            </div>
+            <div class="tenant-user-meta">
+              <div class="tenant-user-name">{{ active_tenant.get_full_name|default:"Aarav Sharma" }}</div>
+              <div class="tenant-user-sub">Personal account</div>
+            </div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0AEC0" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN RIGHT VIEW -->
+    <main class="tenant-main-content">
+
+      <!-- TOPBAR HEADER -->
+      <header class="tenant-topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="tenant-mobile-menu-btn" id="tenantMobileMenuBtn" aria-label="Toggle tenant menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div>
+            <div class="tenant-welcome-greeting">
+              Good morning, {{ active_tenant.first_name|default:"Aarav" }}
+            </div>
+            <div class="tenant-welcome-sub">
+              Your next chapter starts here.
+            </div>
+          </div>
+        </div>
+
+        <div class="tenant-topbar-actions">
+          <!-- City Selector with Dynamic Dropdown -->
+          <div style="position: relative;">
+            <div class="tenant-city-picker" id="cityDropdownBtn" onclick="toggleCityDropdown(event)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span id="currentCityLabel">{{ selected_city|default:"Bengaluru" }}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <!-- Dropdown Menu -->
+            <div id="cityDropdownMenu" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-dropdown); width: 180px; z-index: 1000; padding: 6px 0;">
+              <a href="?city=Bengaluru" onclick="handleCitySelect('Bengaluru', event)" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--color-text-main); transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
+                <span>Bengaluru</span>
+                {% if selected_city == 'Bengaluru' or not selected_city %}<span style="color: var(--color-success); font-weight: 800;">✓</span>{% endif %}
+              </a>
+              <a href="?city=Pune" onclick="handleCitySelect('Pune', event)" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--color-text-main); transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
+                <span>Pune</span>
+                {% if selected_city == 'Pune' %}<span style="color: var(--color-success); font-weight: 800;">✓</span>{% endif %}
+              </a>
+              <a href="?city=Hyderabad" onclick="handleCitySelect('Hyderabad', event)" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--color-text-main); transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
+                <span>Hyderabad</span>
+                {% if selected_city == 'Hyderabad' %}<span style="color: var(--color-success); font-weight: 800;">✓</span>{% endif %}
+              </a>
+              <a href="?city=Indore" onclick="handleCitySelect('Indore', event)" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--color-text-main); transition: background 0.15s ease;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
+                <span>Indore</span>
+                {% if selected_city == 'Indore' %}<span style="color: var(--color-success); font-weight: 800;">✓</span>{% endif %}
+              </a>
+            </div>
+          </div>
+
+          <!-- Notification Bell -->
+          <a href="{% url 'tenant_portal:notifications' %}" class="tenant-notif-btn" title="Notifications">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            {% if global_unread_notifications > 0 %}
+            <span class="tenant-notif-dot"></span>
+            {% endif %}
+          </a>
+
+          <!-- User Circle Avatar -->
+          <a href="{% url 'tenant_portal:profile_preferences' %}" class="tenant-user-avatar" style="width: 36px; height: 36px; cursor: pointer; text-decoration: none;">
+            {{ active_tenant.first_name|first|default:"A" }}{{ active_tenant.last_name|first|default:"S" }}
+          </a>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT INJECTION -->
+      <div class="tenant-page-container">
+        {% block content %}{% endblock %}
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="tenant-footer">
+        <div>
+          <span style="font-weight: 700; color: var(--color-text-main);">A home for every new beginning.</span><br>
+          <span style="color: var(--color-text-muted);">&copy; 2026 KiraayaGrid &middot; Privacy &middot; Terms &middot; Direct living platform</span>
+        </div>
+        <a href="{% url 'tenant_portal:help_support' %}" style="color: var(--color-text-main); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+          <span>Need help?</span>
+          <span>&nearr;</span>
+        </a>
+      </footer>
+
+    </main>
+
+  </div>
+
+  <!-- FLOATING AJAX NOTIFICATION TOAST -->
+  <div id="tenantAjaxToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #0F202B; color: #FFFFFF; padding: 12px 22px; border-radius: 12px; font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.2); align-items: center; gap: 10px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6EE7B7" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span id="tenantAjaxToastMsg">Success!</span>
+  </div>
+
+  <script>
+    // Tenant Mobile Sidebar Toggle
+    const tenantMobileMenuBtn = document.getElementById('tenantMobileMenuBtn');
+    const tenantSidebar = document.getElementById('tenantSidebar');
+    const tenantSidebarBackdrop = document.getElementById('tenantSidebarBackdrop');
+    const tenantSidebarCloseBtn = document.getElementById('tenantSidebarCloseBtn');
+
+    function openTenantSidebar() {
+      if (tenantSidebar) tenantSidebar.classList.add('mobile-open');
+      if (tenantSidebarBackdrop) tenantSidebarBackdrop.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeTenantSidebar() {
+      if (tenantSidebar) tenantSidebar.classList.remove('mobile-open');
+      if (tenantSidebarBackdrop) tenantSidebarBackdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    if (tenantMobileMenuBtn) {
+      tenantMobileMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (tenantSidebar && tenantSidebar.classList.contains('mobile-open')) {
+          closeTenantSidebar();
+        } else {
+          openTenantSidebar();
+        }
+      });
+    }
+
+    if (tenantSidebarCloseBtn) tenantSidebarCloseBtn.addEventListener('click', closeTenantSidebar);
+    if (tenantSidebarBackdrop) tenantSidebarBackdrop.addEventListener('click', closeTenantSidebar);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && tenantSidebar && tenantSidebar.classList.contains('mobile-open')) {
+        closeTenantSidebar();
+      }
+    });
+
+    function showTenantToast(msg) {
+      const toast = document.getElementById('tenantAjaxToast');
+      const msgEl = document.getElementById('tenantAjaxToastMsg');
+      if (toast && msgEl) {
+        msgEl.textContent = msg;
+        toast.style.display = 'inline-flex';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 3200);
+      }
+    }
+
+    function toggleCityDropdown(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('cityDropdownMenu');
+      if (menu) {
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+      }
+    }
+
+    function handleCitySelect(cityName, e) {
+      e.preventDefault();
+      fetch('/tenant/api/switch-city/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: `city=${encodeURIComponent(cityName)}`
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showTenantToast(`Preferred city switched to ${cityName}!`);
+          setTimeout(() => {
+            window.location.search = `?city=${encodeURIComponent(cityName)}`;
+          }, 400);
+        }
+      })
+      .catch(() => {
+        window.location.search = `?city=${encodeURIComponent(cityName)}`;
+      });
+    }
+
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('cityDropdownMenu');
+      const btn = document.getElementById('cityDropdownBtn');
+      if (menu && menu.style.display === 'block' && (!btn || !btn.contains(e.target))) {
+        menu.style.display = 'none';
+      }
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

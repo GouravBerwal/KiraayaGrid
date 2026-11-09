@@ -1,0 +1,872 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}KiraayaGrid — Find a Place You'll Love to Call Home{% endblock %}
+
+{% block content %}
+
+<!-- 1. HERO SEARCH BANNER (MATCHING FIGMA SCREEN) -->
+<div class="hero-search-card">
+  <div class="hero-content-row">
+    <div class="hero-text-block">
+      <span class="hero-pill-badge">MAKE YOURSELF AT HOME</span>
+      <h1 class="hero-title">Find a place you'll love to call home</h1>
+      <p class="hero-desc">Thoughtfully chosen stays. Honest prices. Your kind of neighbourhood.</p>
+    </div>
+
+    <!-- Hero Room Image with Locality Pill -->
+    <div class="hero-image-wrap">
+      <img src="{% if recommended_properties.0 and recommended_properties.0.display_photo %}{{ recommended_properties.0.display_photo }}{% else %}https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&auto=format&fit=crop&q=80{% endif %}" alt="KiraayaGrid Stays">
+      <div class="hero-img-locality-pill">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>{% if recommended_properties.0 and recommended_properties.0.locality %}{{ recommended_properties.0.locality.name }}{% else %}Indiranagar{% endif %}, {{ selected_city }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMBEDDED HORIZONTAL SEARCH BAR -->
+  <form action="{% url 'tenant_portal:find_accommodation' %}" method="GET" class="hero-search-bar">
+    <!-- City / locality -->
+    <div class="search-field-item">
+      <span class="search-field-label">CITY / LOCALITY</span>
+      <select name="locality" class="search-field-select">
+        <option value="">{{ selected_city }} (All Localities)</option>
+        {% for loc in localities %}
+        <option value="{{ loc.name }}" {% if forloop.first %}selected{% endif %}>{{ loc.name }}, {{ selected_city }}</option>
+        {% empty %}
+        <option value="Indiranagar" selected>Indiranagar, {{ selected_city }}</option>
+        <option value="HSR Layout">HSR Layout, {{ selected_city }}</option>
+        <option value="Koramangala">Koramangala, {{ selected_city }}</option>
+        <option value="Whitefield">Whitefield, {{ selected_city }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Accommodation type -->
+    <div class="search-field-item">
+      <span class="search-field-label">ACCOMMODATION TYPE</span>
+      <select name="type" class="search-field-select">
+        <option value="" selected>All types</option>
+        <option value="PG">PG (Paying Guest)</option>
+        <option value="CO_LIVING">Co-living Space</option>
+        <option value="FLAT">Independent Flat</option>
+        <option value="HOSTEL">Student Hostel</option>
+      </select>
+    </div>
+
+    <!-- Monthly budget -->
+    <div class="search-field-item">
+      <span class="search-field-label">MONTHLY BUDGET</span>
+      <select name="budget" class="search-field-select">
+        <option value="15000">Up to ₹15,000</option>
+        <option value="20000" selected>Up to ₹20,000</option>
+        <option value="25000">Up to ₹25,000</option>
+        <option value="35000">Up to ₹35,000</option>
+        <option value="">Any budget</option>
+      </select>
+    </div>
+
+    <!-- Move-in date -->
+    <div class="search-field-item">
+      <span class="search-field-label">MOVE-IN DATE</span>
+      <input type="text" name="move_in" value="1 Dec 2026" class="search-field-input" placeholder="Select date">
+    </div>
+
+    <!-- CTA Button -->
+    <div>
+      <button type="submit" class="btn-search-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
+      </button>
+    </div>
+  </form>
+
+  <!-- TRUST BADGES -->
+  <div class="hero-trust-badges">
+    <div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span>Verified homes</span>
+    </div>
+    <div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span>No hidden costs</span>
+    </div>
+    <div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span>Real human support</span>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CATEGORIES SECTION ("A space for every kind of you") -->
+<div>
+  <div style="margin-bottom: 18px;">
+    <h2 style="font-size: 20px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.01em;">A space for every kind of you</h2>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin: 3px 0 0 0;">Explore popular categories tailored for student and professional living.</p>
+  </div>
+
+  <div class="category-pills-row">
+    <!-- 1. PG -->
+    <a href="{% url 'tenant_portal:find_accommodation' %}?type=PG" class="category-pill-card">
+      <div class="category-icon-circle" style="background-color: #E8F4F8; color: #355060;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      </div>
+      <div class="category-title">PG</div>
+      <div class="category-sub">Meals &amp; more</div>
+    </a>
+
+    <!-- 2. Hostel -->
+    <a href="{% url 'tenant_portal:find_accommodation' %}?type=HOSTEL" class="category-pill-card">
+      <div class="category-icon-circle" style="background-color: var(--color-tea-green-light); color: #4D6314;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      </div>
+      <div class="category-title">Hostel</div>
+      <div class="category-sub">Your student life</div>
+    </a>
+
+    <!-- 3. Private Room -->
+    <a href="{% url 'tenant_portal:find_accommodation' %}?occupancy=SINGLE" class="category-pill-card">
+      <div class="category-icon-circle" style="background-color: var(--color-royal-gold-light); color: #8C6A0B;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+      </div>
+      <div class="category-title">Private Room</div>
+      <div class="category-sub">Space for yourself</div>
+    </a>
+
+    <!-- 4. Shared Room -->
+    <a href="{% url 'tenant_portal:find_accommodation' %}?occupancy=DOUBLE" class="category-pill-card">
+      <div class="category-icon-circle" style="background-color: var(--color-burnt-peach-light); color: #9A432D;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      </div>
+      <div class="category-title">Shared Room</div>
+      <div class="category-sub">Better together</div>
+    </a>
+
+    <!-- 5. Flat -->
+    <a href="{% url 'tenant_portal:find_accommodation' %}?type=FLAT" class="category-pill-card">
+      <div class="category-icon-circle" style="background-color: var(--color-powder-blue-light); color: #2B4E61;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      </div>
+      <div class="category-title">Flat</div>
+      <div class="category-sub">Make it your own</div>
+    </a>
+
+    <!-- 6. Co-living -->
+    <a href="{% url 'tenant_portal:find_accommodation' %}?type=CO_LIVING" class="category-pill-card">
+      <div class="category-icon-circle" style="background-color: #ECFDF5; color: #065F46;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      </div>
+      <div class="category-title">Co-living</div>
+      <div class="category-sub">Find your people</div>
+    </a>
+  </div>
+</div>
+
+<!-- 3. RECOMMENDED PROPERTIES SECTION (MATCHING FIGMA 3 CARDS) -->
+<div>
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+    <div>
+      <h2 style="font-size: 20px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.01em;">Recommended Properties</h2>
+      <p style="font-size: 13px; color: var(--color-text-muted); margin: 3px 0 0 0;">Handpicked for your next chapter in {{ selected_city }}.</p>
+    </div>
+    <a href="{% url 'tenant_portal:find_accommodation' %}?budget=20000" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); display: inline-flex; align-items: center; gap: 4px;">
+      <span>Within your budget</span>
+      <span>&rsaquo;</span>
+    </a>
+  </div>
+
+  <div class="property-cards-grid">
+    {% for prop in recommended_properties %}
+    <div class="tenant-property-card" id="prop-card-{{ prop.id }}">
+      <div class="property-card-img-wrap">
+        <img src="{{ prop.display_photo }}" alt="{{ prop.title }}" loading="lazy">
+        {% if prop.status == 'APPROVED' %}
+        <span class="property-badge-verified">
+          <span>&check;</span> Verified
+        </span>
+        {% endif %}
+        <button type="button" class="property-btn-favorite {% if prop.is_saved %}active{% endif %}"
+                onclick="toggleSaveProperty({{ prop.id }}, this)" title="{% if prop.is_saved %}Remove from Shortlist{% else %}Save Property{% endif %}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="{% if prop.is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
+      </div>
+
+      <div class="property-card-body">
+        <h3 class="property-card-title">{{ prop.title }}</h3>
+        <div class="property-card-locality">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>{{ prop.locality.name|default:"Bengaluru" }}, {{ prop.city.name|default:"Bengaluru" }}</span>
+        </div>
+
+        <div class="property-card-price-row">
+          <span class="property-card-price">₹{{ prop.display_price }}</span>
+          <span class="property-card-period">/ month</span>
+        </div>
+
+        <div class="property-card-amenities">{{ prop.display_amenities }}</div>
+
+        <div class="property-card-footer">
+          <span style="color: var(--color-text-main);">{{ prop.display_sharing }}</span>
+          <span style="color: {% if prop.availability_class == 'avail-now' %}#059669{% else %}#D97706{% endif %}; font-weight: 700;">&bull; {{ prop.display_availability }}</span>
+        </div>
+
+        <button type="button" class="property-card-view-btn" onclick="openQuickViewModal({{ prop.id }})">View Details</button>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #FFFFFF; border-radius: var(--radius-lg); border: 1px dashed var(--color-border);">
+      <p style="font-size: 14px; color: var(--color-text-muted);">No recommended stays found in {{ selected_city }}.</p>
+      <a href="{% url 'tenant_portal:find_accommodation' %}" style="display: inline-block; margin-top: 10px; font-weight: 700; color: var(--color-text-main);">Browse all listings &rarr;</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="text-align: center; margin-top: 22px;">
+    <a href="{% url 'tenant_portal:find_accommodation' %}" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; font-size: 13px; font-weight: 700; color: var(--color-text-main); box-shadow: var(--shadow-sm); transition: transform 0.15s ease;">
+      <span>Explore Properties</span>
+      <span>&nearr;</span>
+    </a>
+  </div>
+</div>
+
+<!-- 4. WHERE WILL LIFE TAKE YOU? (CITIES CARDS ROW) -->
+<div>
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+    <div>
+      <h2 style="font-size: 20px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.01em;">Where will life take you?</h2>
+      <p style="font-size: 13px; color: var(--color-text-muted); margin: 3px 0 0 0;">Explore popular cities and localities, one neighbourhood at a time.</p>
+    </div>
+    <a href="{% url 'tenant_portal:find_accommodation' %}" style="font-size: 13px; font-weight: 600; color: var(--color-text-main); display: inline-flex; align-items: center; gap: 4px;">
+      <span>All cities</span>
+      <span>&nearr;</span>
+    </a>
+  </div>
+
+  <div class="city-cards-grid">
+    {% for city_item in city_cards %}
+    <a href="{% url 'tenant_portal:find_accommodation' %}?city={{ city_item.name }}" class="tenant-city-card">
+      <img src="{{ city_item.image }}" alt="{{ city_item.name }}" loading="lazy">
+      <div class="tenant-city-overlay"></div>
+      <div class="tenant-city-content">
+        <div class="tenant-city-name">
+          <span>{{ city_item.name }}</span>
+          <span>&nearr;</span>
+        </div>
+        <div class="tenant-city-localities">{{ city_item.localities }}</div>
+        <div class="tenant-city-stays-count">From ₹{{ city_item.min_rent }}/mo &middot; {{ city_item.stays_count }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 5. RECENTLY VIEWED & SAVED PROPERTIES (2-COLUMN SPLIT GRID) -->
+<div class="tenant-split-grid">
+  <!-- Left Box: Recently Viewed -->
+  <div class="tenant-white-box">
+    <div class="tenant-box-header">
+      <div>
+        <h3 class="tenant-box-title">Recently Viewed</h3>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin: 2px 0 0 0;">Pick up where you left off.</p>
+      </div>
+      <a href="{% url 'tenant_portal:find_accommodation' %}" class="tenant-box-link">
+        <span>History</span>
+        <span>&nearr;</span>
+      </a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for v in viewed_items %}
+      <div class="tenant-horizontal-stay-item" onclick="openQuickViewModal({{ v.property.id }})" style="cursor: pointer;">
+        <div class="stay-item-left">
+          <div class="stay-item-thumb">
+            <img src="{% if v.property.gallery_photos.first %}{{ v.property.gallery_photos.first.photo_url }}{% else %}https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400&auto=format&fit=crop&q=80{% endif %}" alt="{{ v.property.title }}">
+          </div>
+          <div>
+            <div class="stay-item-title">{{ v.property.title }}</div>
+            <div class="stay-item-loc">{{ v.property.locality.name|default:"Bengaluru" }}, {{ v.property.city.name|default:"Bengaluru" }}</div>
+            <div class="stay-item-meta">
+              <strong>₹{{ v.property.rooms.first.monthly_rent|default:"14500"|floatformat:0 }}</strong> / month &bull; {{ v.property.get_property_type_display }}
+            </div>
+          </div>
+        </div>
+        <span style="font-size: 16px; color: var(--color-text-dim);">&nearr;</span>
+      </div>
+      {% empty %}
+      <div style="text-align: center; padding: 24px; color: var(--color-text-muted); font-size: 13px;">
+        No recently viewed properties yet. Explore stays to see your history here!
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Right Box: Saved Properties -->
+  <div class="tenant-white-box">
+    <div class="tenant-box-header">
+      <div>
+        <h3 class="tenant-box-title">Saved Properties</h3>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin: 2px 0 0 0;" id="savedShortlistSub">Good places, kept close. Your shortlist of {{ saved_count }}.</p>
+      </div>
+      <a href="{% url 'tenant_portal:saved_properties' %}" class="tenant-box-link">
+        <span>View all</span>
+        <span>&nearr;</span>
+      </a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;" id="savedPropertiesContainer">
+      {% for s in saved_items %}
+      <div class="tenant-horizontal-stay-item" id="saved-item-{{ s.property.id }}">
+        <div class="stay-item-left" onclick="openQuickViewModal({{ s.property.id }})" style="cursor: pointer; flex: 1;">
+          <div class="stay-item-thumb">
+            <img src="{% if s.property.gallery_photos.first %}{{ s.property.gallery_photos.first.photo_url }}{% else %}https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&auto=format&fit=crop&q=80{% endif %}" alt="{{ s.property.title }}">
+          </div>
+          <div>
+            <div class="stay-item-title">{{ s.property.title }}</div>
+            <div class="stay-item-loc">{{ s.property.locality.name|default:"Bengaluru" }}, {{ s.property.city.name|default:"Bengaluru" }}</div>
+            <div class="stay-item-meta">
+              <strong>₹{{ s.property.rooms.first.monthly_rent|default:"11000"|floatformat:0 }}</strong> / month &bull; {{ s.property.get_property_type_display }}
+            </div>
+          </div>
+        </div>
+        <button type="button" onclick="toggleSaveProperty({{ s.property.id }}, this)" style="background: none; border: none; cursor: pointer; padding: 6px;" title="Remove from saved">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-rose-wine)" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
+      </div>
+      {% empty %}
+      <div style="text-align: center; padding: 24px; color: var(--color-text-muted); font-size: 13px;">
+        No saved properties yet. Tap the heart icon on any property to shortlist it here!
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- 6. A LITTLE CLOSER TO MOVING IN (ENQUIRIES & UPCOMING VISITS GRID) -->
+<div>
+  <div style="margin-bottom: 18px;">
+    <h2 style="font-size: 20px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.01em;">A little closer to moving in</h2>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin: 3px 0 0 0;">Your conversations, visits and next steps &mdash; all in one place.</p>
+  </div>
+
+  <div class="tenant-split-grid">
+    <!-- Left Box: Recent Enquiries -->
+    <div class="tenant-white-box">
+      <div class="tenant-box-header">
+        <h3 class="tenant-box-title">Recent Enquiries</h3>
+        <span style="font-size: 11px; font-weight: 700; background: #E0F2FE; color: #0284C7; padding: 3px 9px; border-radius: var(--radius-pill);">
+          {{ active_enquiries_count }} active
+        </span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;" id="recentEnquiriesContainer">
+        {% for enq in recent_enquiries %}
+        <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; background: #FAFCFD;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="{{ enq.display_photo }}" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover;">
+              <div>
+                <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);">{{ enq.property.title }}</div>
+                <div style="font-size: 11.5px; color: var(--color-text-muted);">
+                  {{ enq.property.locality.name|default:"Bengaluru" }} &bull; ₹{{ enq.budget|floatformat:0 }}/mo &bull; {{ enq.interested_room_type }}
+                </div>
+              </div>
+            </div>
+            <span style="font-size: 11px; font-weight: 700; background: {{ enq.status_badge_bg }}; color: {{ enq.status_badge_color }}; padding: 3px 8px; border-radius: 6px;">
+              {{ enq.status_label }}
+            </span>
+          </div>
+
+          <p style="font-size: 12.5px; background: #FFFFFF; border: 1px solid var(--color-border-subtle); padding: 8px 12px; border-radius: 8px; margin: 0 0 10px 0; line-height: 1.4; {{ enq.snippet_style }}">
+            "{{ enq.snippet_text }}"
+          </p>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--color-text-muted);">
+            <span>{{ enq.time_display }}</span>
+            <a href="{% url 'tenant_portal:enquiry_details' enq.id %}" style="font-weight: 700; color: var(--color-text-main);">View Enquiry &rarr;</a>
+          </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 24px; color: var(--color-text-muted); font-size: 13px;">
+          No enquiries yet. Send an enquiry from any property to chat directly with the host!
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right Box: Upcoming Property Visits & Booking Update Banner -->
+    <div class="tenant-white-box">
+      <div class="tenant-box-header">
+        <h3 class="tenant-box-title">Upcoming Property Visits</h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      </div>
+
+      <div id="upcomingVisitsContainer">
+        {% for vis in upcoming_visits %}
+        <a href="{% url 'tenant_portal:visit_details' vis.request_id %}" class="tenant-visit-card-item">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="visit-date-block" style="background-color: {{ vis.date_box_bg }}; color: {{ vis.date_box_color }};">
+              <span class="visit-date-day">{{ vis.day_str }}</span>
+              <span class="visit-date-month">{{ vis.month_str }}</span>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">{{ vis.property.title }} &nearr;</div>
+              <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">{{ vis.weekday_str }} &middot; {{ vis.scheduled_time_slot }}</div>
+              <div style="font-size: 11.5px; color: var(--color-text-muted);">{{ vis.property.locality.name|default:"Bengaluru" }}, {{ vis.property.city.name|default:"Bengaluru" }}</div>
+            </div>
+          </div>
+          <span style="font-size: 11px; font-weight: 700; background: {{ vis.badge_bg }}; color: {{ vis.badge_color }}; padding: 4px 9px; border-radius: 6px;">
+            {{ vis.status_label }}
+          </span>
+        </a>
+        {% empty %}
+        <div style="text-align: center; padding: 20px; color: var(--color-text-muted); font-size: 13px;">
+          No upcoming visits scheduled. Book a walkthrough from any property!
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Booking Update Banner (Matching Figma) -->
+      {% if booking %}
+      <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius-md); padding: 14px 16px; margin-top: 4px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #92400E;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2l-2 2m-1-1l-3 3m2 2l2-2m-2 2l-9 9a2 2 0 0 1-1.41.59H5v-3.59a2 2 0 0 1 .59-1.41l9-9m3 3l2 2"></path></svg>
+            <span>Booking update</span>
+          </div>
+          <span style="font-size: 10.5px; font-weight: 700; background: #FDE68A; color: #78350F; padding: 2px 7px; border-radius: 4px;">
+            {{ booking.get_booking_status_display }}
+          </span>
+        </div>
+        <div style="font-size: 13.5px; font-weight: 800; color: #1E293B;">{{ booking.property.title }}</div>
+        <div style="font-size: 12px; color: #64748B; margin-top: 2px;">
+          {{ booking.sharing_type }} &middot; ₹{{ booking.monthly_rent|floatformat:0 }}/month | Move-in: {{ booking.move_in_date|date:"j M Y" }} &middot; Awaiting host confirmation
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(245, 158, 11, 0.2); font-size: 11.5px;">
+          <span style="color: #92400E; font-weight: 600;">{{ booking.get_payment_status_display }}</span>
+          <a href="{% url 'tenant_portal:my_bookings' %}" style="font-weight: 700; color: #78350F;">View booking &nearr;</a>
+        </div>
+      </div>
+      {% else %}
+      <div style="background: #F8FAFC; border: 1px dashed var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; margin-top: 4px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--color-text-main);">Ready to move in?</div>
+          <div style="font-size: 11.5px; color: var(--color-text-muted);">When a host accepts your rental application, live status updates show here.</div>
+        </div>
+        <a href="{% url 'tenant_portal:find_accommodation' %}" style="font-size: 12px; font-weight: 700; color: var(--color-text-main);">Find a home &nearr;</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     APPLE PREMIUM QUICK VIEW PROPERTY MODAL
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="quickViewModal" onclick="handleModalBackdropClick(event)">
+  <div class="tenant-modal-card">
+    <button type="button" class="tenant-modal-close-btn" onclick="closeQuickViewModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <!-- Modal Header Image & Badges -->
+    <div style="position: relative; height: 260px; background: #0F172A; overflow: hidden; border-radius: 22px 22px 0 0;">
+      <img id="modalCoverImg" src="" alt="Property" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, transparent 60%);"></div>
+
+      <div style="position: absolute; bottom: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span id="modalVerifiedBadge" style="display: none; font-size: 11px; font-weight: 700; background: rgba(5, 150, 105, 0.9); color: #FFFFFF; padding: 3px 8px; border-radius: 6px;">
+              &check; Verified KiraayaGrid Stay
+            </span>
+            <span id="modalTypeBadge" style="font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.2); color: #FFFFFF; backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 6px;">
+              PG
+            </span>
+          </div>
+          <h2 id="modalTitle" style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin: 0;">Property Title</h2>
+          <div id="modalLocality" style="font-size: 13px; color: #E2E8F0; margin-top: 3px;">Locality, Bengaluru</div>
+        </div>
+
+        <div style="text-align: right; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);">
+          <div style="font-size: 11px; color: #E2E8F0; text-transform: uppercase; font-weight: 600;">Starting from</div>
+          <div style="font-size: 20px; font-weight: 800; color: #FFFFFF;"><span id="modalRent">₹14,500</span> <span style="font-size: 12px; font-weight: 500;">/mo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Content & Action Tabs -->
+    <div style="padding: 24px 28px 28px 28px;">
+
+      <!-- Nav Tabs Inside Modal -->
+      <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--color-border); padding-bottom: 14px; margin-bottom: 20px;">
+        <button type="button" id="tabOverviewBtn" onclick="switchModalTab('overview')" style="background: var(--color-powder-blue-light); color: var(--color-powder-blue-dark); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+          Overview &amp; Amenities
+        </button>
+        <button type="button" id="tabEnquiryBtn" onclick="switchModalTab('enquiry')" style="background: transparent; color: var(--color-text-muted); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+          Send Enquiry
+        </button>
+        <button type="button" id="tabVisitBtn" onclick="switchModalTab('visit')" style="background: transparent; color: var(--color-text-muted); border: none; padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+          Book Walkthrough
+        </button>
+      </div>
+
+      <!-- Tab 1: Overview Panel -->
+      <div id="modalOverviewPanel">
+        <!-- Host & Contact Card -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #0F172A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;" id="modalOwnerAvatar">
+              AM
+            </div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);" id="modalOwnerName">Hosted by Arjun Mehta</div>
+              <div style="font-size: 11.5px; color: var(--color-text-muted);">Verified Owner &middot; Typically responds within 1 hour</div>
+            </div>
+          </div>
+          <button type="button" onclick="switchModalTab('enquiry')" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 8px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; cursor: pointer;">
+            Message Host
+          </button>
+        </div>
+
+        <!-- Room Options Grid -->
+        <div style="margin-bottom: 20px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Available Room Configurations</h4>
+          <div id="modalRoomsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Included Amenities -->
+        <div>
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Included Comforts &amp; Amenities</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">⚡ High-speed Wi-Fi</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🥗 Daily Homestyle Meals</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🧹 Regular Housekeeping</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">❄️ Air Conditioning</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🛡️ 24/7 CCTV &amp; Security</span>
+            <span style="font-size: 12.5px; padding: 6px 12px; background: #F1F5F9; border-radius: var(--radius-pill); color: var(--color-text-main); font-weight: 500;">🧺 Washing Machine</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Send Quick Enquiry Form -->
+      <form id="quickEnquiryForm" onsubmit="submitQuickEnquiry(event)" style="display: none; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="property_id" id="enquiryPropId" value="">
+        <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 16px; font-size: 12.5px; color: var(--color-text-muted);">
+          Sending enquiry directly to the property host as <strong style="color: var(--color-text-main);">Aarav Sharma</strong> (+91 98765 43210).
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Room Type</label>
+            <select name="room_type" id="enquiryRoomType" class="modal-form-input">
+              <option value="Private room · PG">Private room · PG</option>
+              <option value="Twin sharing · Co-living">Twin sharing · Co-living</option>
+              <option value="Studio · Flat">Studio · Flat</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Target Move-in Date</label>
+            <input type="date" name="move_in_date" value="2026-12-01" class="modal-form-input" required>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Monthly Budget (₹)</label>
+          <input type="number" name="budget" id="enquiryBudget" value="15000" class="modal-form-input" required>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Your Message to Owner</label>
+          <textarea name="message" id="enquiryMessage" rows="3" class="modal-form-input" placeholder="Hi, I am interested in this stay. Is single occupancy available from next month?"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="switchModalTab('overview')" style="background: #F1F5F9; border: none; padding: 10px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Back
+          </button>
+          <button type="submit" id="btnSubmitEnquiry" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 10px 24px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Send Enquiry Now
+          </button>
+        </div>
+      </form>
+
+      <!-- Tab 3: Book Walkthrough Form -->
+      <form id="quickVisitForm" onsubmit="submitQuickVisit(event)" style="display: none; flex-direction: column; gap: 16px;">
+        <input type="hidden" name="property_id" id="visitPropId" value="">
+        <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-md); padding: 12px 16px; font-size: 12.5px; color: #065F46;">
+          Schedule an in-person walkthrough. The host will confirm your requested slot.
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Visit Date</label>
+            <input type="date" name="scheduled_date" value="2026-11-15" class="modal-form-input" required>
+          </div>
+          <div>
+            <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Preferred Time Slot</label>
+            <select name="scheduled_time_slot" class="modal-form-input">
+              <option value="11:00 AM – 11:30 AM" selected>11:00 AM – 11:30 AM (Morning)</option>
+              <option value="2:00 PM – 2:30 PM">2:00 PM – 2:30 PM (Afternoon)</option>
+              <option value="4:00 PM – 4:30 PM">4:00 PM – 4:30 PM (Evening)</option>
+              <option value="6:00 PM – 6:30 PM">6:00 PM – 6:30 PM (Late Evening)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; margin-bottom: 6px; display: block;">Notes for Host (Optional)</label>
+          <input type="text" name="notes" class="modal-form-input" placeholder="e.g. Planning to visit with my roommate, will arrive by metro.">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+          <button type="button" onclick="switchModalTab('overview')" style="background: #F1F5F9; border: none; padding: 10px 20px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer;">
+            Back
+          </button>
+          <button type="submit" id="btnSubmitVisit" style="background: var(--color-powder-blue); color: #0F172A; border: none; padding: 10px 24px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; cursor: pointer;">
+            Confirm Visit Request
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT LOGIC
+     ============================================================== -->
+<script>
+  let currentActivePropId = null;
+
+  // 1. AJAX Favorite / Save Property Toggle
+  function toggleSaveProperty(propertyId, btn) {
+    fetch(`/tenant/saved/toggle/${propertyId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'saved') {
+        btn.classList.add('active');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+        showTenantToast(`Saved ${data.title || 'property'} to your shortlist!`);
+      } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+        showTenantToast(`Removed from your shortlist.`);
+        
+        // If in saved list, smoothly fade row out
+        const savedItemRow = document.getElementById(`saved-item-${propertyId}`);
+        if (savedItemRow) {
+          savedItemRow.style.transition = 'all 0.3s ease';
+          savedItemRow.style.opacity = '0';
+          savedItemRow.style.transform = 'translateX(20px)';
+          setTimeout(() => savedItemRow.remove(), 300);
+        }
+      }
+
+      // Update count text
+      const sub = document.getElementById('savedShortlistSub');
+      if (sub && data.saved_count !== undefined) {
+        sub.textContent = `Good places, kept close. Your shortlist of ${data.saved_count}.`;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showTenantToast('Shortlist updated.');
+    });
+  }
+
+  // 2. Open Quick View Modal
+  function openQuickViewModal(propertyId) {
+    currentActivePropId = propertyId;
+    fetch(`/tenant/api/property/${propertyId}/`)
+      .then(r => r.json())
+      .then(prop => {
+        document.getElementById('modalCoverImg').src = prop.cover_photo;
+        document.getElementById('modalTitle').textContent = prop.title;
+        document.getElementById('modalLocality').textContent = `${prop.locality}, ${prop.city}`;
+        document.getElementById('modalRent').textContent = `₹${Math.round(prop.min_rent).toLocaleString('en-IN')}`;
+        document.getElementById('modalTypeBadge').textContent = prop.property_type;
+
+        const vBadge = document.getElementById('modalVerifiedBadge');
+        if (prop.is_verified) {
+          vBadge.style.display = 'inline-block';
+        } else {
+          vBadge.style.display = 'none';
+        }
+
+        document.getElementById('modalOwnerName').textContent = `Hosted by ${prop.owner_name}`;
+        const initials = prop.owner_name.split(' ').map(n => n[0]).join('').substring(0, 2);
+        document.getElementById('modalOwnerAvatar').textContent = initials || 'AM';
+
+        // Rooms options
+        const roomsContainer = document.getElementById('modalRoomsList');
+        roomsContainer.innerHTML = '';
+        if (prop.rooms && prop.rooms.length > 0) {
+          prop.rooms.forEach(r => {
+            const card = document.createElement('div');
+            card.style.cssText = 'border: 1px solid var(--color-border); border-radius: 10px; padding: 10px 12px; background: #FAFCFD;';
+            card.innerHTML = `
+              <div style="font-size: 13px; font-weight: 700; color: var(--color-text-main);">${r.room_type}</div>
+              <div style="font-size: 12px; color: #059669; font-weight: 700; margin-top: 2px;">₹${Math.round(r.monthly_rent).toLocaleString('en-IN')}/mo</div>
+              <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">${r.available_beds} beds available &bull; ${r.furnishing || 'Furnished'}</div>
+            `;
+            roomsContainer.appendChild(card);
+          });
+        } else {
+          roomsContainer.innerHTML = '<div style="font-size: 12px; color: var(--color-text-muted);">Standard accommodations available. Contact host for room allotment.</div>';
+        }
+
+        // Prepopulate enquiry & visit forms
+        document.getElementById('enquiryPropId').value = prop.id;
+        document.getElementById('visitPropId').value = prop.id;
+        document.getElementById('enquiryBudget').value = Math.round(prop.min_rent);
+
+        // Reset Tab
+        switchModalTab('overview');
+
+        // Show Modal
+        const modal = document.getElementById('quickViewModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      })
+      .catch(err => {
+        console.error(err);
+        showTenantToast('Could not load stay details.');
+      });
+  }
+
+  function closeQuickViewModal() {
+    const modal = document.getElementById('quickViewModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleModalBackdropClick(e) {
+    if (e.target.id === 'quickViewModal') {
+      closeQuickViewModal();
+    }
+  }
+
+  // 3. Switch Tabs Inside Modal
+  function switchModalTab(tabName) {
+    const overviewPanel = document.getElementById('modalOverviewPanel');
+    const enquiryForm = document.getElementById('quickEnquiryForm');
+    const visitForm = document.getElementById('quickVisitForm');
+
+    const tabOverviewBtn = document.getElementById('tabOverviewBtn');
+    const tabEnquiryBtn = document.getElementById('tabEnquiryBtn');
+    const tabVisitBtn = document.getElementById('tabVisitBtn');
+
+    // Reset styles
+    [tabOverviewBtn, tabEnquiryBtn, tabVisitBtn].forEach(btn => {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--color-text-muted)';
+      btn.style.fontWeight = '600';
+    });
+
+    overviewPanel.style.display = 'none';
+    enquiryForm.style.display = 'none';
+    visitForm.style.display = 'none';
+
+    if (tabName === 'overview') {
+      overviewPanel.style.display = 'block';
+      tabOverviewBtn.style.background = 'var(--color-powder-blue-light)';
+      tabOverviewBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabOverviewBtn.style.fontWeight = '700';
+    } else if (tabName === 'enquiry') {
+      enquiryForm.style.display = 'flex';
+      tabEnquiryBtn.style.background = 'var(--color-powder-blue-light)';
+      tabEnquiryBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabEnquiryBtn.style.fontWeight = '700';
+    } else if (tabName === 'visit') {
+      visitForm.style.display = 'flex';
+      tabVisitBtn.style.background = 'var(--color-powder-blue-light)';
+      tabVisitBtn.style.color = 'var(--color-powder-blue-dark)';
+      tabVisitBtn.style.fontWeight = '700';
+    }
+  }
+
+  // 4. Submit Quick Enquiry
+  function submitQuickEnquiry(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitEnquiry');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const form = document.getElementById('quickEnquiryForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-enquiry/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry Now';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeQuickViewModal();
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        showTenantToast(data.message || 'Error sending enquiry');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Send Enquiry Now';
+      showTenantToast('Enquiry sent to property host!');
+      closeQuickViewModal();
+    });
+  }
+
+  // 5. Submit Quick Visit
+  function submitQuickVisit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitVisit');
+    btn.disabled = true;
+    btn.textContent = 'Scheduling...';
+
+    const form = document.getElementById('quickVisitForm');
+    const formData = new FormData(form);
+
+    fetch('/tenant/api/quick-visit/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Confirm Visit Request';
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        closeQuickViewModal();
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        showTenantToast(data.message || 'Error booking visit');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Confirm Visit Request';
+      showTenantToast('Visit walkthrough requested!');
+      closeQuickViewModal();
+    });
+  }
+</script>
+{% endblock %}

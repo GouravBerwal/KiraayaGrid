@@ -1,0 +1,1405 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Review moderation — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Review moderation{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/11_review_moderation.css' %}?v=4.0">
+  <style>
+    /* ==============================================================
+       SCREEN 11: CARD-WISE PROFESSIONAL MODERATION CONSOLE
+       ============================================================== */
+    .review-filter-toolbar {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      padding-bottom: 4px !important;
+    }
+
+    .review-search-wrap {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      padding: 8px 12px !important;
+      flex: 1 !important;
+      min-width: 250px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .review-search-wrap:focus-within {
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .review-search-icon {
+      color: #64748B !important;
+      flex-shrink: 0 !important;
+    }
+
+    .review-search-input {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      width: 100% !important;
+      font-size: 13px !important;
+      color: #0F172A !important;
+      font-weight: 500 !important;
+    }
+
+    .review-filter-select {
+      width: auto !important;
+      min-width: 140px !important;
+      padding: 8px 28px 8px 11px !important;
+      border: 1.5px solid #CBD5E1 !important;
+      border-radius: 9px !important;
+      background: #FFFFFF !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      color: #334155 !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      appearance: none !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 10px center !important;
+    }
+
+    .review-filter-select:focus {
+      outline: none !important;
+      border-color: #1C5D99 !important;
+      box-shadow: 0 0 0 3px rgba(28, 93, 153, 0.12) !important;
+    }
+
+    .review-btn {
+      padding: 8px 16px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 9px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    /* MASTER-DETAIL GRID */
+    .master-detail-grid {
+      display: grid !important;
+      grid-template-columns: 370px 1fr !important;
+      gap: 24px !important;
+      align-items: start !important;
+    }
+
+    /* LEFT QUEUE COLUMN */
+    .queue-sidebar-col {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+
+    .queue-header-box {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 14px 18px !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .queue-title-bold {
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      letter-spacing: -0.2px !important;
+    }
+
+    .review-queue-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+
+    /* ELEVATED REVIEW QUEUE CARD */
+    .review-item-card {
+      background: #FFFFFF !important;
+      border: 1.5px solid #E2E8F0 !important;
+      border-radius: 14px !important;
+      padding: 16px !important;
+      cursor: pointer !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      position: relative !important;
+    }
+
+    .review-item-card:hover {
+      transform: translateY(-2px) !important;
+      border-color: #CBD5E1 !important;
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .review-item-card.selected {
+      background: #FFFFFF !important;
+      border-color: #1C5D99 !important;
+      border-left: 4.5px solid #1C5D99 !important;
+      box-shadow: 0 4px 18px rgba(28, 93, 153, 0.16) !important;
+    }
+
+    .queue-card-top {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 10px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .queue-user-info {
+      display: flex !important;
+      align-items: center !important;
+      gap: 9px !important;
+    }
+
+    .queue-avatar {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      background: #EFF6FF !important;
+      color: #1C5D99 !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important;
+    }
+
+    .queue-name-text {
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+    }
+
+    .item-tag {
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+    }
+
+    .tag-warning {
+      background: #FFFBEB !important;
+      color: #B45309 !important;
+      border: 1px solid #FDE68A !important;
+    }
+
+    .tag-review {
+      background: #EFF6FF !important;
+      color: #1D4ED8 !important;
+      border: 1px solid #BFDBFE !important;
+    }
+
+    .queue-prop-title {
+      font-size: 12.5px !important;
+      color: #334155 !important;
+      font-weight: 600 !important;
+      margin-bottom: 6px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+    }
+
+    .queue-card-meta {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      font-size: 11.5px !important;
+      color: #94A3B8 !important;
+      border-top: 1px dashed #F1F5F9 !important;
+      padding-top: 8px !important;
+      margin-top: 8px !important;
+    }
+
+    .rating-pill-sm {
+      background: #FFFBEB !important;
+      color: #B45309 !important;
+      border: 1px solid #FDE68A !important;
+      padding: 2px 7px !important;
+      border-radius: 12px !important;
+      font-size: 11.5px !important;
+      font-weight: 700 !important;
+    }
+
+    .queue-footer-pagination {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 12px 16px !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      font-size: 12.5px !important;
+      color: #64748B !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    /* RIGHT DETAIL MAIN COLUMN */
+    .detail-main-col {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 20px !important;
+      min-width: 0 !important;
+    }
+
+    .card {
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+      overflow: hidden !important;
+    }
+
+    /* REVIEW DETAIL HEADER CARD */
+    .detail-header-card {
+      padding: 26px 28px !important;
+    }
+
+    .reviewer-profile-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 16px !important;
+      padding-bottom: 20px !important;
+      border-bottom: 1px solid #F1F5F9 !important;
+    }
+
+    .reviewer-identity {
+      display: flex !important;
+      align-items: center !important;
+      gap: 14px !important;
+    }
+
+    .big-avatar {
+      width: 50px !important;
+      height: 50px !important;
+      border-radius: 50% !important;
+      background: #EFF6FF !important;
+      color: #1C5D99 !important;
+      font-size: 18px !important;
+      font-weight: 800 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: 2px solid #BFDBFE !important;
+    }
+
+    .owner-full-name {
+      font-size: 21px !important;
+      font-weight: 800 !important;
+      color: #0F172A !important;
+      letter-spacing: -0.4px !important;
+      line-height: 1.2 !important;
+    }
+
+    .owner-code-sub {
+      font-size: 13px !important;
+      color: #64748B !important;
+      margin-top: 4px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    .rating-badge-gold {
+      background: #FFFBEB !important;
+      color: #B45309 !important;
+      border: 1.5px solid #FDE68A !important;
+      padding: 6px 14px !important;
+      border-radius: 20px !important;
+      font-size: 14px !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.2px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      box-shadow: 0 1px 2px rgba(217, 119, 6, 0.1) !important;
+    }
+
+    .report-meta-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 14px !important;
+      padding: 16px 20px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      margin: 20px 0 !important;
+    }
+
+    .info-cell {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 4px !important;
+    }
+
+    .info-label {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      color: #64748B !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    .info-value {
+      font-size: 13.5px !important;
+      color: #0F172A !important;
+    }
+
+    /* HIGH-END REVIEW QUOTE BOX */
+    .review-quote-box {
+      background: #FFFFFF !important;
+      border-left: 4px solid #1C5D99 !important;
+      border-top: 1px solid #E2E8F0 !important;
+      border-right: 1px solid #E2E8F0 !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      padding: 22px 24px !important;
+      margin-bottom: 20px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+      position: relative !important;
+    }
+
+    .quote-watermark {
+      position: absolute !important;
+      right: 20px !important;
+      top: 16px !important;
+      font-size: 42px !important;
+      line-height: 1 !important;
+      color: #E2E8F0 !important;
+      font-family: Georgia, serif !important;
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+
+    .review-quote-title {
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin-bottom: 8px !important;
+    }
+
+    .review-quote-body {
+      font-size: 14px !important;
+      color: #334155 !important;
+      line-height: 1.65 !important;
+    }
+
+    /* DISPUTE ALERT CARD */
+    .alert-box-info {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 14px !important;
+      padding: 16px 20px !important;
+      background: #FFFBEB !important;
+      border: 1.5px solid #FDE68A !important;
+      border-radius: 12px !important;
+    }
+
+    .alert-icon {
+      font-size: 20px !important;
+      color: #B45309 !important;
+      line-height: 1 !important;
+      margin-top: 2px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .alert-text {
+      font-size: 13px !important;
+      color: #78350F !important;
+      line-height: 1.55 !important;
+    }
+
+    /* 2-COLUMN DETAIL GRID */
+    .two-col-detail-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 20px !important;
+    }
+
+    .card-section-title {
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      padding: 20px 24px 0 !important;
+    }
+
+    .checklist-items {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 11px !important;
+      padding: 16px 24px 22px !important;
+    }
+
+    .checklist-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 11px 14px !important;
+      border-radius: 10px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+    }
+
+    .checklist-row.matched {
+      background: #F0FDF4 !important;
+      border-color: #BBF7D0 !important;
+    }
+
+    .chk-icon {
+      width: 24px !important;
+      height: 24px !important;
+      border-radius: 50% !important;
+      background: #059669 !important;
+      color: white !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      flex-shrink: 0 !important;
+    }
+
+    .chk-info {
+      flex: 1 !important;
+      margin-left: 12px !important;
+      margin-right: 12px !important;
+    }
+
+    .chk-title {
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #0F172A !important;
+    }
+
+    .chk-sub {
+      font-size: 11.5px !important;
+      color: #64748B !important;
+    }
+
+    .chk-status {
+      font-size: 11.5px !important;
+      font-weight: 700 !important;
+      color: #059669 !important;
+      background: #DCFCE7 !important;
+      padding: 3px 9px !important;
+      border-radius: 6px !important;
+    }
+
+    .impact-metrics-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 11px !important;
+      padding: 16px 24px 22px !important;
+    }
+
+    .impact-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 11px 14px !important;
+      border-radius: 10px !important;
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+    }
+
+    .impact-lbl {
+      font-size: 12.5px !important;
+      color: #64748B !important;
+      font-weight: 500 !important;
+    }
+
+    .impact-val {
+      font-size: 13px !important;
+      color: #0F172A !important;
+      font-weight: 600 !important;
+    }
+
+    /* DECISION CARD */
+    .decision-card {
+      padding: 24px 26px !important;
+    }
+
+    .decision-card .card-section-title {
+      padding: 0 !important;
+      margin-bottom: 12px !important;
+    }
+
+    .decision-footer {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 14px !important;
+      margin-top: 20px !important;
+      padding-top: 20px !important;
+      border-top: 1px solid #E2E8F0 !important;
+    }
+
+    .btn-danger-outline {
+      padding: 9px 18px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #DC2626 !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #FECACA !important;
+      border-radius: 9px !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+
+    .btn-danger-outline:hover {
+      background: #FEF2F2 !important;
+      border-color: #DC2626 !important;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #1E293B;
+      color: #FFFFFF;
+      font-size: 13.5px;
+      font-weight: 500;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s ease;
+    }
+    .toast.success { background: #065F46; border-left: 4px solid #34D399; }
+    .toast.error { background: #991B1B; border-left: 4px solid #F87171; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 960px) {
+      .master-detail-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .two-col-detail-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .review-filter-toolbar {
+        flex-wrap: wrap !important;
+      }
+      .review-search-wrap {
+        min-width: 100% !important;
+      }
+    }
+
+    /* ==============================================================
+       MODAL: COMMUNITY GUIDELINES (HIDDEN BY DEFAULT, POPUP ON TAP)
+       ============================================================== */
+    .modal-backdrop {
+      display: none !important;
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(15, 23, 42, 0.72) !important;
+      backdrop-filter: blur(6px) !important;
+      -webkit-backdrop-filter: blur(6px) !important;
+      z-index: 99999 !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px !important;
+    }
+
+    .modal-backdrop.open {
+      display: flex !important;
+    }
+
+    .modal-content-box {
+      background: #FFFFFF !important;
+      border-radius: 18px !important;
+      width: 100% !important;
+      max-width: 620px !important;
+      box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4) !important;
+      overflow: hidden !important;
+      animation: modalPopAnim 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      border: 1px solid #E2E8F0 !important;
+      max-height: 90vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    @keyframes modalPopAnim {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 18px 24px !important;
+      border-bottom: 1px solid #E2E8F0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #F8FAFC !important;
+    }
+
+    .modal-header-info {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+
+    .modal-header-icon {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 10px !important;
+      background: rgba(28, 93, 153, 0.1) !important;
+      color: #1C5D99 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 20px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .modal-title {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      margin: 0 !important;
+      letter-spacing: -0.2px !important;
+    }
+
+    .modal-subtitle {
+      font-size: 12px !important;
+      color: #64748B !important;
+      margin-top: 2px !important;
+    }
+
+    .modal-close-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      width: 32px !important;
+      height: 32px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+      color: #64748B !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+    }
+
+    .modal-close-btn:hover {
+      background: #F1F5F9 !important;
+      color: #0F172A !important;
+      border-color: #94A3B8 !important;
+    }
+
+    .modal-body {
+      padding: 22px 24px !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 14px !important;
+    }
+
+    .guideline-card {
+      background: #F8FAFC !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+      padding: 14px 16px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .guideline-card:hover {
+      border-color: #CBD5E1 !important;
+      background: #FFFFFF !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .guideline-card-head {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin-bottom: 6px !important;
+    }
+
+    .guideline-card-title {
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      color: #0F172A !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+
+    .guideline-badge {
+      font-size: 10.5px !important;
+      font-weight: 700 !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      letter-spacing: 0.3px !important;
+      text-transform: uppercase !important;
+    }
+
+    .guideline-badge-blue {
+      background: #EFF6FF !important;
+      color: #1D4ED8 !important;
+      border: 1px solid #BFDBFE !important;
+    }
+
+    .guideline-badge-red {
+      background: #FEF2F2 !important;
+      color: #B91C1C !important;
+      border: 1px solid #FECACA !important;
+    }
+
+    .guideline-badge-amber {
+      background: #FFFBEB !important;
+      color: #B45309 !important;
+      border: 1px solid #FDE68A !important;
+    }
+
+    .guideline-badge-green {
+      background: #F0FDF4 !important;
+      color: #15803D !important;
+      border: 1px solid #BBF7D0 !important;
+    }
+
+    .guideline-card-desc {
+      font-size: 12.5px !important;
+      color: #475569 !important;
+      line-height: 1.55 !important;
+      margin: 0 !important;
+    }
+
+    .modal-footer {
+      padding: 16px 24px !important;
+      border-top: 1px solid #E2E8F0 !important;
+      background: #F8FAFC !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- ==============================================================
+     PAGE HEADER
+     ============================================================== -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Review moderation</h1>
+    <p class="page-subtitle">Protect authentic feedback. Review reported content fairly and keep a record of every decision.</p>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="btn btn-outline" onclick="openGuidelinesModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      Community guidelines
+    </button>
+    <a href="{% url 'admin_portal:review_export_csv' %}?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}" class="btn btn-outline" title="Export Reviews CSV">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Export reviews
+    </a>
+  </div>
+</div>
+
+<!-- ==============================================================
+     NAV TAB STRIP (DYNAMIC COUNTS & URL PRESERVATION)
+     ============================================================== -->
+<div class="nav-tab-strip">
+  <a href="?tab=REPORTED{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'REPORTED' %}active{% endif %}">
+    Reported · {{ tab_counts.reported }}
+  </a>
+  <a href="?tab=PENDING{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'PENDING' %}active{% endif %}">
+    Pending · {{ tab_counts.pending }}
+  </a>
+  <a href="?tab=PUBLISHED{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'PUBLISHED' or tab == 'APPROVED' %}active{% endif %}">
+    Published · {{ tab_counts.published }}
+  </a>
+  <a href="?tab=REMOVED{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'REMOVED' or tab == 'REJECTED' %}active{% endif %}">
+    Removed · {{ tab_counts.removed }}
+  </a>
+  <a href="?tab=ALL{% if search_q %}&q={{ search_q }}{% endif %}" class="tab-btn {% if tab == 'ALL' %}active{% endif %}">
+    All reviews · {{ tab_counts.all }}
+  </a>
+</div>
+
+<!-- ==============================================================
+     SINGLE-LINE FILTER TOOLBAR
+     ============================================================== -->
+<form method="GET" action="" class="review-filter-toolbar">
+  <input type="hidden" name="tab" value="{{ tab }}">
+  {% if selected_review %}<input type="hidden" name="id" value="{{ selected_review.id }}">{% endif %}
+
+  <!-- SEARCH INPUT -->
+  <div class="review-search-wrap">
+    <span class="review-search-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </span>
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Search review code, reviewer, property or comment..." class="review-search-input">
+  </div>
+
+  <!-- RATING FILTER -->
+  <select name="rating" class="review-filter-select">
+    <option value="ALL">All ratings ▾</option>
+    <option value="1" {% if rating_filter == '1' %}selected{% endif %}>★ 1 Star</option>
+    <option value="2" {% if rating_filter == '2' %}selected{% endif %}>★ 2 Stars</option>
+    <option value="3" {% if rating_filter == '3' %}selected{% endif %}>★ 3 Stars</option>
+    <option value="4" {% if rating_filter == '4' %}selected{% endif %}>★ 4 Stars</option>
+    <option value="5" {% if rating_filter == '5' %}selected{% endif %}>★ 5 Stars</option>
+  </select>
+
+  <!-- VIOLATION REASON FILTER -->
+  <select name="reason" class="review-filter-select">
+    <option value="ALL">All report types ▾</option>
+    <option value="DISPUTED_CONTENT" {% if reason_filter == 'DISPUTED_CONTENT' %}selected{% endif %}>Disputed content</option>
+    <option value="ABUSIVE_LANGUAGE" {% if reason_filter == 'ABUSIVE_LANGUAGE' %}selected{% endif %}>Abusive language</option>
+    <option value="POSSIBLE_SPAM" {% if reason_filter == 'POSSIBLE_SPAM' %}selected{% endif %}>Possible spam</option>
+    <option value="PERSONAL_INFO" {% if reason_filter == 'PERSONAL_INFO' %}selected{% endif %}>Personal information</option>
+    <option value="OFF_TOPIC" {% if reason_filter == 'OFF_TOPIC' %}selected{% endif %}>Off-topic</option>
+  </select>
+
+  <!-- FILTER BUTTON -->
+  <button type="submit" class="btn btn-primary review-btn">
+    Filter
+  </button>
+
+  <!-- RESET BUTTON -->
+  {% if search_q or rating_filter or reason_filter %}
+    <a href="?tab={{ tab }}" class="btn btn-outline review-btn" style="color: #64748B;">✕ Reset</a>
+  {% endif %}
+</form>
+
+<!-- ==============================================================
+     CARD-WISE MASTER-DETAIL INVESTIGATION WORKSPACE
+     ============================================================== -->
+<div class="master-detail-grid">
+  <!-- LEFT QUEUE SIDEBAR (CARD-WISE) -->
+  <div class="queue-sidebar-col">
+    <div class="queue-header-box">
+      <span class="queue-title-bold" id="queueHeaderCount">Queue · {{ total_results }} items</span>
+      <span class="status-pill info" style="font-size: 11px;">{{ tab|title }}</span>
+    </div>
+
+    <!-- QUEUE CARDS LIST -->
+    <div class="review-queue-list">
+      {% for r in reviews %}
+        <div class="review-item-card {% if selected_review and selected_review.id == r.id %}selected{% endif %}" id="queueItem_{{ r.id }}" onclick="selectReview({{ r.id }})">
+          <!-- CARD TOP: AVATAR, NAME & TAG -->
+          <div class="queue-card-top">
+            <div class="queue-user-info">
+              <div class="queue-avatar">{{ r.avatar_initial }}</div>
+              <div>
+                <div class="queue-name-text">{{ r.reviewer_name }}</div>
+              </div>
+            </div>
+            {% if r.report_reason %}
+              <span class="item-tag {{ r.tag_class }}">{{ r.reason_tag_display }}</span>
+            {% elif r.status == 'APPROVED' %}
+              <span class="item-tag tag-review" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">✓ Live</span>
+            {% elif r.status == 'REJECTED' %}
+              <span class="item-tag tag-warning" style="background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA;">✕ Removed</span>
+            {% else %}
+              <span class="item-tag tag-review">◔ Pending</span>
+            {% endif %}
+          </div>
+
+          <!-- PROPERTY INFO -->
+          <div class="queue-prop-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            {{ r.property.title }}
+          </div>
+
+          <!-- CARD FOOTER: RATING & TIME -->
+          <div class="queue-card-meta">
+            <span class="rating-pill-sm">★ {{ r.rating }} / 5</span>
+            <span style="font-family: monospace;">{{ r.review_code }}</span>
+            <span>{{ r.reported_time_text|default:r.created_at|date:"d M, H:i" }}</span>
+          </div>
+        </div>
+      {% empty %}
+        <div class="card" style="padding: 36px 16px; text-align: center; color: #64748B;">
+          <div style="font-size: 32px; margin-bottom: 8px;">✓</div>
+          <div style="font-size: 14px; font-weight: 700; color: #0F172A;">Queue is clean</div>
+          <div style="font-size: 12px; margin-top: 4px; color: #64748B;">No reviews currently awaiting moderation in this view.</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- QUEUE FOOTER PAGINATION -->
+    <div class="queue-footer-pagination">
+      <span>{{ page_obj.start_index|default:0 }}–{{ page_obj.end_index|default:0 }} of {{ total_results }}</span>
+      <div class="pagination-arrows" style="display: flex; align-items: center; gap: 6px;">
+        {% if page_obj.has_previous %}
+          <a href="?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if reason_filter %}&reason={{ reason_filter }}{% endif %}&page={{ page_obj.previous_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">← Prev</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">← Prev</span>
+        {% endif %}
+
+        <span style="font-size: 11.5px; font-weight: 600; color: #475569;">{{ page_obj.number|default:1 }}/{{ page_obj.paginator.num_pages|default:1 }}</span>
+
+        {% if page_obj.has_next %}
+          <a href="?tab={{ tab }}{% if search_q %}&q={{ search_q }}{% endif %}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}{% if reason_filter %}&reason={{ reason_filter }}{% endif %}&page={{ page_obj.next_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">Next →</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">Next →</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT DETAIL MAIN COLUMN (MODULAR CARD-TYPE ARCHITECTURE) -->
+  <div class="detail-main-col">
+    {% if selected_review %}
+      <div id="detailContainer">
+        <input type="hidden" id="currentReviewId" value="{{ selected_review.id }}">
+
+        <!-- CARD 1: PRIMARY REVIEW CARD & DISPUTE REPORT -->
+        <div class="card detail-header-card">
+          <!-- REVIEWER PROFILE HEADER ROW -->
+          <div class="reviewer-profile-header">
+            <div class="reviewer-identity">
+              <div class="big-avatar" id="detailBigAvatar">{{ selected_review.avatar_initial }}</div>
+              <div>
+                <h2 class="owner-full-name" id="detailHeading">Review by {{ selected_review.reviewer_name }}</h2>
+                <div class="owner-code-sub" id="detailSubheading">
+                  <span style="font-family: monospace; font-weight: 700; color: #1C5D99;">{{ selected_review.review_code }}</span>
+                  <span>·</span>
+                  <span>📍 {{ selected_review.property.title }}, {{ selected_review.property.city.name }}</span>
+                  <span>·</span>
+                  <span>Published {{ selected_review.created_at|date:"d M Y" }}</span>
+                </div>
+              </div>
+            </div>
+            <span class="rating-badge-gold" id="detailRatingBadge">
+              <span style="color: #F59E0B; font-size: 15px;">★</span>
+              <span>{{ selected_review.rating }} / 5</span>
+            </span>
+          </div>
+
+          <!-- REPORT METADATA 3-CELL GRID -->
+          <div class="report-meta-grid">
+            <div class="info-cell">
+              <span class="info-label">Reviewer</span>
+              <span class="info-value font-bold" id="detailReviewerCell">
+                {{ selected_review.reviewer_name }} · <span style="font-family: monospace; color: #64748B;">USR-{{ selected_review.user.id }}</span>
+              </span>
+            </div>
+            <div class="info-cell">
+              <span class="info-label">Stay verification</span>
+              <span class="info-value font-bold" id="detailStayCell" style="color: #059669;">
+                ✓ {{ selected_review.stay_verification }}
+              </span>
+            </div>
+            <div class="info-cell">
+              <span class="info-label">Reported by</span>
+              <span class="info-value font-bold" id="detailReporterCell">
+                {% if selected_review.reported_by %}
+                  {{ selected_review.reported_by.get_full_name|default:selected_review.reported_by.username }} · Property owner
+                {% else %}
+                  Community / System AI Scanner
+                {% endif %}
+              </span>
+            </div>
+          </div>
+
+          <!-- REVIEW QUOTE BOX (CARD-TYPE) -->
+          <div class="review-quote-box">
+            <span class="quote-watermark">“</span>
+            <div class="review-quote-title" id="detailQuoteTitle">{{ selected_review.title|default:"Feedback Title" }}</div>
+            <p class="review-quote-body" id="detailQuoteBody">{{ selected_review.comment }}</p>
+          </div>
+
+          <!-- OWNER'S REPORT ALERT BANNER -->
+          <div class="alert-box-info" id="detailReportBox" {% if not selected_review.report_details %}style="display:none;"{% endif %}>
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-text">
+              <strong id="detailReportTitle" style="font-size: 13.5px; font-weight: 700; color: #92400E; display: block; margin-bottom: 2px;">
+                Owner's report · {{ selected_review.reason_tag_display }}
+              </strong>
+              <span id="detailReportText" style="color: #78350F; font-size: 13px;">{{ selected_review.report_details }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: 2-COLUMN DETAIL GRID (CHECKLIST & REVIEWER HISTORY) -->
+        <div class="two-col-detail-grid">
+          <!-- SUB-CARD A: MODERATION CHECKLIST -->
+          <div class="card">
+            <h3 class="card-section-title">Moderation checklist</h3>
+            <div class="checklist-items">
+              <div class="checklist-row matched" id="chkAbusive">
+                <span class="chk-icon">✓</span>
+                <div class="chk-info">
+                  <div class="chk-title">No abusive or hateful language</div>
+                  <div class="chk-sub">Language complies with community guidelines</div>
+                </div>
+                <span class="chk-status">Matched</span>
+              </div>
+
+              <div class="checklist-row matched" id="chkPrivacy">
+                <span class="chk-icon">✓</span>
+                <div class="chk-info">
+                  <div class="chk-title">No personal information exposed</div>
+                  <div class="chk-sub">No unredacted mobile numbers or sensitive details</div>
+                </div>
+                <span class="chk-status">Matched</span>
+              </div>
+
+              <div class="checklist-row matched" id="chkGenuine">
+                <span class="chk-icon">✓</span>
+                <div class="chk-info">
+                  <div class="chk-title">Based on a genuine interaction</div>
+                  <div class="chk-sub" id="chkStaySub">{{ selected_review.stay_verification }}</div>
+                </div>
+                <span class="chk-status">Matched</span>
+              </div>
+
+              <div class="checklist-row matched">
+                <span class="chk-icon">✓</span>
+                <div class="chk-info">
+                  <div class="chk-title">Relevant to the property</div>
+                  <div class="chk-sub">Addresses room quality, facilities or host experience</div>
+                </div>
+                <span class="chk-status">Matched</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-CARD B: REVIEWER TRUST HISTORY -->
+          <div class="card">
+            <h3 class="card-section-title">Reviewer trust profile</h3>
+            <div class="impact-metrics-list">
+              <div class="impact-row">
+                <span class="impact-lbl">Account age</span>
+                <span class="impact-val font-bold" id="histAccountAge">Joined {{ reviewer_stats.account_created }}</span>
+              </div>
+              <div class="impact-row">
+                <span class="impact-lbl">Published reviews</span>
+                <span class="impact-val font-bold" id="histPublishedCount">{{ reviewer_stats.published_reviews_count }} reviews · {{ reviewer_stats.prior_removals }} removals</span>
+              </div>
+              <div class="impact-row">
+                <span class="impact-lbl">Property interaction</span>
+                <span class="impact-val font-bold" id="histInteraction">{{ reviewer_stats.interaction_text }}</span>
+              </div>
+              <div class="impact-row">
+                <span class="impact-lbl">Trust index</span>
+                <span class="impact-val" style="color: #059669; font-weight: 700;" id="histPolicy">98% High Trust Account</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: DECISION CONSOLE -->
+        <div class="card decision-card">
+          <h3 class="card-section-title">Moderation decision</h3>
+          <div class="form-group" style="margin-top: 10px; margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Administrative decision note</label>
+            <textarea class="form-textarea" id="decisionNoteInput" rows="2" style="border-radius: 8px; font-size: 13px;">{{ selected_review.decision_note|default:"A genuine property visit is sufficient. The review does not violate our guidelines." }}</textarea>
+            <span class="field-hint" style="font-size: 11.5px; color: #64748B; margin-top: 4px; display: block;">Decision record is timestamped and saved in platform audit logs.</span>
+          </div>
+
+          <div class="decision-footer">
+            <button type="button" class="btn-danger-outline" onclick="moderateAction('REMOVE')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Remove review
+            </button>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" class="btn btn-outline" onclick="moderateAction('REQUEST_CLARIFICATION')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Request clarification
+              </button>
+              <button type="button" class="btn btn-primary" onclick="moderateAction('KEEP_PUBLISHED')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Keep published
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="card" style="padding: 60px 20px; text-align: center; color: #64748B;">
+        <div style="font-size: 36px; margin-bottom: 10px;">📋</div>
+        <div style="font-size: 16px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">Select a review to moderate</div>
+        <div style="font-size: 13px;">Choose any card from the queue on the left to inspect the review content and apply administrative decisions.</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+
+<!-- ==============================================================
+     MODAL: COMMUNITY GUIDELINES (CENTERED POPUP DIALOG)
+     ============================================================== -->
+<div class="modal-backdrop" id="guidelinesModal" onclick="if(event.target === this) closeGuidelinesModal();">
+  <div class="modal-content-box">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-header-icon">🛡</div>
+        <div>
+          <h3 class="modal-title">KiraayaGrid Community Guidelines</h3>
+          <p class="modal-subtitle">Official moderation standards & dispute resolution criteria</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeGuidelinesModal()" title="Close dialog">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- GUIDELINE CARD 1 -->
+      <div class="guideline-card">
+        <div class="guideline-card-head">
+          <div class="guideline-card-title">
+            <span style="color: #1C5D99;">✓</span> 1. Genuine Interaction Requirement
+          </div>
+          <span class="guideline-badge guideline-badge-blue">Mandatory</span>
+        </div>
+        <p class="guideline-card-desc">
+          Reviews must be authored by verified tenants, active enquirers, or verified visitors who scheduled a property visit through KiraayaGrid. Unverified third-party reviews are filtered out.
+        </p>
+      </div>
+
+      <!-- GUIDELINE CARD 2 -->
+      <div class="guideline-card">
+        <div class="guideline-card-head">
+          <div class="guideline-card-title">
+            <span style="color: #DC2626;">🚫</span> 2. Zero Tolerance for Abusive Content
+          </div>
+          <span class="guideline-badge guideline-badge-red">Immediate Removal</span>
+        </div>
+        <p class="guideline-card-desc">
+          Personal harassment, hate speech, threats, vulgarity, discrimination based on gender/religion/caste, or defamatory attacks are strictly prohibited and immediately taken down.
+        </p>
+      </div>
+
+      <!-- GUIDELINE CARD 3 -->
+      <div class="guideline-card">
+        <div class="guideline-card-head">
+          <div class="guideline-card-title">
+            <span style="color: #B45309;">🔒</span> 3. Privacy & Personal Information Protection
+          </div>
+          <span class="guideline-badge guideline-badge-amber">Strict Redaction</span>
+        </div>
+        <p class="guideline-card-desc">
+          Publishing personal phone numbers, UPI handles, bank details, or private family information of caretakers, owners, or other flatmates is grounds for immediate redaction.
+        </p>
+      </div>
+
+      <!-- GUIDELINE CARD 4 -->
+      <div class="guideline-card">
+        <div class="guideline-card-head">
+          <div class="guideline-card-title">
+            <span style="color: #15803D;">⚖️</span> 4. Constructive Grievances are Protected
+          </div>
+          <span class="guideline-badge guideline-badge-green">Protected Speech</span>
+        </div>
+        <p class="guideline-card-desc">
+          Factual negative feedback regarding maintenance, security deposit delays, cleanliness, or power issues will <strong>NOT</strong> be removed simply because the property owner disputes it.
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <span style="font-size: 12px; color: #64748B;">KiraayaGrid Trust & Safety Standard v2.4</span>
+      <button type="button" class="btn btn-primary" onclick="closeGuidelinesModal()" style="padding: 8px 20px; font-weight: 600; border-radius: 9px;">Understood</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     TOAST NOTIFICATIONS CONTAINER
+     ============================================================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT LOGIC
+     ============================================================== -->
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'success' ? '✓' : '✕';
+    toast.innerHTML = `<span style="font-weight:700;">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  // --- SELECT REVIEW FROM QUEUE VIA AJAX ---
+  function selectReview(reviewId) {
+    document.querySelectorAll('.review-item-card').forEach(c => c.classList.remove('selected'));
+    const clicked = document.getElementById(`queueItem_${reviewId}`);
+    if (clicked) clicked.classList.add('selected');
+
+    fetch(`{% url 'admin_portal:review_get_detail' %}?id=${reviewId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const r = data.review;
+          document.getElementById('currentReviewId').value = r.id;
+          
+          // Big avatar initials
+          const avatar = document.getElementById('detailBigAvatar');
+          if (avatar) {
+            const words = r.reviewer.name.split(' ');
+            avatar.innerText = words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : r.reviewer.name.substring(0, 2).toUpperCase();
+          }
+
+          document.getElementById('detailHeading').innerText = `Review by ${r.reviewer.name}`;
+          document.getElementById('detailSubheading').innerHTML = `
+            <span style="font-family: monospace; font-weight: 700; color: #1C5D99;">${r.code}</span>
+            <span>·</span>
+            <span>📍 ${r.property_title}</span>
+            <span>·</span>
+            <span>Published ${r.created_at}</span>
+          `;
+          document.getElementById('detailRatingBadge').innerHTML = `<span style="color: #F59E0B; font-size: 15px;">★</span> <span>${r.rating} / 5</span>`;
+
+          document.getElementById('detailReviewerCell').innerHTML = `${r.reviewer.name} · <span style="font-family: monospace; color: #64748B;">${r.reviewer.code}</span>`;
+          document.getElementById('detailStayCell').innerText = `✓ ${r.stay_verification}`;
+          document.getElementById('detailReporterCell').innerText = `${r.reporter.name} · ${r.reporter.role}`;
+
+          document.getElementById('detailQuoteTitle').innerText = r.title || 'Feedback Title';
+          document.getElementById('detailQuoteBody').innerText = r.comment;
+
+          // Report details box
+          const repBox = document.getElementById('detailReportBox');
+          if (r.report_details) {
+            repBox.style.display = 'flex';
+            document.getElementById('detailReportTitle').innerText = `Owner's report · ${r.reason_tag}`;
+            document.getElementById('detailReportText').innerText = r.report_details;
+          } else {
+            repBox.style.display = 'none';
+          }
+
+          // History
+          document.getElementById('chkStaySub').innerText = r.stay_verification;
+          document.getElementById('histAccountAge').innerText = `Joined ${r.reviewer.joined}`;
+          document.getElementById('histPublishedCount').innerText = `${r.reviewer.published_count} reviews · ${r.reviewer.removal_count} removals`;
+
+          // Decision note
+          document.getElementById('decisionNoteInput').value = r.decision_note || 'A genuine property visit is sufficient. The review does not violate our guidelines.';
+        } else {
+          showToast(data.message || 'Error loading review details', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Network error loading review', 'error');
+      });
+  }
+
+  // --- MODERATION ACTIONS ---
+  function moderateAction(actionType) {
+    const reviewId = document.getElementById('currentReviewId').value;
+    const note = document.getElementById('decisionNoteInput').value.trim();
+
+    if (!reviewId) {
+      showToast('No review selected', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('id', reviewId);
+    formData.append('action', actionType);
+    formData.append('decision_note', note);
+
+    fetch(`{% url 'admin_portal:review_action' %}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 700);
+        } else {
+          showToast(data.message || 'Action failed', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('Network error recording decision', 'error');
+      });
+  }
+
+  // --- GUIDELINES MODAL ---
+  function openGuidelinesModal() {
+    const modal = document.getElementById('guidelinesModal');
+    if (modal) {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeGuidelinesModal() {
+    const modal = document.getElementById('guidelinesModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  // ESC key handler
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeGuidelinesModal();
+    }
+  });
+</script>
+{% endblock %}

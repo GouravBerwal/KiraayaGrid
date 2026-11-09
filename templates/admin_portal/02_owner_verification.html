@@ -1,0 +1,628 @@
+{% extends 'admin_portal/base.html' %}
+{% load static %}
+
+{% block title %}Owner verification — KiraayaGrid Admin{% endblock %}
+{% block breadcrumb %}Owner verification{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'admin_portal/css/02_owner_verification.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Owner verification</h1>
+    <p class="page-subtitle">Validate identities, review KYC evidence and onboard trusted property owners.</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="openPolicyBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <span>Verification policy</span>
+    </button>
+  </div>
+</div>
+
+<!-- FILTER TABS WITH LIVE COUNTS -->
+<div class="nav-tab-strip">
+  <a href="?tab=PENDING" class="tab-btn {% if active_tab == 'PENDING' %}active{% endif %}">Pending · {{ pending_count }}</a>
+  <a href="?tab=VERIFIED" class="tab-btn {% if active_tab == 'VERIFIED' %}active{% endif %}">Verified · {{ verified_count }}</a>
+  <a href="?tab=REJECTED" class="tab-btn {% if active_tab == 'REJECTED' %}active{% endif %}">Rejected · {{ rejected_count }}</a>
+  <a href="?tab=ALL" class="tab-btn {% if active_tab == 'ALL' %}active{% endif %}">All Applications · {{ total_count }}</a>
+</div>
+
+<!-- TWO COLUMN MASTER-DETAIL WORKSPACE -->
+<div class="master-detail-grid">
+  <!-- LEFT QUEUE COLUMN -->
+  <div class="queue-sidebar-col">
+    <div class="queue-header-box">
+      <span class="queue-title-bold">{{ active_tab|title }} owners · {{ queue_list|length }}</span>
+      <div class="search-box-wrap">
+        <span class="search-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+        <input type="text" id="queueSearchInput" placeholder="Filter queue by name..." class="search-input-field" value="{{ search_q }}">
+      </div>
+    </div>
+
+    <div class="review-queue-list" id="queueContainer">
+      {% for kyc in queue_list %}
+      <a href="?tab={{ active_tab }}&id={{ kyc.id }}" class="review-item-card queue-item-card {% if selected_kyc and kyc.id == selected_kyc.id %}selected{% endif %}" data-name="{{ kyc.user.get_full_name|lower }} {{ kyc.user.username|lower }}">
+        <div class="review-item-header">
+          <span class="item-name">{{ kyc.user.get_full_name|default:kyc.user.username }}</span>
+          {% if kyc.status == 'VERIFIED' %}
+            <span class="item-tag" style="background:#ECFDF5; color:#059669; border-color:#A7F3D0;">✓ Verified</span>
+          {% elif kyc.status == 'REJECTED' %}
+            <span class="item-tag tag-warning">✕ Rejected</span>
+          {% else %}
+            <span class="item-tag tag-review">◔ Awaiting review</span>
+          {% endif %}
+        </div>
+        <div class="item-meta-sub">OWN-{{ kyc.user.id }} · {{ kyc.document_type }}</div>
+        <div class="item-time">Submitted {{ kyc.created_at|timesince }} ago</div>
+      </a>
+      {% empty %}
+      <div style="padding: 32px 16px; text-align: center; color: var(--color-text-muted); font-size: 13px;">
+        No owner applications found in {{ active_tab|lower }} status.
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="queue-footer-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 1px solid #E2E8F0; background: #FFFFFF; border-radius: 0 0 12px 12px;">
+      <span style="font-size: 11.5px; color: #64748B;">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+      <div class="pagination-arrows" style="display: flex; align-items: center; gap: 6px;">
+        {% if page_obj.has_previous %}
+          <a href="?tab={{ active_tab }}&q={{ search_q }}&page={{ page_obj.previous_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">← Prev</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">← Prev</span>
+        {% endif %}
+        
+        <span style="font-size: 11.5px; font-weight: 600; color: #475569;">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+          <a href="?tab={{ active_tab }}&q={{ search_q }}&page={{ page_obj.next_page_number }}" class="page-btn" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #CBD5E1; border-radius: 6px; color: #0F172A; text-decoration: none; background: #FFFFFF;">Next →</a>
+        {% else %}
+          <span class="page-btn disabled" style="padding: 4px 10px; font-size: 12px; border: 1.5px solid #E2E8F0; border-radius: 6px; color: #94A3B8; opacity: 0.5; pointer-events: none;">Next →</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT DETAIL PANEL -->
+  <div class="detail-main-col">
+    {% if selected_kyc %}
+      <!-- OWNER PROFILE HEADER CARD -->
+      <div class="card detail-header-card">
+        <div class="card-header-flex">
+          <div>
+            <h2 class="owner-full-name">{{ selected_kyc.user.get_full_name|default:selected_kyc.user.username }}</h2>
+            <div class="owner-code-sub">
+              OWN-{{ selected_kyc.user.id }} · Individual Partner · Joined {{ selected_kyc.user.date_joined|date:"d M Y" }}
+            </div>
+          </div>
+          {% if selected_kyc.status == 'VERIFIED' %}
+            <span class="status-pill success">✓ Verified Owner</span>
+          {% elif selected_kyc.status == 'REJECTED' %}
+            <span class="status-pill warning">✕ Application Rejected</span>
+          {% else %}
+            <span class="status-pill pending">◔ Under Verification</span>
+          {% endif %}
+        </div>
+
+        <div class="profile-info-grid">
+          <div class="info-cell">
+            <span class="info-label">Email address</span>
+            <span class="info-value">{{ selected_kyc.user.email|default:"Not specified" }}</span>
+          </div>
+          <div class="info-cell">
+            <span class="info-label">Mobile number</span>
+            <span class="info-value">{{ selected_kyc.user.phone_number }}</span>
+          </div>
+          <div class="info-cell">
+            <span class="info-label">Primary Location</span>
+            <span class="info-value">{{ primary_city }}</span>
+          </div>
+          <div class="info-cell">
+            <span class="info-label">{{ selected_kyc.get_document_type_display }} Number</span>
+            <span class="info-value font-mono">{{ selected_kyc.document_number }}</span>
+          </div>
+          <div class="info-cell">
+            <span class="info-label">Verification Type</span>
+            <span class="info-value">{{ selected_kyc.document_type }} (Government ID)</span>
+          </div>
+          <div class="info-cell">
+            <span class="info-label">Properties Registered</span>
+            <span class="info-value font-bold">{{ owner_properties_count }} properties · {{ owner_rooms_count }} rooms</span>
+          </div>
+        </div>
+
+        {% if selected_kyc.rejection_reason %}
+        <div class="alert-box-info" style="background:#FEF2F2; border-color:#FECACA; margin-top: 14px;">
+          <span class="alert-icon" style="color:#DC2626;">⚠</span>
+          <div class="alert-text">
+            <strong style="color:#DC2626;">Previous Review Remarks:</strong><br>
+            {{ selected_kyc.rejection_reason }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- KYC DOCUMENTS & INTERACTIVE CHECKLIST -->
+      <div class="two-col-detail-grid">
+        <!-- KYC DOCUMENTS CARD -->
+        <div class="card">
+          <h3 class="card-section-title">Submitted KYC Evidence</h3>
+          <p class="card-subtitle mb-14">Uploaded {{ selected_kyc.created_at|date:"d M Y · H:i" }} IST</p>
+
+          <div class="document-list">
+            <div class="doc-item">
+              <div class="doc-icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line></svg></div>
+              <div class="doc-meta">
+                <div class="doc-name">{{ selected_kyc.document_type }}_Proof.pdf</div>
+                <div class="doc-size">PDF Document · Original upload verified</div>
+              </div>
+              <button class="btn btn-outline btn-sm preview-btn" data-docname="{{ selected_kyc.document_type }} ID Card" data-number="{{ selected_kyc.document_number }}" data-owner="{{ selected_kyc.user.get_full_name|default:selected_kyc.user.username }}">
+                👁 Preview
+              </button>
+            </div>
+
+            <div class="doc-item">
+              <div class="doc-icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"></path></svg></div>
+              <div class="doc-meta">
+                <div class="doc-name">Live_Photo_Capture.jpg</div>
+                <div class="doc-size">JPG Image · Geotagged & verified selfie</div>
+              </div>
+              <button class="btn btn-outline btn-sm preview-btn" data-docname="Owner Live Selfie" data-number="Face Match Verified" data-owner="{{ selected_kyc.user.get_full_name|default:selected_kyc.user.username }}">
+                👁 Preview
+              </button>
+            </div>
+          </div>
+
+          <div class="alert-box-info mt-14">
+            <span class="alert-icon">ℹ</span>
+            <div class="alert-text">
+              <strong>DPDP Act 2023 Compliant</strong><br>
+              Aadhaar numbers masked. Documents stored with encryption and accessible only by verification staff.
+            </div>
+          </div>
+        </div>
+
+        <!-- DYNAMIC CHECKLIST CARD -->
+        <div class="card">
+          <div class="card-header-flex">
+            <h3 class="card-section-title">Verification Checklist</h3>
+            <span class="text-subtle font-medium" id="checklistCounter">5 of 5 checks</span>
+          </div>
+
+          <div class="checklist-items">
+            <label class="checklist-row matched" style="cursor: pointer;">
+              <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+              <div class="chk-info">
+                <div class="chk-title">Name matches identity document</div>
+                <div class="chk-sub">{{ selected_kyc.user.get_full_name|default:selected_kyc.user.username }} on {{ selected_kyc.document_type }}</div>
+              </div>
+              <span class="chk-status">Matched</span>
+            </label>
+
+            <label class="checklist-row matched" style="cursor: pointer;">
+              <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+              <div class="chk-info">
+                <div class="chk-title">Mobile OTP verified</div>
+                <div class="chk-sub">{{ selected_kyc.user.phone_number }} confirmation completed</div>
+              </div>
+              <span class="chk-status">Matched</span>
+            </label>
+
+            <label class="checklist-row matched" style="cursor: pointer;">
+              <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+              <div class="chk-info">
+                <div class="chk-title">Valid government checksum</div>
+                <div class="chk-sub">{{ selected_kyc.document_type }} standard format verified</div>
+              </div>
+              <span class="chk-status">Matched</span>
+            </label>
+
+            <label class="checklist-row matched" style="cursor: pointer;">
+              <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+              <div class="chk-info">
+                <div class="chk-title">Zero duplicate identities</div>
+                <div class="chk-sub">No duplicate owner account in KiraayaGrid</div>
+              </div>
+              <span class="chk-status">Matched</span>
+            </label>
+
+            <label class="checklist-row matched" style="cursor: pointer;">
+              <input type="checkbox" checked class="chk-input" style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+              <div class="chk-info">
+                <div class="chk-title">Face match on identity photo</div>
+                <div class="chk-sub">Owner face match with ID card photo</div>
+              </div>
+              <span class="chk-status">Matched</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- DECISION CARD & WORKING ACTIONS -->
+      <div class="card decision-card">
+        <h3 class="card-section-title">Verification decision</h3>
+        <p class="card-subtitle mb-14">Your decision updates the owner status, publishes audit log entries, and sends in-app notification.</p>
+
+        <div class="form-group mb-14">
+          <label class="form-label">Internal review note</label>
+          <textarea id="decisionReviewNote" class="form-textarea" rows="2" placeholder="Enter review remarks (saved in audit trail)...">Identity documents verified. Cleared for property publishing.</textarea>
+          <span class="field-hint">Internal audit record · visible to staff only</span>
+        </div>
+
+        <div class="decision-footer">
+          <span class="assigned-staff-txt">
+            Assigned reviewer: <strong>{{ request.user.get_full_name|default:request.user.username }}</strong> · {{ "now"|date:"H:i" }} IST
+          </span>
+          <div class="action-buttons-wrap">
+            <button class="btn btn-danger-outline" id="rejectActionBtn" data-id="{{ selected_kyc.id }}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Reject</span>
+            </button>
+            <button class="btn btn-outline" id="correctionActionBtn" data-id="{{ selected_kyc.id }}">
+              <span>Request corrections</span>
+            </button>
+            <button class="btn btn-primary" id="approveActionBtn" data-id="{{ selected_kyc.id }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span>Approve owner</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    {% else %}
+      <!-- EMPTY STATE IF NO APPLICATION SELECTED -->
+      <div class="card" style="text-align: center; padding: 60px 24px;">
+        <div style="font-size: 40px; margin-bottom: 16px;">🎉</div>
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">No Pending Applications</h2>
+        <p style="color: var(--color-text-muted); max-width: 420px; margin: 0 auto 20px; font-size: 14px;">
+          All owner KYC applications in this category have been processed. New owner registrations will appear in this workspace automatically.
+        </p>
+        <a href="?tab=ALL" class="btn btn-outline">View All Registered Owners</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 1: VERIFICATION POLICY (FULLY DYNAMIC MODAL)      -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="policyModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header-bar">
+      <div class="modal-title-text">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C5D99" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>KiraayaGrid Owner Verification Policy v2.4</span>
+      </div>
+      <button class="modal-close-icon" id="closePolicyBtn">✕</button>
+    </div>
+    <div class="modal-body-content">
+      <!-- POLICY METRICS -->
+      <div class="policy-metrics-grid">
+        <div class="policy-metric-box">
+          <div class="policy-metric-val">24 Hours</div>
+          <div class="policy-metric-lbl">Target SLA</div>
+        </div>
+        <div class="policy-metric-box">
+          <div class="policy-metric-val">94.2%</div>
+          <div class="policy-metric-lbl">Approval Rate</div>
+        </div>
+        <div class="policy-metric-box">
+          <div class="policy-metric-val">100%</div>
+          <div class="policy-metric-lbl">DPDP Masked</div>
+        </div>
+      </div>
+
+      <!-- POLICY GUIDELINES -->
+      <div class="policy-step-item">
+        <div class="policy-step-num">1</div>
+        <div>
+          <div class="policy-step-title">Government Identity Proof (Mandatory)</div>
+          <div class="policy-step-desc">Aadhaar (with first 8 digits masked), PAN card, Passport, or Voter ID. Name must match bank settlement account.</div>
+        </div>
+      </div>
+
+      <div class="policy-step-item">
+        <div class="policy-step-num">2</div>
+        <div>
+          <div class="policy-step-title">Live Geotagged Identity Selfie</div>
+          <div class="policy-step-desc">Facial match verification ensures the person submitting the documents is the genuine owner and not an unauthorized third party.</div>
+        </div>
+      </div>
+
+      <div class="policy-step-item">
+        <div class="policy-step-num">3</div>
+        <div>
+          <div class="policy-step-title">Strict Zero-Brokerage Policy</div>
+          <div class="policy-step-desc">KiraayaGrid is strictly brokerage-free. Commercial brokers posing as direct owners are blacklisted immediately.</div>
+        </div>
+      </div>
+
+      <div class="policy-step-item">
+        <div class="policy-step-num">4</div>
+        <div>
+          <div class="policy-step-title">Turnaround SLA Commitment</div>
+          <div class="policy-step-desc">Applications older than 20 hours are flagged with high priority SLA warnings for review staff.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer-bar">
+      <span style="font-size: 12px; color: var(--color-text-muted); margin-right: auto;">Last updated: November 2026</span>
+      <button class="btn btn-primary" id="policyAcknowledgeBtn">Got it, close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 2: DOCUMENT PREVIEW MODAL                         -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="docPreviewModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header-bar">
+      <div class="modal-title-text" id="previewModalTitle">Document Preview</div>
+      <button class="modal-close-icon" id="closeDocPreviewBtn">✕</button>
+    </div>
+    <div class="modal-body-content">
+      <div class="doc-mock-preview-card">
+        <div class="doc-mock-badge">OFFICIAL DOCUMENT VERIFIED</div>
+        <div class="doc-mock-name" id="previewOwnerName">Rajesh Mehta</div>
+        <div class="doc-mock-sub" id="previewDocSub">PAN CARD · ABCDE1234F</div>
+        <div style="margin: 20px auto; width: 100%; max-width: 320px; height: 160px; background: #E2E8F0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748B; font-weight: 600;">
+          [ Secure Document Inspection Stream ]
+        </div>
+        <p style="font-size: 12px; color: var(--color-text-muted);">Digital watermark applied. Download access restricted to compliance staff.</p>
+      </div>
+    </div>
+    <div class="modal-footer-bar">
+      <button class="btn btn-outline" id="docCloseBtn">Close preview</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 3: REJECTION REASON MODAL                         -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="rejectionModal" style="display: none;">
+  <div class="modal-dialog">
+    <div class="modal-header-bar">
+      <div class="modal-title-text" style="color: #DC2626;">
+        <span>✕ Reject Owner Verification</span>
+      </div>
+      <button class="modal-close-icon" id="closeRejectModalBtn">✕</button>
+    </div>
+    <div class="modal-body-content">
+      <p style="font-size: 13.5px; color: var(--color-text-main); margin-bottom: 14px;">
+        Please select or enter the reason for rejection. This explanation will be sent to the owner:
+      </p>
+
+      <div class="form-group mb-14">
+        <label class="form-label">Predefined Reason</label>
+        <select class="form-select" id="predefinedReasonSelect" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px;">
+          <option value="Blurry document photo. Please re-upload high resolution document.">Blurry document photo (Unclear scan)</option>
+          <option value="Name on identity proof does not match registered profile.">Name mismatch between account and ID card</option>
+          <option value="Expired or invalid government document.">Expired or invalid document</option>
+          <option value="Selfie does not match identity card photo.">Face mismatch on selfie verification</option>
+          <option value="Broker account detected. KiraayaGrid is strictly direct-owner only.">Broker activity detected (Anti-brokerage policy)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Custom Message / Details</label>
+        <textarea id="customRejectionText" class="form-textarea" rows="3" placeholder="Additional instructions for the owner..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer-bar">
+      <button class="btn btn-outline" id="cancelRejectBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmRejectBtn" style="background:#DC2626; color:#FFFFFF;">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST ALERT ELEMENT -->
+<div id="toastAlert" class="toast-notification" style="display: none;">
+  <span id="toastIcon">✓</span>
+  <span id="toastMessage">Action completed</span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function() {
+    // 1. Queue Filter by Search Input
+    const searchInput = document.getElementById('queueSearchInput');
+    const queueCards = document.querySelectorAll('.queue-item-card');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase().trim();
+        queueCards.forEach(card => {
+          const name = card.getAttribute('data-name') || '';
+          if (name.includes(val)) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // 2. Policy Modal Handlers
+    const policyModal = document.getElementById('policyModal');
+    const openPolicyBtn = document.getElementById('openPolicyBtn');
+    const closePolicyBtn = document.getElementById('closePolicyBtn');
+    const policyAcknowledgeBtn = document.getElementById('policyAcknowledgeBtn');
+
+    function openPolicy() { if (policyModal) policyModal.style.display = 'flex'; }
+    function closePolicy() { if (policyModal) policyModal.style.display = 'none'; }
+
+    if (openPolicyBtn) openPolicyBtn.addEventListener('click', openPolicy);
+    if (closePolicyBtn) closePolicyBtn.addEventListener('click', closePolicy);
+    if (policyAcknowledgeBtn) policyAcknowledgeBtn.addEventListener('click', closePolicy);
+
+    // 3. Document Preview Modal Handlers
+    const docModal = document.getElementById('docPreviewModal');
+    const closeDocBtn = document.getElementById('closeDocPreviewBtn');
+    const docCloseBtn = document.getElementById('docCloseBtn');
+    const previewBtns = document.querySelectorAll('.preview-btn');
+
+    const previewModalTitle = document.getElementById('previewModalTitle');
+    const previewOwnerName = document.getElementById('previewOwnerName');
+    const previewDocSub = document.getElementById('previewDocSub');
+
+    previewBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const docname = btn.getAttribute('data-docname');
+        const num = btn.getAttribute('data-number');
+        const owner = btn.getAttribute('data-owner');
+
+        if (previewModalTitle) previewModalTitle.textContent = docname;
+        if (previewOwnerName) previewOwnerName.textContent = owner;
+        if (previewDocSub) previewDocSub.textContent = `${docname} · ${num}`;
+
+        if (docModal) docModal.style.display = 'flex';
+      });
+    });
+
+    if (closeDocBtn) closeDocBtn.addEventListener('click', () => { docModal.style.display = 'none'; });
+    if (docCloseBtn) docCloseBtn.addEventListener('click', () => { docModal.style.display = 'none'; });
+
+    // 4. Rejection Modal Handlers
+    const rejectionModal = document.getElementById('rejectionModal');
+    const rejectActionBtn = document.getElementById('rejectActionBtn');
+    const closeRejectModalBtn = document.getElementById('closeRejectModalBtn');
+    const cancelRejectBtn = document.getElementById('cancelRejectBtn');
+    const confirmRejectBtn = document.getElementById('confirmRejectBtn');
+    const predefinedReasonSelect = document.getElementById('predefinedReasonSelect');
+    const customRejectionText = document.getElementById('customRejectionText');
+
+    let currentActionKycId = null;
+
+    if (rejectActionBtn) {
+      rejectActionBtn.addEventListener('click', () => {
+        currentActionKycId = rejectActionBtn.getAttribute('data-id');
+        if (rejectionModal) rejectionModal.style.display = 'flex';
+      });
+    }
+
+    if (closeRejectModalBtn) closeRejectModalBtn.addEventListener('click', () => { rejectionModal.style.display = 'none'; });
+    if (cancelRejectBtn) cancelRejectBtn.addEventListener('click', () => { rejectionModal.style.display = 'none'; });
+
+    // 5. Toast Notification Helper
+    const toast = document.getElementById('toastAlert');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIco = document.getElementById('toastIcon');
+
+    function showToast(msg, isSuccess = true) {
+      if (!toast) return;
+      toastMsg.textContent = msg;
+      toastIco.textContent = isSuccess ? '✓' : '⚠';
+      toast.style.background = isSuccess ? '#059669' : '#DC2626';
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    // 6. Generic Action Caller (Approve, Reject, Correction)
+    function executeAction(kycId, action, reviewNote, rejectionReason = '') {
+      fetch('/api/owner-verification/action/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          kyc_id: kycId,
+          action: action,
+          review_note: reviewNote,
+          rejection_reason: rejectionReason
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showToast(data.message, true);
+          setTimeout(() => {
+            window.location.reload();
+          }, 1200);
+        } else {
+          showToast(data.error || 'Failed to process action', false);
+        }
+      })
+      .catch(err => {
+        console.error('Action error:', err);
+        showToast('Network error processing decision', false);
+      });
+    }
+
+    // Helper: CSRF Token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Approve Button Listener
+    const approveBtn = document.getElementById('approveActionBtn');
+    const reviewNoteText = document.getElementById('decisionReviewNote');
+
+    if (approveBtn) {
+      approveBtn.addEventListener('click', () => {
+        const kycId = approveBtn.getAttribute('data-id');
+        const note = reviewNoteText ? reviewNoteText.value : '';
+        approveBtn.disabled = true;
+        approveBtn.textContent = 'Approving...';
+        executeAction(kycId, 'APPROVE', note);
+      });
+    }
+
+    // Confirm Reject Listener
+    if (confirmRejectBtn) {
+      confirmRejectBtn.addEventListener('click', () => {
+        const reason = customRejectionText.value.trim() || predefinedReasonSelect.value;
+        const note = reviewNoteText ? reviewNoteText.value : '';
+        confirmRejectBtn.disabled = true;
+        confirmRejectBtn.textContent = 'Processing...';
+        executeAction(currentActionKycId, 'REJECT', note, reason);
+      });
+    }
+
+    // Close modals on outside click or Escape
+    window.addEventListener('click', (e) => {
+      if (e.target === policyModal) closePolicy();
+      if (e.target === docModal) docModal.style.display = 'none';
+      if (e.target === rejectModal) rejectModal.style.display = 'none';
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closePolicy();
+        if (docModal) docModal.style.display = 'none';
+        if (rejectModal) rejectModal.style.display = 'none';
+      }
+    });
+
+    // Correction Button Listener
+    const correctionBtn = document.getElementById('correctionActionBtn');
+    if (correctionBtn) {
+      correctionBtn.addEventListener('click', () => {
+        const kycId = correctionBtn.getAttribute('data-id');
+        const note = prompt('Please enter correction instructions for the owner:', 'Please re-upload clearer photos of your document.');
+        if (note) {
+          executeAction(kycId, 'CORRECTION', note);
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

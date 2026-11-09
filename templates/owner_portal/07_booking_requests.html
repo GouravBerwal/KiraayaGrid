@@ -1,0 +1,649 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Booking &amp; Visit Requests — KiraayaGrid Owner Portal{% endblock %}
+{% block page_title %}Booking &amp; Visits{% endblock %}
+{% block page_subtitle %}Manage physical walkthroughs, scheduled property visits, and room booking applications{% endblock %}
+
+{% block content %}
+<!-- TOAST MESSAGES -->
+{% if messages %}
+  <div style="margin-bottom: 20px;" id="djangoMessages">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- FLOATING AJAX NOTIFICATION TOAST -->
+<div id="ajaxToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #065F46; color: #FFFFFF; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.18); align-items: center; gap: 10px;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="ajaxToastMsg">Request updated successfully.</span>
+</div>
+
+<!-- HEADER ROW -->
+<div class="owner-header-row" style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+      Booking &amp; Visit Requests
+    </h1>
+    <p class="welcome-subheading" style="margin-top: 4px; font-size: 13.5px; color: var(--color-text-muted);">
+      Review seeker visit schedules, confirm appointment slots, and manage room booking requests.
+    </p>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <a href="{% url 'owner_portal:enquiries' %}" class="btn-secondary-light" style="padding: 9px 14px; text-decoration: none; font-size: 13px;">
+      &larr; View All Enquiries
+    </a>
+  </div>
+</div>
+
+<!-- POLICY DISTINCTION BANNER -->
+<div style="background: var(--color-porcelain); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 22px; font-size: 13px; color: var(--color-text-main); display: flex; align-items: center; gap: 12px;">
+  <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-powder-blue-light); color: var(--color-yale-blue); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;">
+    &iexcl;
+  </div>
+  <div>
+    <strong style="color: var(--color-yale-blue);">Operational Policy:</strong> Property Visits are complimentary walkthroughs scheduled directly between you and verified seekers. Room Booking requests represent formal reservation intents requiring verification before final occupancy.
+  </div>
+</div>
+
+<!-- 5 KPI SUMMARY METRIC CARDS -->
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 22px;">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px;">TOTAL REQUESTS</div>
+    <div style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_all }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">Visits &amp; bookings</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: #D97706; text-transform: uppercase; letter-spacing: 0.5px;">PENDING ACTION</div>
+    <div style="font-size: 24px; font-weight: 700; color: #D97706; margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_pending }}
+    </div>
+    <div style="font-size: 11.5px; color: #D97706; margin-top: 2px; font-weight: 600;">Needs your approval</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: #2563EB; text-transform: uppercase; letter-spacing: 0.5px;">ACCEPTED &amp; UPCOMING</div>
+    <div style="font-size: 24px; font-weight: 700; color: #2563EB; margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_accepted }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">Confirmed walkthroughs</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: #7C3AED; text-transform: uppercase; letter-spacing: 0.5px;">RESCHEDULED</div>
+    <div style="font-size: 24px; font-weight: 700; color: #7C3AED; margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_rescheduled }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">Updated date/slot</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+    <div style="font-size: 11px; font-weight: 600; color: var(--color-dry-sage-dark); text-transform: uppercase; letter-spacing: 0.5px;">COMPLETED</div>
+    <div style="font-size: 24px; font-weight: 700; color: var(--color-dry-sage-dark); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      {{ count_completed }}
+    </div>
+    <div style="font-size: 11.5px; color: var(--color-dry-sage-dark); margin-top: 2px; font-weight: 600;">Walkthroughs hosted</div>
+  </div>
+</div>
+
+<!-- FILTER TABS & SEARCH TOOLBAR -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- 7 Status Filter Tabs -->
+  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+    <!-- All -->
+    <a href="?status=all{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+       class="enq-filter-tab {% if status_filter == 'all' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'all' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>All</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'all' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_all }}</span>
+    </a>
+
+    <!-- Pending -->
+    <a href="?status=pending{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+       class="enq-filter-tab {% if status_filter == 'pending' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'pending' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Pending</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'pending' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_pending }}</span>
+    </a>
+
+    <!-- Accepted -->
+    <a href="?status=accepted{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+       class="enq-filter-tab {% if status_filter == 'accepted' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'accepted' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Accepted</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'accepted' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_accepted }}</span>
+    </a>
+
+    <!-- Rescheduled -->
+    <a href="?status=rescheduled{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+       class="enq-filter-tab {% if status_filter == 'rescheduled' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'rescheduled' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Rescheduled</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'rescheduled' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_rescheduled }}</span>
+    </a>
+
+    <!-- Completed -->
+    <a href="?status=completed{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+       class="enq-filter-tab {% if status_filter == 'completed' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'completed' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Completed</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'completed' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_completed }}</span>
+    </a>
+
+    <!-- Cancelled -->
+    <a href="?status=cancelled{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+       class="enq-filter-tab {% if status_filter == 'cancelled' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'cancelled' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Cancelled</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'cancelled' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_cancelled }}</span>
+    </a>
+
+    <!-- Rejected -->
+    <a href="?status=rejected{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+       class="enq-filter-tab {% if status_filter == 'rejected' %}active{% endif %}"
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if status_filter == 'rejected' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+      <span>Rejected</span>
+      <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if status_filter == 'rejected' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_rejected }}</span>
+    </a>
+  </div>
+
+  <!-- Search, Property Selector & Sort Toolbar -->
+  <form method="GET" action="{% url 'owner_portal:booking_requests' %}" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    {% if status_filter != 'all' %}
+      <input type="hidden" name="status" value="{{ status_filter }}">
+    {% endif %}
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1;">
+      <!-- Property Filter -->
+      <select name="property_id" onchange="this.form.submit()" style="padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff; min-width: 190px;">
+        <option value="all">All Properties ({{ properties.count }})</option>
+        {% for p in properties %}
+          <option value="{{ p.id }}" {% if selected_property_id == p.id|stringformat:"s" %}selected{% endif %}>
+            {{ p.title }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <!-- Search Box -->
+      <div style="position: relative; flex: 1; min-width: 220px; max-width: 380px;">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search seeker, phone, or request ID..." style="width: 100%; box-sizing: border-box; padding: 8px 12px 8px 32px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 10px; top: 11px; color: var(--color-text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+
+      <button type="submit" class="btn-secondary-light" style="padding: 8px 14px; font-size: 12.5px;">Search</button>
+
+      {% if q or selected_property_id and selected_property_id != 'all' or status_filter != 'all' %}
+        <a href="{% url 'owner_portal:booking_requests' %}" style="font-size: 12px; color: var(--color-text-muted); text-decoration: underline;">Clear Filters</a>
+      {% endif %}
+    </div>
+
+    <!-- Sort By -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 12px; color: var(--color-text-muted);">Sort:</span>
+      <select name="sort" onchange="this.form.submit()" style="padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff;">
+        <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Visit Date: Soonest First</option>
+        <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Visit Date: Latest First</option>
+        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Request Date: Newest First</option>
+      </select>
+    </div>
+  </form>
+</div>
+
+<!-- ========================================================= -->
+<!-- REQUESTS TABLE (LIMIT 5 WITH SCROLL RETENTION #bookingsList) -->
+<!-- ========================================================= -->
+<div id="bookingsList" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <table class="enquiries-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+    <thead>
+      <tr style="background: var(--color-bg); border-bottom: 1px solid var(--color-border);">
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">REQUEST ID &amp; TYPE</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">SEEKER DETAILS</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">PROPERTY &amp; ROOM</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">APPOINTMENT SCHEDULE</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">STATUS</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; text-align: right;">ACTIONS</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in visit_requests %}
+        <tr id="booking-row-{{ req.id }}" style="border-bottom: 1px solid var(--color-border); transition: background 0.15s ease;">
+          <!-- Request ID & Type -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <div style="font-weight: 700; font-size: 13px; color: var(--color-yale-blue); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+              {{ req.request_id }}
+            </div>
+            <div style="margin-top: 4px;">
+              {% if req.request_type == 'BOOKING' %}
+                <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: var(--radius-pill); background: #EDE9FE; color: #5B21B6; border: 1px solid #DDD6FE;">
+                  Room Booking
+                </span>
+              {% else %}
+                <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: var(--radius-pill); background: var(--color-powder-blue-light); color: var(--color-yale-blue);">
+                  Property Walkthrough
+                </span>
+              {% endif %}
+            </div>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 3px;">
+              Req: {{ req.created_at|date:"d M Y" }}
+            </div>
+          </td>
+
+          <!-- Seeker Details -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                {{ req.seeker_name|first|upper }}
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 13.5px; color: var(--color-text-main);">{{ req.seeker_name }}</div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px; font-size: 11.5px;">
+                  <a href="tel:{{ req.seeker_phone }}" style="color: var(--color-text-muted); text-decoration: none;">
+                    {{ req.seeker_phone }}
+                  </a>
+                  <a href="https://wa.me/91{{ req.seeker_phone|cut:'+'|cut:' '|cut:'-' }}" target="_blank" style="color: #059669; font-weight: 600; text-decoration: none;">
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Property & Room -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <div style="font-weight: 600; font-size: 13px; color: var(--color-text-main);">{{ req.property.title }}</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">
+              {{ req.property.locality.name }} &middot; {{ req.room.name|default:"General Room" }}
+            </div>
+          </td>
+
+          <!-- Scheduled Date / Time Slot -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <div style="font-weight: 700; font-size: 13px; color: var(--color-text-main);">
+              {{ req.scheduled_date|date:"D, d M Y" }}
+            </div>
+            <div style="font-size: 12px; color: var(--color-yale-blue); font-weight: 600; margin-top: 2px;">
+              {{ req.scheduled_time_slot }}
+            </div>
+            {% if req.notes %}
+              <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 3px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ req.notes }}">
+                Note: {{ req.notes }}
+              </div>
+            {% endif %}
+          </td>
+
+          <!-- Status Badge -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <span id="booking-badge-{{ req.id }}" style="font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-pill);
+              {% if req.status == 'PENDING' %}background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;
+              {% elif req.status == 'ACCEPTED' %}background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0;
+              {% elif req.status == 'RESCHEDULED' %}background: #EDE9FE; color: #5B21B6; border: 1px solid #DDD6FE;
+              {% elif req.status == 'COMPLETED' %}background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0;
+              {% elif req.status == 'CANCELLED' %}background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB;
+              {% else %}background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA;{% endif %}">
+              {{ req.get_status_display }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td style="padding: 14px 18px; text-align: right; vertical-align: middle;">
+            <div style="display: inline-flex; align-items: center; gap: 6px;">
+              <!-- If PENDING: Quick Accept / Reject -->
+              {% if req.status == 'PENDING' %}
+                <button type="button" class="btn-primary-yale" style="padding: 5px 10px; font-size: 11.5px; background: #059669; border-color: #059669;" title="Accept Walkthrough Visit" onclick="quickAction({{ req.id }}, 'accept')">
+                  Accept
+                </button>
+                <button type="button" class="btn-secondary-light" style="padding: 5px 8px; font-size: 11.5px; color: #DC2626;" title="Reject Request" onclick="openRejectModal({{ req.id }}, '{{ req.seeker_name|escapejs }}', '{{ req.request_id }}')">
+                  Reject
+                </button>
+              {% elif req.status == 'ACCEPTED' or req.status == 'RESCHEDULED' %}
+                <button type="button" class="btn-secondary-light" style="padding: 5px 9px; font-size: 11.5px; color: #059669;" title="Mark Completed" onclick="quickAction({{ req.id }}, 'complete')">
+                  &check; Completed
+                </button>
+              {% endif %}
+
+              <!-- Reschedule Button -->
+              {% if req.status != 'CANCELLED' and req.status != 'REJECTED' and req.status != 'COMPLETED' %}
+                <button type="button" class="btn-secondary-light" style="padding: 5px 8px; font-size: 11.5px;" title="Reschedule Date/Time" onclick="openRescheduleModal({{ req.id }}, '{{ req.seeker_name|escapejs }}', '{{ req.request_id }}', '{{ req.scheduled_date|date:"Y-m-d" }}', '{{ req.scheduled_time_slot }}')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </button>
+              {% endif %}
+
+              <!-- View Details Link -->
+              <a href="{% url 'owner_portal:booking_request_details' req.id %}" class="btn-secondary-light" style="padding: 5px 10px; font-size: 11.5px; text-decoration: none;" title="Open full visit details">
+                Details &nearr;
+              </a>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 48px; color: var(--color-text-muted);">
+            <div style="font-size: 15px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">No booking requests found</div>
+            <p style="font-size: 13px; margin: 0;">Try selecting a different status filter tab or clear your search criteria.</p>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGINATION CONTROLS (LIMIT 5 WITH SCROLL RETENTION #bookingsList) -->
+<!-- ========================================================= -->
+{% if paginator.num_pages > 1 %}
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-top: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Showing indicator -->
+  <div style="font-size: 13px; color: var(--color-text-muted);">
+    Showing <strong style="color: var(--color-text-main);">{{ page_obj.start_index }}</strong> to <strong style="color: var(--color-text-main);">{{ page_obj.end_index }}</strong> of <strong style="color: var(--color-text-main);">{{ paginator.count }}</strong> requests
+  </div>
+
+  <!-- Page Navigation Controls -->
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <!-- Previous Page -->
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        &larr; Previous
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        &larr; Previous
+      </span>
+    {% endif %}
+
+    <!-- Page Number Pills -->
+    {% for num in paginator.page_range %}
+      {% if num == page_obj.number %}
+        <span style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; background: var(--color-yale-blue); color: #FFFFFF;">
+          {{ num }}
+        </span>
+      {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="?page={{ num }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+           style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; color: var(--color-text-main); text-decoration: none; border: 1px solid var(--color-border); background: #FFFFFF;">
+          {{ num }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next Page -->
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if selected_property_id %}&property_id={{ selected_property_id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#bookingsList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        Next &rarr;
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        Next &rarr;
+      </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ========================================================= -->
+<!-- MODAL: RESCHEDULE VISIT -->
+<!-- ========================================================= -->
+<div id="rescheduleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 92%; max-width: 460px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin: 0;">Reschedule Visit Appointment</h3>
+      <button type="button" onclick="closeRescheduleModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+
+    <p style="font-size: 13px; color: var(--color-text-muted); margin: 0 0 16px 0;">
+      Updating appointment for <strong id="rescheduleSeeker"></strong> (<span id="rescheduleReqId"></span>).
+    </p>
+
+    <form id="rescheduleForm" onsubmit="submitReschedule(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reschedule">
+      <input type="hidden" name="request_id" id="rescheduleTargetId">
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">NEW VISIT DATE</label>
+        <input type="date" name="new_date" id="rescheduleDate" required style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;">
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">NEW TIME SLOT</label>
+        <select name="new_slot" id="rescheduleSlot" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff; font-family: inherit;">
+          <option value="10:00 AM - 11:00 AM">Morning: 10:00 AM – 11:00 AM</option>
+          <option value="11:00 AM - 12:00 PM">Morning: 11:00 AM – 12:00 PM</option>
+          <option value="02:00 PM - 03:00 PM">Afternoon: 02:00 PM – 03:00 PM</option>
+          <option value="04:00 PM - 05:00 PM">Evening: 04:00 PM – 05:00 PM</option>
+          <option value="05:30 PM - 06:30 PM">Evening: 05:30 PM – 06:30 PM</option>
+        </select>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary-light" onclick="closeRescheduleModal()" style="padding: 8px 14px; font-size: 12.5px;">Cancel</button>
+        <button type="submit" id="btnSubmitReschedule" class="btn-primary-yale" style="padding: 8px 18px; font-size: 12.5px; font-weight: 600;">Save &amp; Notify Seeker</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MODAL: REJECT REQUEST -->
+<!-- ========================================================= -->
+<div id="rejectModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 92%; max-width: 440px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: #DC2626; margin: 0;">Decline Request</h3>
+      <button type="button" onclick="closeRejectModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+
+    <p style="font-size: 13px; color: var(--color-text-muted); margin: 0 0 16px 0;">
+      Decline visit request from <strong id="rejectSeeker"></strong> (<span id="rejectReqId"></span>).
+    </p>
+
+    <form id="rejectForm" onsubmit="submitReject(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reject">
+      <input type="hidden" name="request_id" id="rejectTargetId">
+
+      <div style="margin-bottom: 18px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">REASON FOR DECLINE (OPTIONAL)</label>
+        <textarea name="reason" id="rejectReason" rows="2" placeholder="e.g. Room already occupied, visit timing out of policy..." style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary-light" onclick="closeRejectModal()" style="padding: 8px 14px; font-size: 12.5px;">Cancel</button>
+        <button type="submit" id="btnSubmitReject" class="btn-primary-yale" style="padding: 8px 18px; font-size: 12.5px; font-weight: 600; background: #DC2626; border-color: #DC2626;">Decline Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Show Toast
+function showToast(msg) {
+  const t = document.getElementById('ajaxToast');
+  const txt = document.getElementById('ajaxToastMsg');
+  txt.innerText = msg;
+  t.style.display = 'flex';
+  setTimeout(() => { t.style.display = 'none'; }, 4000);
+}
+
+// Quick Action (Accept or Complete via AJAX)
+function quickAction(reqId, actionType) {
+  const formData = new FormData();
+  formData.append('action', actionType);
+  formData.append('request_id', reqId);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showToast(data.message);
+      const badge = document.getElementById(`booking-badge-${reqId}`);
+      if (badge && data.status_display) {
+        badge.innerText = data.status_display;
+        if (data.new_status === 'ACCEPTED' || data.new_status === 'COMPLETED') {
+          badge.style.background = '#DCFCE7';
+          badge.style.color = '#166534';
+          badge.style.border = '1px solid #BBF7D0';
+        }
+      }
+      setTimeout(() => { window.location.reload(); }, 900);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    window.location.reload();
+  });
+}
+
+// Reschedule Modal
+function openRescheduleModal(reqId, seekerName, reqCode, curDate, curSlot) {
+  document.getElementById('rescheduleTargetId').value = reqId;
+  document.getElementById('rescheduleSeeker').innerText = seekerName;
+  document.getElementById('rescheduleReqId').innerText = reqCode;
+  document.getElementById('rescheduleDate').value = curDate || '';
+  if (curSlot) {
+    document.getElementById('rescheduleSlot').value = curSlot;
+  }
+  document.getElementById('rescheduleModal').style.display = 'flex';
+}
+
+function closeRescheduleModal() {
+  document.getElementById('rescheduleModal').style.display = 'none';
+}
+
+function submitReschedule(e) {
+  e.preventDefault();
+  const form = document.getElementById('rescheduleForm');
+  const btn = document.getElementById('btnSubmitReschedule');
+  btn.disabled = true;
+  btn.innerText = 'Updating...';
+
+  const formData = new FormData(form);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerText = 'Save & Notify Seeker';
+    closeRescheduleModal();
+    if (data.status === 'success') {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 900);
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    form.submit();
+  });
+}
+
+// Reject Modal
+function openRejectModal(reqId, seekerName, reqCode) {
+  document.getElementById('rejectTargetId').value = reqId;
+  document.getElementById('rejectSeeker').innerText = seekerName;
+  document.getElementById('rejectReqId').innerText = reqCode;
+  document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function closeRejectModal() {
+  document.getElementById('rejectModal').style.display = 'none';
+}
+
+function submitReject(e) {
+  e.preventDefault();
+  const form = document.getElementById('rejectForm');
+  const btn = document.getElementById('btnSubmitReject');
+  btn.disabled = true;
+  btn.innerText = 'Declining...';
+
+  const formData = new FormData(form);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerText = 'Decline Request';
+    closeRejectModal();
+    if (data.status === 'success') {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 900);
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    form.submit();
+  });
+}
+</script>
+
+<style>
+.enq-filter-tab {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  border-radius: 9999px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  color: var(--color-text-muted) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.15s ease !important;
+  cursor: pointer;
+}
+.enq-filter-tab:hover {
+  background: var(--color-bg) !important;
+  color: var(--color-text-main) !important;
+  text-decoration: none !important;
+  border-color: var(--color-border) !important;
+}
+.enq-filter-tab.active {
+  background: var(--color-yale-blue) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2) !important;
+  border-color: var(--color-yale-blue) !important;
+}
+.enq-filter-tab:visited {
+  color: var(--color-text-muted) !important;
+}
+.enq-filter-tab.active:visited {
+  color: #FFFFFF !important;
+}
+</style>
+{% endblock %}

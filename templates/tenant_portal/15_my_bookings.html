@@ -1,0 +1,610 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}My Bookings &amp; Rental Requests — KiraayaGrid{% endblock %}
+
+{% block content %}
+<!-- HEADER ROW -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+      My Bookings &amp; Rental Requests
+    </h1>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Track formal tenancy agreements, landlord approvals, deposit receipts, and move-in gate passes.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <button type="button" onclick="openNewBookingModal()" class="btn-search-primary" style="padding: 9px 18px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span>Request New Tenancy</span>
+    </button>
+    <a href="{% url 'tenant_portal:find_accommodation' %}" class="btn-outline-pill" style="padding: 9px 16px; font-size: 13px; text-decoration: none;">
+      Explore More Stays
+    </a>
+  </div>
+</div>
+
+<!-- POLICY CLARIFICATION NOTICE (AS SPECIFIED BY USER) -->
+<div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--radius-md); padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; margin-bottom: 24px;">
+  <div style="width: 24px; height: 24px; border-radius: 50%; background: #059669; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; margin-top: 2px;">
+    &check;
+  </div>
+  <div>
+    <div style="font-size: 13.5px; font-weight: 700; color: #065F46;">Zero Brokerage &amp; Direct Tenancy Policy</div>
+    <div style="font-size: 12.5px; color: #047857; margin-top: 2px; line-height: 1.5;">
+      Enquiring or scheduling a walkthrough does not automatically lock a room. A formal rental booking requires mutual owner acceptance, digital lease verification, and token deposit confirmation.
+    </div>
+  </div>
+</div>
+
+<!-- SEGMENTED STATUS TABS & SEARCH -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+  <!-- Tabs -->
+  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: #FFFFFF; padding: 6px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+    <a href="?status=ALL" class="enq-tab {% if status_tab == 'ALL' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if status_tab == 'ALL' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      All Bookings ({{ count_all }})
+    </a>
+    <a href="?status=REQUESTED" class="enq-tab {% if status_tab == 'REQUESTED' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if status_tab == 'REQUESTED' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Awaiting Host ({{ count_requested }})
+    </a>
+    <a href="?status=ACCEPTED" class="enq-tab {% if status_tab == 'ACCEPTED' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if status_tab == 'ACCEPTED' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Accepted &amp; Payment ({{ count_accepted }})
+    </a>
+    <a href="?status=CONFIRMED" class="enq-tab {% if status_tab == 'CONFIRMED' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if status_tab == 'CONFIRMED' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Confirmed ({{ count_confirmed }})
+    </a>
+    <a href="?status=CANCELLED" class="enq-tab {% if status_tab == 'CANCELLED' %}active{% endif %}" style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 700; text-decoration: none; {% if status_tab == 'CANCELLED' %}background: var(--color-powder-blue); color: #FFFFFF;{% else %}color: var(--color-text-muted);{% endif %}">
+      Cancelled ({{ count_cancelled }})
+    </a>
+  </div>
+
+  <!-- Search Filter -->
+  <form method="GET" action="{% url 'tenant_portal:my_bookings' %}" style="display: flex; align-items: center; gap: 8px;">
+    {% if status_tab != 'ALL' %}
+      <input type="hidden" name="status" value="{{ status_tab }}">
+    {% endif %}
+    <input type="text" name="q" value="{{ search_query }}" placeholder="Search by stay, ID, or host..." style="padding: 8px 14px; border-radius: 8px; border: 1px solid var(--color-border); font-size: 12.5px; outline: none; width: 220px; background: #FFFFFF;">
+    <button type="submit" class="btn-search-primary" style="padding: 8px 14px; font-size: 12.5px;">
+      Search
+    </button>
+  </form>
+</div>
+
+<!-- BOOKINGS LIST -->
+<div style="display: flex; flex-direction: column; gap: 22px;">
+  
+  {% for b in bookings %}
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px 28px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Top Row: Booking ID, Status Badge & Timestamp -->
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span style="font-size: 16px; font-weight: 800; font-family: ui-monospace, monospace; color: var(--color-text-main); background: #F8FAFC; border: 1px solid var(--color-border); padding: 4px 10px; border-radius: 6px;">
+            {{ b.booking_id }}
+          </span>
+          
+          <span style="font-size: 12px; font-weight: 700; background: {{ b.status_meta.badge_bg }}; color: {{ b.status_meta.badge_color }}; border: 1px solid {{ b.status_meta.badge_border }}; padding: 4px 12px; border-radius: var(--radius-pill); display: inline-flex; align-items: center; gap: 5px;">
+            <span>{{ b.status_meta.icon }}</span>
+            <span>{{ b.status_meta.label }}</span>
+          </span>
+
+          {% if b.payment_status == 'PAID' %}
+            <span style="font-size: 11px; font-weight: 700; background: #DCFCE7; color: #166534; padding: 3px 8px; border-radius: 4px;">
+              ✓ Token Paid (Ref: {{ b.payment_reference }})
+            </span>
+          {% endif %}
+        </div>
+
+        <div style="font-size: 12px; color: var(--color-text-muted);">
+          Submitted: <strong>{{ b.created_at|date:"d M Y" }}</strong>
+        </div>
+      </div>
+
+      <!-- Middle 3-Column Dossier -->
+      <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1fr; gap: 20px; align-items: center;">
+        
+        <!-- 1. Property & Room Info -->
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <img src="{{ b.display_photo }}" alt="{{ b.property.title }}" style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.06);">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #059669; text-transform: uppercase;">Verified Direct Tenancy</div>
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 2px 0 3px 0;">{{ b.property.title }}</h3>
+            <div style="font-size: 12px; color: var(--color-text-muted);">
+              {{ b.locality_str }} &bull; Host: <strong>{{ b.host_name }}</strong>
+            </div>
+            <div style="font-size: 12.5px; font-weight: 700; color: #0F3E4D; margin-top: 4px;">
+              {{ b.sharing_type }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Financial Breakdown -->
+        <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: 12px; padding: 14px 18px; font-size: 12.5px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--color-text-muted);">Monthly Rent:</span>
+            <strong>₹{{ b.monthly_rent|floatformat:0 }} / mo</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--color-text-muted);">Security Deposit:</span>
+            <strong>₹{{ b.security_deposit|floatformat:0 }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--color-border); padding-top: 4px;">
+            <span style="color: var(--color-text-muted);">Platform Brokerage:</span>
+            <strong style="color: #059669;">₹0 (ZERO BROKERAGE)</strong>
+          </div>
+        </div>
+
+        <!-- 3. Move-in & Token Status -->
+        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase;">CONFIRMED MOVE-IN</div>
+          <div style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin-top: 2px;">
+            {{ b.move_in_date|date:"d M Y" }}
+          </div>
+          
+          {% if b.payment_status == 'PAID' %}
+            <span style="font-size: 11px; font-weight: 700; color: #065F46; background: #D1FAE5; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-top: 6px;">
+              Deposit Locked &bull; Room Reserved
+            </span>
+          {% elif b.booking_status == 'ACCEPTED' or b.booking_status == 'PAYMENT_PENDING' %}
+            <span style="font-size: 11px; font-weight: 700; color: #B45309; background: #FEF3C7; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-top: 6px;">
+              Token Deposit Due (₹5,000)
+            </span>
+          {% else %}
+            <span style="font-size: 11px; color: var(--color-text-muted); background: #F1F5F9; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-top: 6px;">
+              No Payment Due Yet
+            </span>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <!-- Notes / Host Remark Section -->
+      {% if b.tenant_notes or b.owner_reply %}
+        <div style="background: #FAFAFA; border: 1px solid var(--color-border-subtle); border-radius: 10px; padding: 12px 16px; font-size: 12px; display: flex; flex-direction: column; gap: 6px;">
+          {% if b.tenant_notes %}
+            <div><strong style="color: var(--color-text-main);">Tenant Special Request:</strong> <span style="color: var(--color-text-muted);">"{{ b.tenant_notes }}"</span></div>
+          {% endif %}
+          {% if b.owner_reply %}
+            <div><strong style="color: #0F3E4D;">Landlord Instruction / Reply:</strong> <span style="color: #1E3A8A;">"{{ b.owner_reply }}"</span></div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <!-- Bottom Action Bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--color-border-subtle); flex-wrap: wrap; gap: 12px;">
+        <div style="font-size: 12.5px; color: var(--color-text-muted);">
+          {{ b.status_meta.summary }}
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          {% if b.is_confirmed %}
+            <button type="button" onclick="openAgreementModal('{{ b.booking_id }}', '{{ b.property.title|escapejs }}', '{{ b.host_name|escapejs }}', '{{ b.move_in_date|date:"d M Y" }}', '{{ b.monthly_rent|floatformat:0 }}', '{{ b.security_deposit|floatformat:0 }}', '{{ b.payment_reference }}')" class="btn-search-primary" style="padding: 8px 16px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span>Download Tenancy Slip</span>
+            </button>
+            <a href="tel:{{ b.host_phone }}" style="padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); text-decoration: none;">
+              📞 Call Host
+            </a>
+
+          {% elif b.can_pay %}
+            <button type="button" onclick="openPayTokenModal('{{ b.booking_id }}', '{{ b.property.title|escapejs }}', '{{ b.monthly_rent|floatformat:0 }}')" style="padding: 8px 18px; border: none; border-radius: 8px; background: #059669; color: #FFFFFF; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              <span>💳 Pay ₹5,000 Token Deposit</span>
+            </button>
+            <a href="{% url 'tenant_portal:my_enquiries' %}" style="padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); text-decoration: none;">
+              Chat with Host
+            </a>
+            <button type="button" onclick="openCancelBookingModal('{{ b.booking_id }}', '{{ b.property.title|escapejs }}')" style="padding: 8px 14px; border: 1px solid #FECACA; border-radius: 8px; background: #FEF2F2; font-size: 12.5px; font-weight: 600; color: #DC2626; cursor: pointer;">
+              Cancel
+            </button>
+
+          {% elif b.can_cancel %}
+            <a href="{% url 'tenant_portal:my_enquiries' %}" style="padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); text-decoration: none;">
+              Chat with Host
+            </a>
+            <button type="button" onclick="openCancelBookingModal('{{ b.booking_id }}', '{{ b.property.title|escapejs }}')" style="padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; color: #DC2626; cursor: pointer;">
+              Cancel Request
+            </button>
+          {% else %}
+            <a href="{% url 'tenant_portal:find_accommodation' %}" class="btn-search-primary" style="padding: 8px 16px; font-size: 12.5px; text-decoration: none;">
+              Explore Other Stays
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  {% empty %}
+    <!-- Empty State -->
+    <div style="background: #FFFFFF; border: 1px dashed var(--color-border); border-radius: var(--radius-lg); padding: 50px 24px; text-align: center;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px auto;">
+        📋
+      </div>
+      <h3 style="font-size: 18px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">No Bookings in this Category</h3>
+      <p style="font-size: 13.5px; color: var(--color-text-muted); margin: 0 0 20px 0;">
+        Found a place you like? Submit a direct booking request to receive owner lease acceptance.
+      </p>
+      <button type="button" onclick="openNewBookingModal()" class="btn-search-primary" style="padding: 10px 20px; font-size: 13px;">
+        Request Tenancy Now
+      </button>
+    </div>
+  {% endfor %}
+
+  <!-- PAGINATION (MAX 5 PER PAGE) -->
+  {% if count_all > 0 %}
+  <div style="margin-top: 24px; padding: 14px 20px; border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; font-size: 13px; color: var(--color-text-muted); flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);">
+    <div>
+      Showing <strong>{{ page_obj.start_index }}</strong> to <strong>{{ page_obj.end_index }}</strong> of <strong>{{ paginator.count }}</strong> tenancy bookings (Limit 5 per page)
+    </div>
+
+    <div style="display: flex; gap: 6px; align-items: center;">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        &larr; Previous
+      </span>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+      <span style="padding: 6px 12px; border-radius: var(--radius-pill); background: var(--color-powder-blue); color: #0F172A; font-weight: 800;">
+        {{ num }}
+      </span>
+      {% else %}
+      <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 600; text-decoration: none;">
+        {{ num }}
+      </a>
+      {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+         style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; color: var(--color-text-main); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </a>
+      {% else %}
+      <span style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #F8FAFC; color: #A0AEC0; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;">
+        Next &rarr;
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- MODAL 1: REQUEST NEW BOOKING -->
+<div id="newBookingModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">Request Rental Booking</h3>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin: 4px 0 0 0;">Zero Brokerage &bull; Direct Landlord Acceptance</p>
+      </div>
+      <button type="button" onclick="closeNewBookingModal()" style="border: none; background: #F1F5F9; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: #64748B;">✕</button>
+    </div>
+
+    <form onsubmit="handleNewBookingSubmit(event)" style="padding: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Select Property</label>
+          <select id="bookingPropertySelect" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            {% for p in available_properties %}
+              <option value="{{ p.id }}">{{ p.title }} &bull; {{ p.locality.name }} ({{ p.city.name }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Preferred Room / Sharing Type</label>
+          <select id="bookingSharingType" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            <option value="Private Single Room · PG">Private Single Room &bull; PG</option>
+            <option value="Twin Sharing Bed · Co-living">Twin Sharing Bed &bull; Co-living</option>
+            <option value="Studio Apartment · Flat">Studio Apartment &bull; Flat</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Target Move-in Date</label>
+          <input type="date" id="bookingMoveInDate" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Notes / Questions for Host (Optional)</label>
+          <textarea id="bookingNotes" rows="2" placeholder="e.g. Requesting room on 2nd floor, vegetarian meals only." style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none; resize: none;"></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="button" onclick="closeNewBookingModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="submit" id="submitBookingBtn" class="btn-search-primary" style="flex: 2; padding: 11px; font-size: 13px; font-weight: 700;">
+          Submit Tenancy Request
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL 2: PAY TOKEN DEPOSIT -->
+<div id="payTokenModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 440px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">Confirm Tenancy Token</h3>
+        <p id="payTokenSubtitle" style="font-size: 12px; color: var(--color-text-muted); margin: 4px 0 0 0;">Olive Co-living</p>
+      </div>
+      <button type="button" onclick="closePayTokenModal()" style="border: none; background: #F1F5F9; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: #64748B;">✕</button>
+    </div>
+
+    <div style="padding: 24px;">
+      <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; margin-bottom: 20px; font-size: 13px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: var(--color-text-muted);">Token Lock Amount:</span>
+          <strong style="color: #059669; font-size: 16px;">₹5,000</strong>
+        </div>
+        <div style="font-size: 11.5px; color: var(--color-text-muted); line-height: 1.4;">
+          This token is 100% adjusted against your first month's rent. No extra transaction fees.
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; margin-bottom: 20px;">
+        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #BFDBFE; background: #EFF6FF; border-radius: 8px; cursor: pointer;">
+          <input type="radio" name="payMethod" checked>
+          <span style="font-weight: 700; color: #1E40AF;">⚡ Instant UPI (Google Pay, PhonePe, Paytm)</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer;">
+          <input type="radio" name="payMethod">
+          <span style="font-weight: 600; color: var(--color-text-main);">Credit / Debit Card &bull; Netbanking</span>
+        </label>
+      </div>
+
+      <input type="hidden" id="payBookingId">
+
+      <div style="display: flex; gap: 12px;">
+        <button type="button" onclick="closePayTokenModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="button" onclick="submitPayToken()" id="confirmPayBtn" style="flex: 2; padding: 11px; border: none; border-radius: 10px; background: #059669; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Pay ₹5,000 &amp; Confirm Room
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 3: CANCEL BOOKING -->
+<div id="cancelBookingModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1); padding: 26px;">
+    <div style="width: 48px; height: 48px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 16px auto;">
+      ⚠️
+    </div>
+    <h3 style="font-size: 18px; font-weight: 800; text-align: center; color: var(--color-text-main); margin: 0 0 8px 0;">
+      Cancel Booking Request?
+    </h3>
+    <p id="cancelBookingText" style="font-size: 13px; color: var(--color-text-muted); text-align: center; margin: 0 0 22px 0; line-height: 1.5;">
+      Are you sure you want to cancel this booking request? The landlord will be notified immediately.
+    </p>
+
+    <input type="hidden" id="cancelTargetId">
+
+    <div style="display: flex; gap: 12px;">
+      <button type="button" onclick="closeCancelBookingModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Keep Booking
+      </button>
+      <button type="button" onclick="confirmCancelBooking()" id="confirmCancelBookingBtn" style="flex: 1; padding: 11px; border: none; border-radius: 10px; background: #DC2626; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Yes, Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 4: OFFICIAL TENANCY SLIP / AGREEMENT CERTIFICATE -->
+<div id="agreementModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 540px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <div style="background: #0F3E4D; color: #FFFFFF; padding: 24px; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #93B5C6; text-transform: uppercase;">KIRAAYAGRID DIGITAL TENANCY SLIP</div>
+        <h3 id="certTitle" style="font-size: 20px; font-weight: 800; margin: 4px 0 0 0;">The Palm House</h3>
+      </div>
+      <button type="button" onclick="closeAgreementModal()" style="border: none; background: rgba(255,255,255,0.15); color: #FFFFFF; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer;">✕</button>
+    </div>
+
+    <div style="padding: 24px; font-size: 13px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+        <span style="color: var(--color-text-muted);">Tenancy Reference ID:</span>
+        <strong id="certBookingId" style="font-family: ui-monospace, monospace; color: #0F3E4D;">BK-84102</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+        <span style="color: var(--color-text-muted);">Tenant Full Name:</span>
+        <strong>Aarav Sharma</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+        <span style="color: var(--color-text-muted);">Property Landlord:</span>
+        <strong id="certHost">Arjun Mehta</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+        <span style="color: var(--color-text-muted);">Confirmed Move-in Date:</span>
+        <strong id="certMoveIn" style="color: #059669;">1 Dec 2026</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+        <span style="color: var(--color-text-muted);">Monthly Rent / Deposit:</span>
+        <strong id="certFinancials">₹14,500 / ₹29,000</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+        <span style="color: var(--color-text-muted);">Token Reference:</span>
+        <strong id="certTxn" style="font-family: ui-monospace, monospace; color: #059669;">TXN-984210</strong>
+      </div>
+
+      <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px; font-size: 12px; color: #166534; line-height: 1.45;">
+        🛡️ <strong>KiraayaGrid Shield Certified:</strong> Present this slip on move-in day at the property security gate to collect your room keycard and move-in welcome kit.
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 10px;">
+        <button type="button" onclick="window.print()" class="btn-search-primary" style="flex: 1; padding: 11px; font-size: 13px;">
+          Print Digital Tenancy Slip
+        </button>
+        <button type="button" onclick="closeAgreementModal()" style="padding: 11px 20px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // New Booking Modal
+  function openNewBookingModal() {
+    const modal = document.getElementById('newBookingModal');
+    modal.style.display = 'flex';
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    document.getElementById('bookingMoveInDate').value = nextWeek.toISOString().split('T')[0];
+  }
+  function closeNewBookingModal() {
+    document.getElementById('newBookingModal').style.display = 'none';
+  }
+
+  function handleNewBookingSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBookingBtn');
+    btn.disabled = true;
+    btn.innerText = 'Submitting...';
+
+    const formData = new FormData();
+    formData.append('property_id', document.getElementById('bookingPropertySelect').value);
+    formData.append('sharing_type', document.getElementById('bookingSharingType').value);
+    formData.append('move_in_date', document.getElementById('bookingMoveInDate').value);
+    formData.append('notes', document.getElementById('bookingNotes').value);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_create_booking" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Tenancy Request';
+      if (data.status === 'success') {
+        closeNewBookingModal();
+        showTenantToast(data.message);
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        alert(data.message || 'Error submitting booking request');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Submit Tenancy Request';
+      alert('Network error');
+    });
+  }
+
+  // Pay Token Modal
+  function openPayTokenModal(bookingId, title, rent) {
+    document.getElementById('payBookingId').value = bookingId;
+    document.getElementById('payTokenSubtitle').innerText = `${title} • ${bookingId}`;
+    document.getElementById('payTokenModal').style.display = 'flex';
+  }
+  function closePayTokenModal() {
+    document.getElementById('payTokenModal').style.display = 'none';
+  }
+
+  function submitPayToken() {
+    const bookingId = document.getElementById('payBookingId').value;
+    const btn = document.getElementById('confirmPayBtn');
+    btn.disabled = true;
+    btn.innerText = 'Processing Payment...';
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/booking/pay-token/' + bookingId + '/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Pay ₹5,000 & Confirm Room';
+      if (data.status === 'success') {
+        closePayTokenModal();
+        showTenantToast('Payment confirmed! Reference: ' + data.payment_reference);
+        setTimeout(() => { window.location.reload(); }, 1200);
+      } else {
+        alert(data.message || 'Payment processing failed');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Pay ₹5,000 & Confirm Room';
+      alert('Network error');
+    });
+  }
+
+  // Cancel Booking Modal
+  function openCancelBookingModal(bookingId, title) {
+    document.getElementById('cancelTargetId').value = bookingId;
+    document.getElementById('cancelBookingText').innerText = `Are you sure you want to cancel booking ${bookingId} for ${title}?`;
+    document.getElementById('cancelBookingModal').style.display = 'flex';
+  }
+  function closeCancelBookingModal() {
+    document.getElementById('cancelBookingModal').style.display = 'none';
+  }
+
+  function confirmCancelBooking() {
+    const bookingId = document.getElementById('cancelTargetId').value;
+    const btn = document.getElementById('confirmCancelBookingBtn');
+    btn.disabled = true;
+    btn.innerText = 'Cancelling...';
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('/tenant/api/booking/cancel/' + bookingId + '/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Yes, Cancel';
+      if (data.status === 'success') {
+        closeCancelBookingModal();
+        showTenantToast(data.message);
+        setTimeout(() => { window.location.reload(); }, 1000);
+      } else {
+        alert(data.message || 'Error cancelling booking');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Yes, Cancel';
+      alert('Network error');
+    });
+  }
+
+  // Tenancy Agreement Modal
+  function openAgreementModal(bookingId, title, host, moveIn, rent, deposit, txn) {
+    document.getElementById('certTitle').innerText = title;
+    document.getElementById('certBookingId').innerText = bookingId;
+    document.getElementById('certHost').innerText = host;
+    document.getElementById('certMoveIn').innerText = moveIn;
+    document.getElementById('certFinancials').innerText = `₹${rent} / mo · Deposit: ₹${deposit}`;
+    document.getElementById('certTxn').innerText = txn || 'PENDING';
+    document.getElementById('agreementModal').style.display = 'flex';
+  }
+  function closeAgreementModal() {
+    document.getElementById('agreementModal').style.display = 'none';
+  }
+</script>
+{% endblock %}

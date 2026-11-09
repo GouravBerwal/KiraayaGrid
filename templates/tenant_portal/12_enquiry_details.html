@@ -1,0 +1,607 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}Enquiry #{{ enquiry.id }} — {{ enquiry.property.title }} — KiraayaGrid{% endblock %}
+
+{% block content %}
+<!-- BREADCRUMB & HEADER ACTION BAR -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <a href="{% url 'tenant_portal:my_enquiries' %}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--color-text-muted); text-decoration: none; padding: 6px 12px; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 8px; transition: all 0.2s;">
+      <span>&larr;</span>
+      <span>Back to My Enquiries</span>
+    </a>
+    <span style="font-size: 12px; font-weight: 700; color: var(--color-text-dim); background: #F1F5F9; padding: 5px 10px; border-radius: 6px; font-family: ui-monospace, monospace;">
+      ENQ-{{ enquiry.id|stringformat:"05d" }}
+    </span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <!-- Host Phone Trigger -->
+    <a href="tel:{{ owner_phone }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--color-border); border-radius: 8px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; color: var(--color-text-main); text-decoration: none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+      <span>Call Host</span>
+    </a>
+
+    <!-- Request Walkthrough Button -->
+    <button type="button" onclick="openScheduleWalkthroughModal()" class="btn-search-primary" style="padding: 8px 16px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>Schedule Walkthrough</span>
+    </button>
+
+    {% if not is_closed %}
+      <button type="button" onclick="openCloseModal()" style="padding: 8px 14px; border: 1px solid #FECACA; border-radius: 8px; background: #FEF2F2; font-size: 12.5px; font-weight: 600; color: #DC2626; cursor: pointer; transition: all 0.2s;">
+        Close Enquiry
+      </button>
+    {% else %}
+      <button type="button" onclick="reopenEnquiry()" style="padding: 8px 14px; border: 1px solid #BFDBFE; border-radius: 8px; background: #EFF6FF; font-size: 12.5px; font-weight: 600; color: #1D4ED8; cursor: pointer;">
+        Reopen Enquiry
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+{% if is_closed %}
+  <!-- CLOSED NOTICE BANNER -->
+  <div style="background: #F8FAFC; border: 1px solid var(--color-border); border-left: 4px solid #64748B; border-radius: 10px; padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+    <div style="font-size: 13px; color: var(--color-text-main);">
+      <strong>This enquiry thread has been closed.</strong> You can review past messages or reopen the discussion anytime.
+    </div>
+    <button type="button" onclick="reopenEnquiry()" style="padding: 5px 12px; font-size: 12px; font-weight: 700; color: #1E40AF; background: #DBEAFE; border: none; border-radius: 6px; cursor: pointer;">
+      Reopen Discussion
+    </button>
+  </div>
+{% endif %}
+
+<!-- 2-COLUMN LAYOUT: CHAT STREAM (LEFT 65%) + PROPERTY DOSSIER (RIGHT 35%) -->
+<div style="display: grid; grid-template-columns: 1.65fr 1fr; gap: 24px; align-items: start;">
+
+  <!-- LEFT: CHAT CONTAINER -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); display: flex; flex-direction: column; overflow: hidden; min-height: 600px;">
+    
+    <!-- Chat Topbar -->
+    <div style="padding: 18px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; background: #FFFFFF;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="position: relative;">
+          <div style="width: 46px; height: 46px; border-radius: 50%; background: #0F3E4D; color: #FFFFFF; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(15,62,77,0.2);">
+            {{ owner_initials }}
+          </div>
+          <div style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 50%; background: #10B981; border: 2px solid #FFFFFF;"></div>
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2 style="font-size: 16px; font-weight: 800; color: var(--color-text-main); margin: 0;">{{ owner_name }}</h2>
+            <span style="font-size: 10.5px; font-weight: 700; background: #E0F2FE; color: #0369A1; padding: 2px 8px; border-radius: 12px;">Verified Host</span>
+          </div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+            {{ enquiry.property.title }} &bull; Indiranagar &bull; <span style="color: #059669; font-weight: 600;">Responds within 1 hour</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Status Pill -->
+      <span style="font-size: 11.5px; font-weight: 700; background: {{ status_meta.bg }}; color: {{ status_meta.color }}; border: 1px solid {{ status_meta.border }}; padding: 5px 12px; border-radius: var(--radius-pill);">
+        {{ status_meta.label }}
+      </span>
+    </div>
+
+    <!-- Message Bubble Stream Box -->
+    <div id="chatMessagesContainer" style="flex: 1; padding: 24px; overflow-y: auto; max-height: 460px; display: flex; flex-direction: column; gap: 16px; background: #F8FAFC;">
+      
+      <!-- System Initial Notice -->
+      <div style="align-self: center; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 20px; padding: 6px 16px; font-size: 11.5px; color: var(--color-text-muted); display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>End-to-end encrypted inquiry thread started on {{ enquiry.created_at|date:"d M Y, h:i A" }}</span>
+      </div>
+
+      <!-- Loop over DB Messages -->
+      {% for msg in messages %}
+        {% if msg.sender_type == 'SEEKER' %}
+          <!-- Tenant / Seeker Message -->
+          <div style="align-self: flex-end; max-width: 78%; display: flex; flex-direction: column; align-items: flex-end;">
+            <div style="background: #0F3E4D; color: #FFFFFF; padding: 12px 18px; border-radius: 18px 18px 4px 18px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 2px 5px rgba(15,62,77,0.15); word-break: break-word;">
+              {{ msg.message_text }}
+            </div>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+              <span>You &bull; {{ msg.created_at|date:"h:i A" }}</span>
+              <span style="color: #059669; font-weight: 700;">&check;&check;</span>
+            </div>
+          </div>
+
+        {% elif msg.sender_type == 'OWNER' %}
+          <!-- Landlord / Host Message -->
+          <div style="align-self: flex-start; max-width: 78%; display: flex; gap: 10px;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: #E2E8F0; color: #0F3E4D; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+              {{ owner_initials }}
+            </div>
+            <div style="display: flex; flex-direction: column;">
+              <div style="background: #FFFFFF; color: var(--color-text-main); border: 1px solid var(--color-border); padding: 12px 18px; border-radius: 18px 18px 18px 4px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,0.04); word-break: break-word;">
+                {{ msg.message_text }}
+              </div>
+              <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px;">
+                {{ owner_name }} &bull; {{ msg.created_at|date:"h:i A" }}
+              </div>
+            </div>
+          </div>
+
+        {% else %}
+          <!-- System Message -->
+          <div style="align-self: center; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 14px; padding: 7px 16px; font-size: 12px; color: #1E40AF; display: inline-flex; align-items: center; gap: 6px;">
+            <span>ℹ️</span>
+            <span>{{ msg.message_text }}</span>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Quick Question Prompt Chips -->
+    <div style="padding: 10px 20px; background: #FFFFFF; border-top: 1px solid var(--color-border); display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">
+      <button type="button" onclick="insertPrompt('Is food included in the monthly rent?')" style="background: #F1F5F9; border: 1px solid var(--color-border); border-radius: 14px; padding: 5px 12px; font-size: 11.5px; font-weight: 600; color: var(--color-text-main); cursor: pointer; transition: background 0.2s;">
+        🍲 Food included?
+      </button>
+      <button type="button" onclick="insertPrompt('Can I schedule a walkthrough visit this weekend?')" style="background: #F1F5F9; border: 1px solid var(--color-border); border-radius: 14px; padding: 5px 12px; font-size: 11.5px; font-weight: 600; color: var(--color-text-main); cursor: pointer;">
+        📅 Weekend walkthrough?
+      </button>
+      <button type="button" onclick="insertPrompt('What is the minimum lock-in period and security deposit?')" style="background: #F1F5F9; border: 1px solid var(--color-border); border-radius: 14px; padding: 5px 12px; font-size: 11.5px; font-weight: 600; color: var(--color-text-main); cursor: pointer;">
+        🔐 Lock-in period?
+      </button>
+      <button type="button" onclick="insertPrompt('Is high-speed Wi-Fi and power backup included?')" style="background: #F1F5F9; border: 1px solid var(--color-border); border-radius: 14px; padding: 5px 12px; font-size: 11.5px; font-weight: 600; color: var(--color-text-main); cursor: pointer;">
+        ⚡ Wi-Fi &amp; Backup?
+      </button>
+    </div>
+
+    <!-- Message Composer -->
+    <form id="tenantMessageForm" onsubmit="handleSendMessage(event)" style="display: flex; gap: 10px; padding: 16px 20px; background: #FFFFFF; border-top: 1px solid var(--color-border); align-items: center;">
+      {% csrf_token %}
+      <input type="text" id="tenantReplyInput" placeholder="Type your message to {{ owner_name }}..." autocomplete="off" style="flex: 1; padding: 12px 18px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #F8FAFC; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--color-powder-blue)'" onblur="this.style.borderColor='var(--color-border)'" {% if is_closed %}disabled placeholder="This thread is closed. Click Reopen above to reply."{% endif %}>
+      
+      <button type="submit" id="sendBtn" class="btn-search-primary" style="padding: 11px 22px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" {% if is_closed %}disabled style="opacity: 0.5;"{% endif %}>
+        <span>Send</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- RIGHT: PROPERTY DOSSIER & AUDIT TIMELINE -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- Property Snapshot Card -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card);">
+      <div style="position: relative; height: 160px;">
+        <img src="{{ prop_photo }}" alt="{{ enquiry.property.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+        <div style="position: absolute; top: 12px; left: 12px; background: rgba(15, 62, 77, 0.85); backdrop-filter: blur(8px); color: #FFFFFF; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700;">
+          ₹{{ rent|floatformat:0 }} / mo
+        </div>
+        <div style="position: absolute; bottom: 12px; right: 12px; background: #059669; color: #FFFFFF; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">
+          Verified Listing &bull; Zero Brokerage
+        </div>
+      </div>
+
+      <div style="padding: 20px;">
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0 0 4px 0;">
+          {{ enquiry.property.title }}
+        </h3>
+        <div style="font-size: 12.5px; color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; margin-bottom: 16px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>{{ locality_name }}, {{ city_name }}</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; border-top: 1px solid var(--color-border-subtle); padding-top: 14px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--color-text-muted);">Selected Category:</span>
+            <strong>{{ room_type }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--color-text-muted);">Offered Monthly Rent:</span>
+            <strong>₹{{ rent|floatformat:0 }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--color-text-muted);">Security Deposit:</span>
+            <strong>₹{{ deposit|floatformat:0 }} (Refundable)</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--color-text-muted);">Target Move-In:</span>
+            <strong style="color: #0F3E4D;">{{ enquiry.preferred_move_in|date:"d M Y"|default:"Immediate" }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--color-text-muted);">Brokerage:</span>
+            <strong style="color: #059669;">₹0 (No Brokerage)</strong>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; border-top: 1px solid var(--color-border-subtle); padding-top: 14px;">
+          <a href="{% url 'tenant_portal:find_accommodation' %}?q={{ enquiry.property.title|urlencode }}" class="btn-outline-pill" style="display: block; text-align: center; text-decoration: none; padding: 8px; font-size: 12.5px;">
+            View Full Stay Details &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% if related_visit %}
+      <!-- Active Walkthrough Banner -->
+      <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--radius-lg); padding: 18px 20px; box-shadow: var(--shadow-card);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #166534; letter-spacing: 0.5px;">Linked Walkthrough Visit</span>
+          <span style="font-size: 11px; font-weight: 800; background: #DCFCE7; color: #166534; padding: 2px 8px; border-radius: 4px;">{{ related_visit.status }}</span>
+        </div>
+        <div style="font-size: 14px; font-weight: 800; color: #14532D;">
+          {{ related_visit.scheduled_date|date:"l, d M Y" }}
+        </div>
+        <div style="font-size: 12.5px; color: #166534; margin-top: 2px;">
+          Slot: {{ related_visit.scheduled_time_slot }}
+        </div>
+        <div style="margin-top: 12px;">
+          <a href="{% url 'tenant_portal:visit_details' related_visit.request_id %}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #059669; text-decoration: none;">
+            <span>Open Visit Pass &bull; {{ related_visit.request_id }} &rarr;</span>
+          </a>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Status Timeline Card -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-card);">
+      <h4 style="font-size: 13.5px; font-weight: 800; color: var(--color-text-main); margin: 0 0 16px 0;">
+        Enquiry Progress Timeline
+      </h4>
+      <div style="display: flex; flex-direction: column; gap: 18px; font-size: 12px; position: relative;">
+        
+        <!-- Step 1: Enquiry Submitted -->
+        <div style="display: flex; gap: 12px;">
+          <div style="width: 22px; height: 22px; border-radius: 50%; background: #059669; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">
+            ✓
+          </div>
+          <div>
+            <div style="font-weight: 800; color: var(--color-text-main);">Enquiry Submitted</div>
+            <div style="color: var(--color-text-muted);">{{ enquiry.created_at|date:"d M Y, h:i A" }}</div>
+          </div>
+        </div>
+
+        <!-- Step 2: Host Response -->
+        <div style="display: flex; gap: 12px;">
+          {% if enquiry.status != 'NEW' %}
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #059669; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">✓</div>
+          {% else %}
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #FEF3C7; color: #92400E; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">•</div>
+          {% endif %}
+          <div>
+            <div style="font-weight: 800; color: var(--color-text-main);">Host Responded</div>
+            <div style="color: var(--color-text-muted);">
+              {% if enquiry.status != 'NEW' %}
+                {{ enquiry.updated_at|date:"d M Y, h:i A" }}
+              {% else %}
+                Awaiting landlord reply (typically &lt; 1 hr)
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Walkthrough Visit -->
+        <div style="display: flex; gap: 12px;">
+          {% if related_visit %}
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #0F3E4D; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">✓</div>
+          {% else %}
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: #F1F5F9; color: #94A3B8; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">3</div>
+          {% endif %}
+          <div>
+            <div style="font-weight: 800; color: var(--color-text-main);">Walkthrough Walk-in</div>
+            <div style="color: var(--color-text-muted);">
+              {% if related_visit %}
+                Scheduled for {{ related_visit.scheduled_date|date:"d M Y" }}
+              {% else %}
+                Request a slot to inspect the room
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Rental Confirmation -->
+        <div style="display: flex; gap: 12px;">
+          <div style="width: 22px; height: 22px; border-radius: 50%; background: #F1F5F9; color: #94A3B8; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0;">4</div>
+          <div>
+            <div style="font-weight: 800; color: var(--color-text-main);">Digital Rental Agreement</div>
+            <div style="color: var(--color-text-muted);">Zero paperwork &bull; Instant confirmation</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- On-Site Landlord Contact Details Card -->
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-card);">
+      <h4 style="font-size: 13px; font-weight: 700; color: var(--color-text-main); margin: 0 0 12px 0;">Host &amp; Support Contact</h4>
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px;">
+        <div>
+          <span style="color: var(--color-text-muted);">Host Name:</span>
+          <strong>{{ owner_name }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--color-text-muted);">Contact Phone:</span>
+          <a href="tel:{{ owner_phone }}" style="color: #059669; font-weight: 700; text-decoration: none;">{{ owner_phone }}</a>
+        </div>
+        <div>
+          <span style="color: var(--color-text-muted);">Email:</span>
+          <a href="mailto:{{ owner_email }}" style="color: #0F3E4D; text-decoration: none;">{{ owner_email }}</a>
+        </div>
+        <div style="background: #F8FAFC; border-radius: 8px; padding: 10px; font-size: 11.5px; color: var(--color-text-dim); margin-top: 4px;">
+          🛡️ Protected by <strong>KiraayaGrid Shield</strong>. No spam guarantee.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: SCHEDULE WALKTHROUGH DIRECTLY FROM ENQUIRY -->
+<div id="scheduleWalkthroughModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h3 style="font-size: 17px; font-weight: 800; color: var(--color-text-main); margin: 0;">Schedule Property Walkthrough</h3>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin: 4px 0 0 0;">{{ enquiry.property.title }} &bull; {{ locality_name }}</p>
+      </div>
+      <button type="button" onclick="closeScheduleWalkthroughModal()" style="border: none; background: #F1F5F9; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; color: #64748B;">✕</button>
+    </div>
+
+    <form onsubmit="handleQuickVisitSubmit(event)" style="padding: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Select Preferred Date</label>
+          <input type="date" id="walkthroughDate" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Select Time Slot</label>
+          <select id="walkthroughTimeSlot" required style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13.5px; outline: none; background: #FFFFFF;">
+            <option value="11:00 AM – 11:30 AM">Morning &bull; 11:00 AM – 11:30 AM</option>
+            <option value="2:00 PM – 2:30 PM">Afternoon &bull; 2:00 PM – 2:30 PM</option>
+            <option value="4:30 PM – 5:00 PM">Evening &bull; 4:30 PM – 5:00 PM</option>
+            <option value="6:00 PM – 6:30 PM">Late Evening &bull; 6:00 PM – 6:30 PM</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Notes / Specific Questions for Host (Optional)</label>
+          <textarea id="walkthroughNotes" rows="2" placeholder="e.g. Please show the private bathroom and Wi-Fi router setup" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--color-border); font-size: 13px; outline: none; resize: none;"></textarea>
+        </div>
+
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="button" onclick="closeScheduleWalkthroughModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="submit" id="submitWalkthroughBtn" class="btn-search-primary" style="flex: 2; padding: 11px; font-size: 13px; font-weight: 700;">
+          Confirm Walkthrough Request
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: CLOSE ENQUIRY CONFIRMATION -->
+<div id="closeConfirmModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #FFFFFF; border-radius: 18px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1); padding: 26px;">
+    <div style="width: 48px; height: 48px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 16px auto;">
+      ⚠️
+    </div>
+    <h3 style="font-size: 18px; font-weight: 800; text-align: center; color: var(--color-text-main); margin: 0 0 8px 0;">
+      Close this Enquiry?
+    </h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); text-align: center; margin: 0 0 22px 0; line-height: 1.5;">
+      Closing this enquiry informs <strong>{{ owner_name }}</strong> that you are no longer actively looking at {{ enquiry.property.title }}. You can reopen it at any time.
+    </p>
+
+    <div style="display: flex; gap: 12px;">
+      <button type="button" onclick="closeCloseModal()" style="flex: 1; padding: 11px; border: 1px solid var(--color-border); border-radius: 10px; background: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Keep Open
+      </button>
+      <button type="button" onclick="confirmCloseEnquiry()" id="confirmCloseBtn" style="flex: 1; padding: 11px; border: none; border-radius: 10px; background: #DC2626; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+        Yes, Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto scroll chat to bottom on load
+  function scrollChatToBottom() {
+    const container = document.getElementById('chatMessagesContainer');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }
+  window.addEventListener('load', scrollChatToBottom);
+
+  // Insert Quick Prompt
+  function insertPrompt(text) {
+    const input = document.getElementById('tenantReplyInput');
+    if (input && !input.disabled) {
+      input.value = text;
+      input.focus();
+    }
+  }
+
+  // Handle Send Message via AJAX
+  function handleSendMessage(e) {
+    e.preventDefault();
+    const input = document.getElementById('tenantReplyInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.disabled = true;
+    sendBtn.disabled = true;
+    sendBtn.innerText = 'Sending...';
+
+    const formData = new FormData();
+    formData.append('message_text', text);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_send_enquiry_message" enquiry.id %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      input.disabled = false;
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = '<span>Send</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+
+      if (data.status === 'success') {
+        input.value = '';
+        
+        // Append bubble to stream
+        const container = document.getElementById('chatMessagesContainer');
+        const bubble = document.createElement('div');
+        bubble.style.cssText = 'align-self: flex-end; max-width: 78%; display: flex; flex-direction: column; align-items: flex-end; animation: fadeInUp 0.2s ease;';
+        bubble.innerHTML = `
+          <div style="background: #0F3E4D; color: #FFFFFF; padding: 12px 18px; border-radius: 18px 18px 4px 18px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 2px 5px rgba(15,62,77,0.15); word-break: break-word;">
+            ${escapeHtml(data.message_text)}
+          </div>
+          <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+            <span>You &bull; ${data.created_at}</span>
+            <span style="color: #059669; font-weight: 700;">&check;&check;</span>
+          </div>
+        `;
+        container.appendChild(bubble);
+        scrollChatToBottom();
+
+        showTenantToast('Message sent to host {{ owner_name }}!');
+      } else {
+        alert(data.message || 'Error sending message');
+      }
+    })
+    .catch(err => {
+      input.disabled = false;
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = 'Send';
+      alert('Network error while dispatching message.');
+    });
+  }
+
+  // Modals for Walkthrough & Close
+  function openScheduleWalkthroughModal() {
+    const modal = document.getElementById('scheduleWalkthroughModal');
+    modal.style.display = 'flex';
+    // set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('walkthroughDate').value = tomorrow.toISOString().split('T')[0];
+  }
+  function closeScheduleWalkthroughModal() {
+    document.getElementById('scheduleWalkthroughModal').style.display = 'none';
+  }
+
+  function handleQuickVisitSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitWalkthroughBtn');
+    btn.disabled = true;
+    btn.innerText = 'Submitting Walkthrough...';
+
+    const formData = new FormData();
+    formData.append('property_id', '{{ enquiry.property.id }}');
+    formData.append('scheduled_date', document.getElementById('walkthroughDate').value);
+    formData.append('scheduled_time_slot', document.getElementById('walkthroughTimeSlot').value);
+    formData.append('notes', document.getElementById('walkthroughNotes').value);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_quick_visit" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Confirm Walkthrough Request';
+      if (data.status === 'success') {
+        closeScheduleWalkthroughModal();
+        showTenantToast('Walkthrough booked! Request ID: ' + data.request_id);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
+      } else {
+        alert(data.message || 'Error booking walkthrough');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Confirm Walkthrough Request';
+      alert('Error connecting to server');
+    });
+  }
+
+  function openCloseModal() {
+    document.getElementById('closeConfirmModal').style.display = 'flex';
+  }
+  function closeCloseModal() {
+    document.getElementById('closeConfirmModal').style.display = 'none';
+  }
+
+  function confirmCloseEnquiry() {
+    const btn = document.getElementById('confirmCloseBtn');
+    btn.disabled = true;
+    btn.innerText = 'Closing...';
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_close_enquiry" enquiry.id %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Yes, Close';
+      if (data.status === 'success') {
+        closeCloseModal();
+        showTenantToast(data.message);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        alert(data.message || 'Error closing enquiry');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerText = 'Yes, Close';
+      alert('Server error');
+    });
+  }
+
+  function reopenEnquiry() {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "tenant_portal:api_reopen_enquiry" enquiry.id %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showTenantToast(data.message);
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+      }
+    });
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text;
+    return div.innerHTML;
+  }
+</script>
+
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}

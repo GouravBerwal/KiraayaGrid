@@ -1,0 +1,436 @@
+{% extends 'tenant_portal/base.html' %}
+{% load static %}
+
+{% block title %}My Enquiries — KiraayaGrid{% endblock %}
+
+{% block content %}
+
+<!-- 1. HEADER ROW WITH SEARCH & CTA -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--color-text-main); margin: 0; letter-spacing: -0.02em;">
+      My Enquiries
+    </h1>
+    <p style="font-size: 13.5px; color: var(--color-text-muted); margin-top: 4px;">
+      Direct messaging threads with property hosts, rent inquiries, and move-in questions.
+    </p>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <!-- Search Form -->
+    <form method="GET" action="{% url 'tenant_portal:my_enquiries' %}" style="display: flex; align-items: center; position: relative;">
+      <input type="hidden" name="status" value="{{ current_tab }}">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search by property or host..." 
+             style="padding: 8px 34px 8px 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-pill); font-size: 12.5px; width: 230px; background: #FFFFFF; outline: none; transition: all 0.15s ease;"
+             onfocus="this.style.borderColor='var(--color-powder-blue)';" onblur="this.style.borderColor='var(--color-border)';">
+      <button type="submit" style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </button>
+    </form>
+
+    <a href="{% url 'tenant_portal:find_accommodation' %}" class="btn-search-primary" style="padding: 9px 18px; font-size: 13px;">
+      <span>+ New Property Enquiry</span>
+    </a>
+  </div>
+</div>
+
+<!-- 2. SEGMENTED FILTER TABS WITH DYNAMIC COUNTS -->
+<div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: #FFFFFF; padding: 6px; border-radius: var(--radius-pill); border: 1px solid var(--color-border); width: fit-content; box-shadow: var(--shadow-sm);">
+  <!-- All -->
+  <a href="?status=ALL{% if search_query %}&q={{ search_query }}{% endif %}" 
+     style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: {% if current_tab == 'ALL' %}700{% else %}600{% endif %}; background: {% if current_tab == 'ALL' %}var(--color-powder-blue){% else %}transparent{% endif %}; color: {% if current_tab == 'ALL' %}#0F172A{% else %}var(--color-text-muted){% endif %}; transition: all 0.15s ease;">
+    All Enquiries ({{ counts.all }})
+  </a>
+
+  <!-- Reply Received -->
+  <a href="?status=RESPONDED{% if search_query %}&q={{ search_query }}{% endif %}" 
+     style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: {% if current_tab == 'RESPONDED' %}700{% else %}600{% endif %}; background: {% if current_tab == 'RESPONDED' %}var(--color-powder-blue){% else %}transparent{% endif %}; color: {% if current_tab == 'RESPONDED' %}#0F172A{% else %}var(--color-text-muted){% endif %}; transition: all 0.15s ease;">
+    Reply Received ({{ counts.responded }})
+  </a>
+
+  <!-- Awaiting Host -->
+  <a href="?status=NEW{% if search_query %}&q={{ search_query }}{% endif %}" 
+     style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: {% if current_tab == 'NEW' %}700{% else %}600{% endif %}; background: {% if current_tab == 'NEW' %}var(--color-powder-blue){% else %}transparent{% endif %}; color: {% if current_tab == 'NEW' %}#0F172A{% else %}var(--color-text-muted){% endif %}; transition: all 0.15s ease;">
+    Awaiting Host ({{ counts.new }})
+  </a>
+
+  <!-- Visit Requested -->
+  <a href="?status=VISIT_REQUESTED{% if search_query %}&q={{ search_query }}{% endif %}" 
+     style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: {% if current_tab == 'VISIT_REQUESTED' %}700{% else %}600{% endif %}; background: {% if current_tab == 'VISIT_REQUESTED' %}var(--color-powder-blue){% else %}transparent{% endif %}; color: {% if current_tab == 'VISIT_REQUESTED' %}#0F172A{% else %}var(--color-text-muted){% endif %}; transition: all 0.15s ease;">
+    Visit Requested ({{ counts.visit }})
+  </a>
+
+  <!-- Closed -->
+  <a href="?status=CLOSED{% if search_query %}&q={{ search_query }}{% endif %}" 
+     style="padding: 7px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: {% if current_tab == 'CLOSED' %}700{% else %}600{% endif %}; background: {% if current_tab == 'CLOSED' %}var(--color-powder-blue){% else %}transparent{% endif %}; color: {% if current_tab == 'CLOSED' %}#0F172A{% else %}var(--color-text-muted){% endif %}; transition: all 0.15s ease;">
+    Closed ({{ counts.closed }})
+  </a>
+</div>
+
+<!-- 3. ENQUIRIES TABLE CARD -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-card);">
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 820px;">
+      <thead>
+        <tr style="background: #F8FAFC; border-bottom: 1px solid var(--color-border);">
+          <th style="padding: 14px 22px; font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">PROPERTY &amp; OWNER</th>
+          <th style="padding: 14px 16px; font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">REQUESTED ROOM</th>
+          <th style="padding: 14px 16px; font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">BUDGET / MO</th>
+          <th style="padding: 14px 16px; font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">MOVE-IN DATE</th>
+          <th style="padding: 14px 16px; font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px;">STATUS</th>
+          <th style="padding: 14px 22px; font-size: 11px; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="enquiriesTableBody">
+        {% for enq in enquiries %}
+        <tr id="enquiryRow-{{ enq.id }}" style="border-bottom: 1px solid var(--color-border-subtle); transition: background 0.15s ease;" onmouseover="this.style.background='#FAFCFD';" onmouseout="this.style.background='#FFFFFF';">
+          <!-- Property & Owner -->
+          <td style="padding: 16px 22px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div onclick="openQuickViewModal({{ enq.property.id }})" style="cursor: pointer; width: 46px; height: 46px; border-radius: 10px; overflow: hidden; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                <img src="{{ enq.display_photo }}" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div>
+                <a href="{% url 'tenant_portal:enquiry_details' enq.id %}" style="font-size: 14px; font-weight: 800; color: var(--color-text-main); display: inline-flex; align-items: center; gap: 4px;">
+                  <span>{{ enq.property.title }}</span>
+                  <span style="font-size: 12px; color: var(--color-text-dim);">&rarr;</span>
+                </a>
+                <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">
+                  Host: <strong style="color: var(--color-text-main);">{{ enq.owner_name }}</strong> &bull; {{ enq.locality_str }}
+                </div>
+                {% if enq.latest_message %}
+                <div style="font-size: 11px; color: #475569; margin-top: 3px; font-style: italic; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  "{{ enq.latest_message.message_text }}"
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+
+          <!-- Requested Room -->
+          <td style="padding: 16px 16px; font-size: 13px; font-weight: 600; color: var(--color-text-main);">
+            {{ enq.interested_room_type }}
+            <div style="font-size: 11px; color: var(--color-text-dim); margin-top: 2px;">Enquired: {{ enq.enquiry_date_str }}</div>
+          </td>
+
+          <!-- Budget -->
+          <td style="padding: 16px 16px; font-size: 14px; font-weight: 800; color: var(--color-text-main);">
+            {{ enq.formatted_budget }}
+            <span style="font-size: 11px; font-weight: normal; color: var(--color-text-muted);">/mo</span>
+          </td>
+
+          <!-- Move-in Date -->
+          <td style="padding: 16px 16px; font-size: 12.5px; font-weight: 600; color: var(--color-text-main);">
+            {{ enq.move_in_str }}
+          </td>
+
+          <!-- Status Badge -->
+          <td style="padding: 16px 16px;">
+            <span id="statusBadge-{{ enq.id }}" style="font-size: 11.5px; font-weight: 700; background: {{ enq.badge_bg }}; color: {{ enq.badge_color }}; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+              <span>{{ enq.status_icon }}</span>
+              <span>{{ enq.status_label }}</span>
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td style="padding: 16px 22px; text-align: right;">
+            <div style="display: inline-flex; align-items: center; gap: 6px;">
+              <a href="{% url 'tenant_portal:enquiry_details' enq.id %}" class="btn-search-primary" style="padding: 6px 14px; font-size: 12px; display: inline-flex;">
+                <span>View Chat &rarr;</span>
+              </a>
+              {% if enq.status != 'CLOSED' %}
+              <button type="button" onclick="confirmCloseEnquiry({{ enq.id }}, '{{ enq.property.title|escapejs }}')" 
+                      style="padding: 6px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; font-size: 11.5px; font-weight: 600; color: var(--color-text-muted); cursor: pointer;"
+                      title="Close Enquiry Thread">
+                Close
+              </button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 60px 24px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--color-powder-blue-light); color: var(--color-powder-blue-dark); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin: 0 0 4px 0;">No enquiries in this tab</h3>
+            <p style="font-size: 13px; color: var(--color-text-muted); max-width: 360px; margin: 0 auto 16px auto;">
+              {% if search_query %}No results matching '{{ search_query }}'. Try a different search term.{% else %}You haven't submitted any enquiries with this status.{% endif %}
+            </p>
+            <a href="{% url 'tenant_portal:find_accommodation' %}" class="btn-search-primary" style="display: inline-flex; padding: 9px 20px; font-size: 12.5px;">Browse Stays &rarr;</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. LIMIT 5 PAGINATION CARD -->
+  {% if total_count > 0 %}
+  <div style="padding: 14px 24px; border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; background: #F8FAFC; font-size: 12.5px; color: var(--color-text-muted); flex-wrap: wrap; gap: 12px;">
+    <div>
+      Showing <strong>{{ page_obj.start_index }}</strong> to <strong>{{ page_obj.end_index }}</strong> of <strong>{{ total_count }}</strong> enquiries (Limit 5 per page)
+    </div>
+
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <!-- Previous -->
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&status={{ current_tab }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+         style="padding: 5px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: #FFFFFF; color: var(--color-text-main); font-weight: 600;">
+        &larr; Previous
+      </a>
+      {% else %}
+      <span style="padding: 5px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: #FFFFFF; color: #A0AEC0; cursor: not-allowed;">
+        &larr; Previous
+      </span>
+      {% endif %}
+
+      <!-- Page Numbers -->
+      {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+      <span style="padding: 5px 11px; border-radius: 6px; background: var(--color-powder-blue); color: #0F172A; font-weight: 800;">
+        {{ num }}
+      </span>
+      {% else %}
+      <a href="?page={{ num }}&status={{ current_tab }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+         style="padding: 5px 11px; border: 1px solid var(--color-border); border-radius: 6px; background: #FFFFFF; color: var(--color-text-main); font-weight: 600;">
+        {{ num }}
+      </a>
+      {% endif %}
+      {% endfor %}
+
+      <!-- Next -->
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&status={{ current_tab }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+         style="padding: 5px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: #FFFFFF; color: var(--color-text-main); font-weight: 600;">
+        Next &rarr;
+      </a>
+      {% else %}
+      <span style="padding: 5px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: #FFFFFF; color: #A0AEC0; cursor: not-allowed;">
+        Next &rarr;
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ==============================================================
+     MODAL 1: CLOSE ENQUIRY CONFIRMATION MODAL
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="closeConfirmModal" onclick="handleCloseModalBackdrop(event)">
+  <div class="tenant-modal-card" style="max-width: 440px;">
+    <button type="button" class="tenant-modal-close-btn" onclick="dismissCloseModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <div style="padding: 24px 26px;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+      </div>
+
+      <h3 style="font-size: 18px; font-weight: 800; color: var(--color-text-main); margin: 0 0 6px 0;">Close Enquiry Thread?</h3>
+      <p id="closeModalPropName" style="font-size: 13px; color: var(--color-text-muted); line-height: 1.45; margin: 0 0 20px 0;">
+        Are you sure you want to close this enquiry thread? The host will be notified that you are no longer actively looking at this property.
+      </p>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" onclick="dismissCloseModal()" style="padding: 9px 18px; border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="button" id="btnConfirmCloseAction" onclick="executeCloseEnquiry()" style="padding: 9px 20px; border: none; border-radius: var(--radius-pill); background: #DC2626; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer;">
+          Close Enquiry
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     MODAL 2: APPLE-GRADE QUICK VIEW MODAL
+     ============================================================== -->
+<div class="tenant-modal-backdrop" id="quickViewModal" onclick="handleModalBackdropClick(event)">
+  <div class="tenant-modal-card">
+    <button type="button" class="tenant-modal-close-btn" onclick="closeQuickViewModal()" title="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <div style="position: relative; height: 260px; background: #0F172A; overflow: hidden; border-radius: 22px 22px 0 0;">
+      <img id="modalCoverImg" src="" alt="Property" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, transparent 60%);"></div>
+
+      <div style="position: absolute; bottom: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span id="modalVerifiedBadge" style="display: none; font-size: 11px; font-weight: 700; background: rgba(5, 150, 105, 0.9); color: #FFFFFF; padding: 3px 8px; border-radius: 6px;">
+              &check; Verified KiraayaGrid Stay
+            </span>
+            <span id="modalTypeBadge" style="font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.2); color: #FFFFFF; backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 6px;">
+              PG
+            </span>
+          </div>
+          <h2 id="modalTitle" style="font-size: 24px; font-weight: 800; color: #FFFFFF; margin: 0;">Property Title</h2>
+          <div id="modalLocality" style="font-size: 13px; color: #E2E8F0; margin-top: 3px;">Locality, Bengaluru</div>
+        </div>
+
+        <div style="text-align: right; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);">
+          <div style="font-size: 11px; color: #E2E8F0; text-transform: uppercase; font-weight: 600;">Starting from</div>
+          <div style="font-size: 20px; font-weight: 800; color: #FFFFFF;"><span id="modalRent">₹14,500</span> <span style="font-size: 12px; font-weight: 500;">/mo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 24px 28px 28px 28px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: #0F172A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;" id="modalOwnerAvatar">
+            AM
+          </div>
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);" id="modalOwnerName">Hosted by Arjun Mehta</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted);">Verified Owner &middot; Dedicated Manager</div>
+          </div>
+        </div>
+        <a id="modalChatLink" href="{% url 'tenant_portal:find_accommodation' %}" class="btn-search-primary" style="padding: 8px 16px; font-size: 12.5px;">
+          View Stay Page
+        </a>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Configurations</h4>
+        <div id="modalRoomsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================================
+     INTERACTIVE JAVASCRIPT LOGIC
+     ============================================================== -->
+<script>
+  let pendingCloseEnquiryId = null;
+
+  // 1. Confirm Close Enquiry
+  function confirmCloseEnquiry(enquiryId, propTitle) {
+    pendingCloseEnquiryId = enquiryId;
+    document.getElementById('closeModalPropName').textContent = `Are you sure you want to close your enquiry for "${propTitle}"? The host will be notified that you are no longer actively looking at this property.`;
+    const modal = document.getElementById('closeConfirmModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function dismissCloseModal() {
+    pendingCloseEnquiryId = null;
+    const modal = document.getElementById('closeConfirmModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleCloseModalBackdrop(e) {
+    if (e.target.id === 'closeConfirmModal') {
+      dismissCloseModal();
+    }
+  }
+
+  // 2. Execute Close Enquiry via AJAX
+  function executeCloseEnquiry() {
+    if (!pendingCloseEnquiryId) return;
+
+    const btn = document.getElementById('btnConfirmCloseAction');
+    btn.disabled = true;
+    btn.textContent = 'Closing...';
+
+    fetch(`/tenant/api/enquiry/close/${pendingCloseEnquiryId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Close Enquiry';
+      if (data.status === 'success') {
+        // Update badge locally
+        const badge = document.getElementById(`statusBadge-${pendingCloseEnquiryId}`);
+        if (badge) {
+          badge.style.background = '#F1F5F9';
+          badge.style.color = '#64748B';
+          badge.innerHTML = '<span>✕</span> <span>Closed</span>';
+        }
+        showTenantToast(data.message);
+        dismissCloseModal();
+      } else {
+        showTenantToast(data.message || 'Error closing enquiry');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Close Enquiry';
+      showTenantToast('Enquiry closed.');
+      dismissCloseModal();
+    });
+  }
+
+  // 3. Quick View Property Modal
+  function openQuickViewModal(propertyId) {
+    fetch(`/tenant/api/property/${propertyId}/`)
+      .then(r => r.json())
+      .then(prop => {
+        document.getElementById('modalCoverImg').src = prop.cover_photo;
+        document.getElementById('modalTitle').textContent = prop.title;
+        document.getElementById('modalLocality').textContent = `${prop.locality}, ${prop.city}`;
+        document.getElementById('modalRent').textContent = `₹${Math.round(prop.min_rent).toLocaleString('en-IN')}`;
+        document.getElementById('modalTypeBadge').textContent = prop.property_type;
+
+        const vBadge = document.getElementById('modalVerifiedBadge');
+        if (prop.is_verified) {
+          vBadge.style.display = 'inline-block';
+        } else {
+          vBadge.style.display = 'none';
+        }
+
+        document.getElementById('modalOwnerName').textContent = `Hosted by ${prop.owner_name}`;
+        const initials = prop.owner_name.split(' ').map(n => n[0]).join('').substring(0, 2);
+        document.getElementById('modalOwnerAvatar').textContent = initials || 'AM';
+
+        // Rooms options
+        const roomsContainer = document.getElementById('modalRoomsList');
+        roomsContainer.innerHTML = '';
+        if (prop.rooms && prop.rooms.length > 0) {
+          prop.rooms.forEach(r => {
+            const card = document.createElement('div');
+            card.style.cssText = 'border: 1px solid var(--color-border); border-radius: 10px; padding: 10px 12px; background: #FAFCFD;';
+            card.innerHTML = `
+              <div style="font-size: 13px; font-weight: 700; color: var(--color-text-main);">${r.room_type}</div>
+              <div style="font-size: 12px; color: #059669; font-weight: 700; margin-top: 2px;">₹${Math.round(r.monthly_rent).toLocaleString('en-IN')}/mo</div>
+              <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">${r.available_beds} beds available &bull; ${r.furnishing || 'Furnished'}</div>
+            `;
+            roomsContainer.appendChild(card);
+          });
+        }
+
+        const modal = document.getElementById('quickViewModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      })
+      .catch(() => {
+        showTenantToast('Could not load details.');
+      });
+  }
+
+  function closeQuickViewModal() {
+    const modal = document.getElementById('quickViewModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function handleModalBackdropClick(e) {
+    if (e.target.id === 'quickViewModal') {
+      closeQuickViewModal();
+    }
+  }
+</script>
+{% endblock %}

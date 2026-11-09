@@ -1,0 +1,926 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if property %}{{ property.title }} — Room &amp; Bed Management{% else %}Room &amp; Bed Management — KiraayaGrid{% endif %}
+{% endblock %}
+
+{% block page_title %}Rooms &amp; Beds{% endblock %}
+{% block page_subtitle %}
+  {% if property %}
+    {{ property.title }} · {{ property.locality.name|default:"Locality" }}, {{ property.city.name|default:"Bengaluru" }}
+  {% else %}
+    Manage individual room configurations, amenities, and live bed vacancies across your portfolio
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- TOAST MESSAGES -->
+{% if messages %}
+  <div style="margin-bottom: 20px;" id="djangoMessages">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- FLOATING AJAX NOTIFICATION TOAST -->
+<div id="ajaxToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #065F46; color: #FFFFFF; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.18); align-items: center; gap: 10px; animation: slideUp 0.2s ease;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="ajaxToastMsg">Action completed successfully.</span>
+</div>
+
+<!-- HEADER ROW -->
+<div class="owner-header-row" style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    {% if property %}
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <a href="{% url 'owner_portal:manage_property' property.id %}" style="color: var(--color-text-muted); text-decoration: none; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: color 0.15s ease;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          <span>Back to Manage Property</span>
+        </a>
+        <span style="color: var(--color-border);">|</span>
+        <span class="badge-verified-sage">✓ {{ property.status }}</span>
+        <span style="font-size: 11px; background: rgba(30,77,107,0.08); color: var(--color-yale-blue); padding: 2px 8px; border-radius: 9999px; font-weight: 600;">
+          {{ property.property_type }}
+        </span>
+      </div>
+      <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+        {{ property.title }} — Rooms &amp; Beds
+      </h1>
+      <p class="welcome-subheading" style="margin-top: 4px; font-size: 13px; color: var(--color-text-muted);">
+        {{ property.address_line }}, {{ property.locality.name }}, {{ property.city.name }} — {{ property.pincode }}
+      </p>
+    {% else %}
+      <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+        Room &amp; Bed Management
+      </h1>
+      <p class="welcome-subheading" style="margin-top: 4px; font-size: 13px; color: var(--color-text-muted);">
+        Portfolio overview: Configure individual room types, pricing, amenities, and toggle live bed occupancy.
+      </p>
+    {% endif %}
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    {% if property %}
+      <a href="{% url 'owner_portal:manage_property' property.id %}#tab-pricing" class="btn-secondary-light" style="padding: 9px 14px; text-decoration: none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        <span>Pricing Policies</span>
+      </a>
+    {% endif %}
+
+    <button type="button" class="btn-primary-yale" onclick="openAddRoomModal()" style="padding: 9px 16px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span>+ Add New Room</span>
+    </button>
+  </div>
+</div>
+
+<!-- PROPERTY SELECTOR & KPI SUMMARY BAR -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Selector -->
+  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <span style="font-size: 12.5px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+      Select Property:
+    </span>
+    <select onchange="handlePropertyChange(this.value)" style="padding: 8px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600; background: #FFFFFF; color: var(--color-text-main); cursor: pointer; min-width: 280px;">
+      <option value="all" {% if not property %}selected{% endif %}>
+        All Properties ({{ all_properties|length }} properties)
+      </option>
+      {% for item in properties_with_counts %}
+        <option value="{{ item.property.id }}" {% if property and property.id == item.property.id %}selected{% endif %}>
+          {{ item.property.title }} ({{ item.rooms_count }} rooms · {{ item.beds_count }} beds)
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- KPI Badges -->
+  <div style="display: flex; align-items: center; gap: 18px; font-size: 13px; flex-wrap: wrap;">
+    <div>
+      <span style="color: var(--color-text-muted); font-size: 12px;">Total Rooms:</span>
+      <strong style="color: var(--color-text-main); font-size: 15px; margin-left: 4px;" id="kpiTotalRooms">{{ total_rooms_count }}</strong>
+    </div>
+    <div style="color: var(--color-border);">•</div>
+    <div>
+      <span style="color: var(--color-text-muted); font-size: 12px;">Total Beds:</span>
+      <strong style="color: var(--color-text-main); font-size: 15px; margin-left: 4px;" id="kpiTotalBeds">{{ total_beds_count }}</strong>
+    </div>
+    <div style="color: var(--color-border);">•</div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span style="color: var(--color-text-muted); font-size: 12px;">Occupied:</span>
+      <span class="badge-verified-sage" id="kpiOccupiedBeds">
+        {{ occupied_beds_count }} beds ({{ occupancy_pct }}%)
+      </span>
+    </div>
+    <div style="color: var(--color-border);">•</div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span style="color: var(--color-text-muted); font-size: 12px;">Available:</span>
+      <span style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 3px 9px; border-radius: 9999px; font-size: 11.5px; font-weight: 700;" id="kpiAvailableBeds">
+        {{ available_beds_count }} beds ({{ vacancy_pct }}%)
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS & SEARCH TOOLBAR -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 24px;">
+  <form method="GET" style="margin: 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    {% if property %}
+      <input type="hidden" name="property_id" value="{{ property.id }}">
+    {% endif %}
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; max-width: 420px;">
+      <div style="position: relative; width: 100%;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" name="q" value="{{ q }}" placeholder="Search room number, tenant, amenities..." style="width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; outline: none;">
+      </div>
+      <button type="submit" class="btn-primary-yale" style="padding: 8px 14px; font-size: 12.5px;">Search</button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <!-- Room Type Filter -->
+      <select name="type" onchange="this.form.submit()" style="padding: 7px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff; color: var(--color-text-main);">
+        <option value="all" {% if room_type_filter == 'all' %}selected{% endif %}>All Sharing Types</option>
+        <option value="SINGLE" {% if room_type_filter == 'SINGLE' %}selected{% endif %}>Single / Private</option>
+        <option value="DOUBLE" {% if room_type_filter == 'DOUBLE' %}selected{% endif %}>Double Sharing</option>
+        <option value="TRIPLE" {% if room_type_filter == 'TRIPLE' %}selected{% endif %}>Triple Sharing</option>
+        <option value="FOUR_SHARING" {% if room_type_filter == 'FOUR_SHARING' %}selected{% endif %}>Four Sharing</option>
+        <option value="DORM" {% if room_type_filter == 'DORM' %}selected{% endif %}>Dormitory</option>
+      </select>
+
+      <!-- Vacancy Status Filter -->
+      <select name="status" onchange="this.form.submit()" style="padding: 7px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff; color: var(--color-text-main);">
+        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Vacancies</option>
+        <option value="vacant" {% if status_filter == 'vacant' %}selected{% endif %}>Has Vacant Beds</option>
+        <option value="full" {% if status_filter == 'full' %}selected{% endif %}>Fully Occupied</option>
+      </select>
+
+      <!-- AC Filter -->
+      <select name="ac" onchange="this.form.submit()" style="padding: 7px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff; color: var(--color-text-main);">
+        <option value="all" {% if ac_filter == 'all' %}selected{% endif %}>All Climate</option>
+        <option value="ac" {% if ac_filter == 'ac' %}selected{% endif %}>Air Conditioned (AC)</option>
+        <option value="non_ac" {% if ac_filter == 'non_ac' %}selected{% endif %}>Non-AC</option>
+      </select>
+
+      {% if q or room_type_filter != 'all' or status_filter != 'all' or ac_filter != 'all' %}
+        <a href="{% if property %}{% url 'owner_portal:room_bed_management' property.id %}{% else %}{% url 'owner_portal:all_rooms' %}{% endif %}" class="btn-secondary-light" style="font-size: 12px; padding: 6px 10px; color: #EF4444; text-decoration: none;">
+          &times; Clear
+        </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- ROOM CARDS LIST -->
+<div id="roomsList" style="display: flex; flex-direction: column; gap: 20px;">
+  {% for r in rooms %}
+    <div id="room-{{ r.id }}" class="room-management-card" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: border-color 0.15s ease;">
+      <!-- TOP ROW: ROOM INFO & RENT -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; gap: 16px; align-items: flex-start;">
+          <!-- Room Photo Thumbnail -->
+          <div style="width: 90px; height: 75px; border-radius: var(--radius-md); overflow: hidden; background: #E2E8F0; flex-shrink: 0; position: relative;">
+            <img src="{{ r.cover_photo|default:'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800' }}" alt="Room {{ r.room_number }}" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+                Room {{ r.room_number }}
+              </h3>
+
+              {% if not property %}
+                <a href="{% url 'owner_portal:manage_property' r.property.id %}" style="font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #F1F5F9; color: var(--color-yale-blue); text-decoration: none;">
+                  {{ r.property.title }}
+                </a>
+              {% endif %}
+
+              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: var(--color-powder-blue-light); color: var(--color-yale-blue);">
+                {{ r.get_room_type_display }}
+              </span>
+
+              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #EFF6FF; color: #2563EB;">
+                {{ r.get_bathroom_type_display }}
+              </span>
+
+              {% if r.ac_type == 'AC' %}
+                <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #FEF3C7; color: #D97706;">
+                  AC Room
+                </span>
+              {% else %}
+                <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #F3F4F6; color: #4B5563;">
+                  Non-AC
+                </span>
+              {% endif %}
+
+              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); background: #F3F4F6; color: var(--color-text-muted);">
+                {{ r.furnishing }}
+              </span>
+
+              <!-- Live Vacancy Pill -->
+              <span id="room-badge-{{ r.id }}">
+                {% if r.available_beds == 0 %}
+                  <span class="badge-verified-sage">Fully Occupied</span>
+                {% else %}
+                  <span style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 700;">
+                    {{ r.available_beds }} of {{ r.total_beds }} Beds Vacant
+                  </span>
+                {% endif %}
+              </span>
+            </div>
+
+            <!-- Amenities -->
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 6px; line-height: 1.4;">
+              {{ r.amenities|default:"WiFi, Hot Water Geyser, Wardrobe, Study Desk & Chair, Power Backup" }}
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: right;">
+          <div style="font-size: 18px; font-weight: 700; color: var(--color-text-main); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+            ₹{{ r.monthly_rent|floatformat:0 }}
+            <span style="font-size: 11.5px; font-weight: 500; color: var(--color-text-muted); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text';">
+              / person / mo
+            </span>
+          </div>
+          <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">
+            Security Deposit: ₹{{ r.security_deposit|floatformat:0 }}
+          </div>
+        </div>
+      </div>
+
+      <!-- INDIVIDUAL BED AVAILABILITY TOGGLES & ALLOCATION -->
+      <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 11.5px; font-weight: 700; color: var(--color-text-main); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+            <span>Individual Bed Allocations ({{ r.total_beds }} Beds)</span>
+          </div>
+          <span style="font-size: 11px; color: var(--color-text-muted);">
+            Click "Mark Vacant" or "Mark Occupied" to update live seeker vacancy
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px;">
+          {% for b in r.beds.all %}
+            <div id="bed-card-{{ b.id }}" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.15s ease;">
+              <div style="flex-grow: 1;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="font-size: 13px; color: var(--color-text-main);">{{ b.bed_number }}</strong>
+                  <span style="font-size: 11px; color: var(--color-text-muted);">({{ b.bed_position }})</span>
+                  <span id="bed-status-pill-{{ b.id }}">
+                    {% if b.status == 'OCCUPIED' %}
+                      <span style="font-size: 10px; font-weight: 700; color: #065F46; background: #D1FAE5; padding: 1px 6px; border-radius: 4px;">● OCCUPIED</span>
+                    {% elif b.status == 'AVAILABLE' %}
+                      <span style="font-size: 10px; font-weight: 700; color: #1D4ED8; background: #DBEAFE; padding: 1px 6px; border-radius: 4px;">● VACANT</span>
+                    {% elif b.status == 'RESERVED' %}
+                      <span style="font-size: 10px; font-weight: 700; color: #92400E; background: #FEF3C7; padding: 1px 6px; border-radius: 4px;">● RESERVED</span>
+                    {% else %}
+                      <span style="font-size: 10px; font-weight: 700; color: #4B5563; background: #F3F4F6; padding: 1px 6px; border-radius: 4px;">● MAINTENANCE</span>
+                    {% endif %}
+                  </span>
+                </div>
+
+                <div id="bed-info-line-{{ b.id }}" style="font-size: 11.5px; margin-top: 4px;">
+                  {% if b.status == 'OCCUPIED' %}
+                    <span style="color: var(--color-dry-sage-dark);">Tenant: <strong>{{ b.tenant_name|default:"Active Tenant" }}</strong></span>
+                    <span style="color: var(--color-text-muted);"> · Since {{ b.occupied_since|date:"d M Y"|default:"Active" }}</span>
+                  {% elif b.status == 'AVAILABLE' %}
+                    <span style="color: #2563EB; font-weight: 500;">Vacant — Ready for immediate move-in</span>
+                  {% elif b.status == 'RESERVED' %}
+                    <span style="color: #D97706;">Reserved for prospective seeker</span>
+                  {% else %}
+                    <span style="color: var(--color-text-muted);">Under maintenance / repairs</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Bed Action Buttons -->
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <div id="bed-toggle-btn-container-{{ b.id }}">
+                  {% if b.status == 'OCCUPIED' %}
+                    <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 5px 10px;" onclick="quickToggleBed({{ b.id }}, 'vacant')">
+                      Mark Vacant
+                    </button>
+                  {% else %}
+                    <button type="button" class="btn-primary-yale" style="font-size: 11px; padding: 5px 10px; background: #059669;" onclick="openMarkOccupiedModal({{ b.id }}, '{{ b.bed_number }}', '{{ r.room_number }}')">
+                      Mark Occupied
+                    </button>
+                  {% endif %}
+                </div>
+
+                <!-- Edit Bed Modal Button -->
+                <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 5px 8px;" title="Edit Bed Details" onclick="openEditBedModal({{ b.id }}, '{{ b.bed_number }}', '{{ b.bed_position }}', '{{ b.status }}', '{{ b.tenant_name|default:'' }}', '{{ b.occupied_since|date:'Y-m-d'|default:'' }}', '{{ b.monthly_rent|default:r.monthly_rent }}')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                </button>
+              </div>
+            </div>
+          {% empty %}
+            <div style="grid-column: span 2; font-size: 12.5px; color: var(--color-text-muted); padding: 10px; text-align: center;">
+              No beds assigned to this room yet.
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- ROOM ACTION FOOTER -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 12px;">
+        <div style="font-size: 11.5px; color: var(--color-text-muted);">
+          Property: <strong>{{ r.property.title }}</strong> · {{ r.beds.count }} beds configured
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-secondary-light" style="font-size: 12px; padding: 6px 12px;" onclick="openEditRoomModal({{ r.id }}, '{{ r.room_number }}', '{{ r.room_type }}', '{{ r.monthly_rent }}', '{{ r.security_deposit }}', '{{ r.bathroom_type }}', '{{ r.ac_type }}', '{{ r.furnishing }}', '{{ r.amenities|escapejs }}', '{{ r.cover_photo|default:''|escapejs }}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span>Edit Room Config</span>
+          </button>
+
+          <form method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete Room {{ r.room_number }} and all its {{ r.total_beds }} beds?');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_room">
+            <input type="hidden" name="room_id" value="{{ r.id }}">
+            <button type="submit" class="btn-secondary-light" style="font-size: 12px; padding: 6px 12px; color: #EF4444;">
+              Delete Room
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 48px; text-align: center;">
+      <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--color-powder-blue-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; color: var(--color-yale-blue);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+      </div>
+      <h3 style="font-size: 17px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">No rooms found</h3>
+      <p style="font-size: 13px; color: var(--color-text-muted); max-width: 440px; margin: 0 auto 20px auto;">
+        No room configurations match your current filter criteria or property selection.
+      </p>
+      <button type="button" class="btn-primary-yale" onclick="openAddRoomModal()">+ Add New Room</button>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- PAGINATION CONTROLS (LIMIT 5 WITH SCROLL RETENTION #roomsList) -->
+{% if paginator.num_pages > 1 %}
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Showing indicator -->
+  <div style="font-size: 13px; color: var(--color-text-muted);">
+    Showing <strong style="color: var(--color-text-main);">{{ page_obj.start_index }}</strong> to <strong style="color: var(--color-text-main);">{{ page_obj.end_index }}</strong> of <strong style="color: var(--color-text-main);">{{ paginator.count }}</strong> rooms
+  </div>
+
+  <!-- Page Navigation Controls -->
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <!-- Previous Page -->
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if property %}&property_id={{ property.id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if room_type_filter != 'all' %}&type={{ room_type_filter }}{% endif %}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if ac_filter != 'all' %}&ac={{ ac_filter }}{% endif %}#roomsList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        &larr; Previous
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        &larr; Previous
+      </span>
+    {% endif %}
+
+    <!-- Page Number Pills -->
+    {% for num in paginator.page_range %}
+      {% if num == page_obj.number %}
+        <span style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; background: var(--color-yale-blue); color: #FFFFFF;">
+          {{ num }}
+        </span>
+      {% else %}
+        <a href="?page={{ num }}{% if property %}&property_id={{ property.id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if room_type_filter != 'all' %}&type={{ room_type_filter }}{% endif %}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if ac_filter != 'all' %}&ac={{ ac_filter }}{% endif %}#roomsList" 
+           style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; color: var(--color-text-main); text-decoration: none; border: 1px solid var(--color-border); background: #FFFFFF;">
+          {{ num }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next Page -->
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if property %}&property_id={{ property.id }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if room_type_filter != 'all' %}&type={{ room_type_filter }}{% endif %}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}{% if ac_filter != 'all' %}&ac={{ ac_filter }}{% endif %}#roomsList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        Next &rarr;
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        Next &rarr;
+      </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ========================================================= -->
+<!-- MODAL 1: ADD NEW ROOM -->
+<!-- ========================================================= -->
+<div id="addRoomModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 95%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+      <h3 style="font-size: 17px; font-weight: 700; color: var(--color-text-main); margin: 0;">+ Add New Room Configuration</h3>
+      <button type="button" onclick="closeAddRoomModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_room">
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Property Selection (if not single property) -->
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Target Property</label>
+          <select name="target_property_id" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+            {% for op in all_properties %}
+              <option value="{{ op.id }}" {% if property and property.id == op.id %}selected{% endif %}>
+                {{ op.title }} ({{ op.locality.name|default:"Bengaluru" }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Room Number / Name</label>
+            <input type="text" name="room_number" placeholder="e.g. Room 301" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Sharing Type</label>
+            <select name="room_type" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="SINGLE">Private / Single Room</option>
+              <option value="DOUBLE" selected>Double Sharing</option>
+              <option value="TRIPLE">Triple Sharing</option>
+              <option value="FOUR_SHARING">Four Sharing</option>
+              <option value="DORM">Dormitory</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Total Beds</label>
+            <input type="number" name="total_beds" value="2" min="1" max="10" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Rent (₹ / bed / mo)</label>
+            <input type="number" name="monthly_rent" value="14000" min="1000" step="500" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Security Deposit (₹)</label>
+            <input type="number" name="security_deposit" value="28000" min="0" step="500" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Bathroom Type</label>
+            <select name="bathroom_type" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="ATTACHED" selected>Attached Ensuite</option>
+              <option value="SHARED">Shared Bathroom</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Air Conditioning</label>
+            <select name="ac_type" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="AC" selected>AC Room</option>
+              <option value="NON_AC">Non-AC</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Furnishing</label>
+            <select name="furnishing" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="Fully Furnished" selected>Fully Furnished</option>
+              <option value="Semi-Furnished">Semi-Furnished</option>
+              <option value="Unfurnished">Unfurnished</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Room Amenities</label>
+          <input type="text" name="amenities" value="High-Speed Wi-Fi, Hot Water Geyser, Wooden Wardrobe, Study Desk &amp; Chair, Power Backup" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Cover Photograph URL</label>
+          <input type="url" name="cover_photo" value="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; border-top: 1px solid var(--color-border); padding-top: 14px;">
+          <button type="button" class="btn-secondary-light" onclick="closeAddRoomModal()">Cancel</button>
+          <button type="submit" class="btn-primary-yale">+ Create Room Configuration</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MODAL 2: EDIT ROOM CONFIG -->
+<!-- ========================================================= -->
+<div id="editRoomModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 95%; max-width: 620px; max-height: 90vh; overflow-y: auto; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">
+      <h3 style="font-size: 17px; font-weight: 700; color: var(--color-text-main); margin: 0;">Edit Room Configuration</h3>
+      <button type="button" onclick="closeEditRoomModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="edit_room">
+      <input type="hidden" id="editRoomId" name="room_id" value="">
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Room Number</label>
+            <input type="text" id="editRoomNumber" name="room_number" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Sharing Type</label>
+            <select id="editRoomType" name="room_type" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="SINGLE">Private / Single Room</option>
+              <option value="DOUBLE">Double Sharing</option>
+              <option value="TRIPLE">Triple Sharing</option>
+              <option value="FOUR_SHARING">Four Sharing</option>
+              <option value="DORM">Dormitory</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Monthly Rent (₹ / bed)</label>
+            <input type="number" id="editRoomRent" name="monthly_rent" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Security Deposit (₹)</label>
+            <input type="number" id="editRoomDeposit" name="security_deposit" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Bathroom</label>
+            <select id="editRoomBath" name="bathroom_type" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="ATTACHED">Attached Ensuite</option>
+              <option value="SHARED">Shared Bathroom</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Air Conditioning</label>
+            <select id="editRoomAc" name="ac_type" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="AC">AC Room</option>
+              <option value="NON_AC">Non-AC</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Furnishing</label>
+            <select id="editRoomFurnishing" name="furnishing" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+              <option value="Fully Furnished">Fully Furnished</option>
+              <option value="Semi-Furnished">Semi-Furnished</option>
+              <option value="Unfurnished">Unfurnished</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Room Amenities</label>
+          <input type="text" id="editRoomAmenities" name="amenities" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Cover Photograph URL</label>
+          <input type="url" id="editRoomPhoto" name="cover_photo" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; border-top: 1px solid var(--color-border); padding-top: 14px;">
+          <button type="button" class="btn-secondary-light" onclick="closeEditRoomModal()">Cancel</button>
+          <button type="submit" class="btn-primary-yale">Save Room Changes</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MODAL 3: MARK BED OCCUPIED -->
+<!-- ========================================================= -->
+<div id="markOccupiedModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 95%; max-width: 480px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin: 0;" id="markOccupiedTitle">
+        Mark Bed as Occupied
+      </h3>
+      <button type="button" onclick="closeMarkOccupiedModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+    </div>
+
+    <form id="markOccupiedForm" onsubmit="submitMarkOccupied(event)">
+      {% csrf_token %}
+      <input type="hidden" id="markOccupiedBedId" name="bed_id" value="">
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Tenant Full Name</label>
+          <input type="text" id="markOccupiedTenantName" name="tenant_name" placeholder="e.g. Rahul Sharma" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Move-in Date</label>
+          <input type="date" id="markOccupiedDate" name="occupied_since" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+          <button type="button" class="btn-secondary-light" onclick="closeMarkOccupiedModal()">Cancel</button>
+          <button type="submit" class="btn-primary-yale" style="background: #059669;">Confirm Occupied</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MODAL 4: EDIT BED DETAILS -->
+<!-- ========================================================= -->
+<div id="editBedModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 95%; max-width: 500px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin: 0;" id="editBedTitle">
+        Edit Bed Details
+      </h3>
+      <button type="button" onclick="closeEditBedModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_bed">
+      <input type="hidden" id="editBedId" name="bed_id" value="">
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Bed Position</label>
+            <select id="editBedPos" name="bed_position" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff;">
+              <option value="Window Side">Window Side</option>
+              <option value="Door Side">Door Side</option>
+              <option value="Balcony Side">Balcony Side</option>
+              <option value="Corner Side">Corner Side</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Occupancy Status</label>
+            <select id="editBedStatus" name="status" onchange="toggleEditBedTenantFields(this.value)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px; background: #fff;">
+              <option value="AVAILABLE">Available / Vacant</option>
+              <option value="OCCUPIED">Occupied</option>
+              <option value="RESERVED">Reserved</option>
+              <option value="MAINTENANCE">Under Maintenance</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="editBedTenantSection">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Tenant Name</label>
+            <input type="text" id="editBedTenantName" name="tenant_name" placeholder="Leave empty if vacant" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div style="margin-top: 10px;">
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Occupied Since Date</label>
+            <input type="date" id="editBedSince" name="occupied_since" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Bed Specific Monthly Rent (₹, Optional)</label>
+          <input type="number" id="editBedRent" name="monthly_rent" placeholder="Defaults to room rent" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+          <button type="button" class="btn-secondary-light" onclick="closeEditBedModal()">Cancel</button>
+          <button type="submit" class="btn-primary-yale">Save Bed Details</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.badge-occupied {
+  font-size: 10px;
+  font-weight: 700;
+  color: #065F46;
+  background: #D1FAE5;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.badge-available {
+  font-size: 10px;
+  font-weight: 700;
+  color: #1D4ED8;
+  background: #DBEAFE;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.badge-reserved {
+  font-size: 10px;
+  font-weight: 700;
+  color: #92400E;
+  background: #FEF3C7;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.badge-maintenance {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4B5563;
+  background: #F3F4F6;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('ajaxToast');
+  const msgEl = document.getElementById('ajaxToastMsg');
+  if (toast && msgEl) {
+    msgEl.innerText = msg;
+    toast.style.display = 'flex';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 3500);
+  }
+}
+
+function handlePropertyChange(propId) {
+  if (propId === 'all') {
+    window.location.href = "{% url 'owner_portal:all_rooms' %}";
+  } else {
+    window.location.href = "/owner/properties/" + propId + "/rooms/";
+  }
+}
+
+// 1. FAST AJAX TOGGLE BED (Mark Vacant / Mark Occupied)
+function quickToggleBed(bedId, targetState, tenantName = '') {
+  const formData = new FormData();
+  formData.append('action', 'toggle_bed');
+  formData.append('bed_id', bedId);
+  formData.append('is_ajax', '1');
+  if (tenantName) {
+    formData.append('tenant_name', tenantName);
+  }
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken'),
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showToast(data.message);
+
+      // Update Bed Status Pill
+      const pill = document.getElementById('bed-status-pill-' + bedId);
+      const infoLine = document.getElementById('bed-info-line-' + bedId);
+      const btnContainer = document.getElementById('bed-toggle-btn-container-' + bedId);
+
+      if (data.new_status === 'AVAILABLE') {
+        if (pill) pill.innerHTML = '<span class="badge-available">● VACANT</span>';
+        if (infoLine) infoLine.innerHTML = '<span style="color: #2563EB; font-weight: 500;">Vacant — Ready for immediate move-in</span>';
+        if (btnContainer) {
+          btnContainer.innerHTML = `<button type="button" class="btn-primary-yale" style="font-size: 11px; padding: 5px 10px; background: #059669;" onclick="openMarkOccupiedModal(${bedId}, 'Bed', '')">Mark Occupied</button>`;
+        }
+      } else {
+        if (pill) pill.innerHTML = '<span class="badge-occupied">● OCCUPIED</span>';
+        if (infoLine) infoLine.innerHTML = `<span style="color: var(--color-dry-sage-dark);">Tenant: <strong>${data.tenant_name}</strong></span><span style="color: var(--color-text-muted);"> · Since ${data.occupied_since || 'Today'}</span>`;
+        if (btnContainer) {
+          btnContainer.innerHTML = `<button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 5px 10px;" onclick="quickToggleBed(${bedId}, 'vacant')">Mark Vacant</button>`;
+        }
+      }
+
+      // Update Room Badge
+      const roomBadge = document.getElementById('room-badge-' + data.room_id);
+      if (roomBadge) {
+        if (data.room_available_beds === 0) {
+          roomBadge.innerHTML = '<span class="badge-verified-sage">Fully Occupied</span>';
+        } else {
+          roomBadge.innerHTML = `<span style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 700;">${data.room_available_beds} Beds Vacant</span>`;
+        }
+      }
+    }
+  })
+  .catch(err => {
+    console.error('Error toggling bed:', err);
+    window.location.reload();
+  });
+}
+
+// 2. MARK OCCUPIED MODAL HANDLERS
+function openMarkOccupiedModal(bedId, bedNumber, roomNumber) {
+  document.getElementById('markOccupiedBedId').value = bedId;
+  document.getElementById('markOccupiedTitle').innerText = `Mark ${bedNumber} (Room ${roomNumber}) as Occupied`;
+  document.getElementById('markOccupiedTenantName').value = '';
+  document.getElementById('markOccupiedDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('markOccupiedModal').style.display = 'flex';
+}
+
+function closeMarkOccupiedModal() {
+  document.getElementById('markOccupiedModal').style.display = 'none';
+}
+
+function submitMarkOccupied(e) {
+  e.preventDefault();
+  const bedId = document.getElementById('markOccupiedBedId').value;
+  const tenantName = document.getElementById('markOccupiedTenantName').value;
+  closeMarkOccupiedModal();
+  quickToggleBed(bedId, 'occupied', tenantName);
+}
+
+// 3. EDIT BED MODAL HANDLERS
+function openEditBedModal(bedId, bedNum, bedPos, status, tenantName, occupiedSince, rent) {
+  document.getElementById('editBedId').value = bedId;
+  document.getElementById('editBedTitle').innerText = `Edit ${bedNum}`;
+  document.getElementById('editBedPos').value = bedPos || 'Window Side';
+  document.getElementById('editBedStatus').value = status;
+  document.getElementById('editBedTenantName').value = tenantName || '';
+  document.getElementById('editBedSince').value = occupiedSince || '';
+  document.getElementById('editBedRent').value = rent ? parseInt(rent) : '';
+  toggleEditBedTenantFields(status);
+  document.getElementById('editBedModal').style.display = 'flex';
+}
+
+function closeEditBedModal() {
+  document.getElementById('editBedModal').style.display = 'none';
+}
+
+function toggleEditBedTenantFields(status) {
+  const sec = document.getElementById('editBedTenantSection');
+  if (sec) {
+    sec.style.display = (status === 'OCCUPIED') ? 'block' : 'none';
+  }
+}
+
+// 4. ADD & EDIT ROOM MODALS
+function openAddRoomModal() {
+  document.getElementById('addRoomModal').style.display = 'flex';
+}
+function closeAddRoomModal() {
+  document.getElementById('addRoomModal').style.display = 'none';
+}
+
+function openEditRoomModal(id, num, type, rent, deposit, bath, ac, furnishing, amenities, photo) {
+  document.getElementById('editRoomId').value = id;
+  document.getElementById('editRoomNumber').value = num;
+  document.getElementById('editRoomType').value = type;
+  document.getElementById('editRoomRent').value = rent ? parseInt(rent) : 14000;
+  document.getElementById('editRoomDeposit').value = deposit ? parseInt(deposit) : 28000;
+  document.getElementById('editRoomBath').value = bath || 'ATTACHED';
+  document.getElementById('editRoomAc').value = ac || 'AC';
+  document.getElementById('editRoomFurnishing').value = furnishing || 'Fully Furnished';
+  document.getElementById('editRoomAmenities').value = amenities || '';
+  document.getElementById('editRoomPhoto').value = photo || '';
+  document.getElementById('editRoomModal').style.display = 'flex';
+}
+function closeEditRoomModal() {
+  document.getElementById('editRoomModal').style.display = 'none';
+}
+
+// Close modals when clicking backdrop
+window.addEventListener('click', (e) => {
+  ['addRoomModal', 'editRoomModal', 'markOccupiedModal', 'editBedModal'].forEach(mId => {
+    const el = document.getElementById(mId);
+    if (el && e.target === el) {
+      el.style.display = 'none';
+    }
+  });
+});
+</script>
+{% endblock %}

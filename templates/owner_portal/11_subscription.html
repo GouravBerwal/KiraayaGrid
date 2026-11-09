@@ -1,0 +1,685 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Subscription &amp; Billing — KiraayaGrid Owner Portal{% endblock %}
+{% block page_title %}Subscription &amp; Billing{% endblock %}
+{% block page_subtitle %}Manage plans, featured discovery boosts, and official tax invoices with 0% brokerage{% endblock %}
+
+{% block content %}
+<!-- TOAST MESSAGES -->
+{% if messages %}
+  <div style="margin-bottom: 20px;" id="djangoMessages">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- FLOATING AJAX NOTIFICATION TOAST -->
+<div id="ajaxToast" style="display: none; position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #065F46; color: #FFFFFF; padding: 12px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.18); align-items: center; gap: 10px;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="ajaxToastMsg">Plan updated successfully.</span>
+</div>
+
+<!-- HEADER ROW -->
+<div class="owner-header-row" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+      Subscription &amp; Billing
+    </h1>
+    <p class="welcome-subheading" style="margin-top: 4px; font-size: 13.5px; color: var(--color-text-muted);">
+      Free direct listings with optional premium discovery boosts and zero mandatory brokerage fees.
+    </p>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <button type="button" onclick="openBoostModal()" class="btn-secondary-light" style="padding: 9px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <span>Buy Discovery Boost</span>
+    </button>
+    <button type="button" onclick="openUpgradeModal('PLUS')" class="btn-primary-yale" style="padding: 9px 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+      <span>View Upgrade Plans &nearr;</span>
+    </button>
+  </div>
+</div>
+
+<!-- CURRENT ACTIVE PLAN BANNER (APPLE GRADIENT CARD) -->
+<div style="background: linear-gradient(135deg, var(--color-yale-blue) 0%, #1A365D 100%); border-radius: var(--radius-xl); padding: 28px 32px; color: #FFFFFF; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0, 53, 107, 0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+      <span style="font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--color-dry-sage); color: #064E3B; letter-spacing: 0.5px;">
+        CURRENT ACTIVE PLAN
+      </span>
+      <span style="font-size: 12.5px; opacity: 0.9; font-weight: 500;">
+        Valid through <strong style="color: #FFFFFF;">{{ subscription.valid_until|date:"d F Y"|default:"15 May 2027" }}</strong>
+      </span>
+    </div>
+
+    <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 6px 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+      <span id="bannerPlanName">{{ subscription.plan_name }}</span>
+      {% if subscription.monthly_price > 0 %}
+        <span style="font-size: 16px; font-weight: 500; opacity: 0.85;">(₹{{ subscription.monthly_price|floatformat:0 }} / month)</span>
+      {% else %}
+        <span style="font-size: 16px; font-weight: 500; opacity: 0.85;">(₹0 / forever)</span>
+      {% endif %}
+    </h2>
+
+    <p style="font-size: 13.5px; opacity: 0.85; max-width: 580px; line-height: 1.5; margin: 0 0 12px 0;">
+      Unlimited free listings, direct seeker leads, WhatsApp visit reminders, verified owner trust badge, and zero brokerage on tenant placements.
+    </p>
+
+    <div style="display: flex; align-items: center; gap: 18px; font-size: 12px; opacity: 0.9;">
+      <div>&check; <strong>0% Brokerage</strong> Policy</div>
+      <div>&bull;</div>
+      <div>&check; <strong>{{ subscription.featured_listings_count }}</strong> Featured Boost Slot{{ subscription.featured_listings_count|pluralize }}</div>
+      <div>&bull;</div>
+      <div>&check; <strong>24/7</strong> WhatsApp Support</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+    {% if subscription.plan_name == 'KiraayaGrid Standard' %}
+      <button type="button" onclick="openUpgradeModal('PLUS')" class="btn-primary-yale" style="background: var(--color-dry-sage); color: #064E3B; border-color: var(--color-dry-sage); font-weight: 700; padding: 10px 20px; font-size: 13.5px;">
+        Upgrade to KiraayaGrid Plus &rarr;
+      </button>
+    {% else %}
+      <button type="button" onclick="renewSubscription()" id="btnRenewSub" class="btn-primary-yale" style="background: #FFFFFF; color: var(--color-yale-blue); border-color: #FFFFFF; font-weight: 700; padding: 10px 20px; font-size: 13.5px;">
+        Renew 1-Year Subscription
+      </button>
+    {% endif %}
+    <span style="font-size: 11.5px; opacity: 0.75;">Zero lock-in &middot; Cancel anytime</span>
+  </div>
+</div>
+
+<!-- 3-TIER APPLE PRICING CARDS GRID -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; align-items: stretch;">
+  <!-- Tier 1: Standard Free -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">Standard Free</div>
+      <div style="font-size: 28px; font-weight: 800; color: var(--color-text-main); margin-bottom: 14px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+        ₹0 <span style="font-size: 13px; font-weight: 500; color: var(--color-text-muted);">/ forever</span>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0 0 20px 0; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--color-text-main);">
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>Unlimited property &amp; room listings</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>Direct seeker enquiry chat &amp; calls</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span><strong>0% brokerage</strong> on all tenant move-ins</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>Verified Owner trust badge</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px; color: var(--color-text-muted);">
+          <span>✕</span>
+          <span>Top search ranking boost</span>
+        </li>
+      </ul>
+    </div>
+    {% if subscription.plan_name == 'KiraayaGrid Standard' %}
+      <button type="button" class="btn-secondary-light" style="width: 100%; justify-content: center; font-weight: 700;" disabled>Current Active Plan</button>
+    {% else %}
+      <button type="button" onclick="openUpgradeModal('FREE')" class="btn-secondary-light" style="width: 100%; justify-content: center; font-weight: 600;">Switch to Free</button>
+    {% endif %}
+  </div>
+
+  <!-- Tier 2: KiraayaGrid Plus (Recommended) -->
+  <div style="background: #FFFFFF; border: 2px solid var(--color-yale-blue); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 4px 16px rgba(0, 53, 107, 0.08); position: relative; display: flex; flex-direction: column; justify-content: space-between;">
+    <span style="position: absolute; top: -11px; right: 20px; background: var(--color-yale-blue); color: #FFFFFF; font-size: 10.5px; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-pill); letter-spacing: 0.5px;">
+      RECOMMENDED FOR FASTER OCCUPANCY
+    </span>
+    <div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">KiraayaGrid Plus (Discovery Boost)</div>
+      <div style="font-size: 28px; font-weight: 800; color: var(--color-yale-blue); margin-bottom: 14px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+        ₹1,999 <span style="font-size: 13px; font-weight: 500; color: var(--color-text-muted);">/ month</span>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0 0 20px 0; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--color-text-main);">
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>All Standard free features included</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span><strong>Top 3 search placement</strong> in your city</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span><strong>3x more seeker enquiries</strong> on average</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span><strong>3 Featured Property Slots</strong> active</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>Priority verification within 4 hours</span>
+        </li>
+      </ul>
+    </div>
+    {% if subscription.plan_name == 'KiraayaGrid Plus' %}
+      <button type="button" class="btn-primary-yale" style="width: 100%; justify-content: center; font-weight: 700;" disabled>Current Active Plan</button>
+    {% else %}
+      <button type="button" onclick="openUpgradeModal('PLUS')" class="btn-primary-yale" style="width: 100%; justify-content: center; font-weight: 700;">Upgrade to Plus &rarr;</button>
+    {% endif %}
+  </div>
+
+  <!-- Tier 3: KiraayaGrid Growth Pro -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">KiraayaGrid Growth Pro</div>
+      <div style="font-size: 28px; font-weight: 800; color: var(--color-text-main); margin-bottom: 14px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+        ₹4,999 <span style="font-size: 13px; font-weight: 500; color: var(--color-text-muted);">/ month</span>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0 0 20px 0; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--color-text-main);">
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>All Plus discovery boost features</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span><strong>8 Featured Property Boosts</strong> across all locations</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>Dedicated Relationship Manager</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>HDR Photography &amp; 360 virtual walkthrough</span>
+        </li>
+        <li style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #059669; font-weight: 700;">&check;</span>
+          <span>Tenant background verification assistance</span>
+        </li>
+      </ul>
+    </div>
+    {% if subscription.plan_name == 'KiraayaGrid Growth Pro' %}
+      <button type="button" class="btn-primary-yale" style="width: 100%; justify-content: center; font-weight: 700;" disabled>Current Active Plan</button>
+    {% else %}
+      <button type="button" onclick="openUpgradeModal('PRO')" class="btn-secondary-light" style="width: 100%; justify-content: center; font-weight: 700;">Upgrade to Pro &rarr;</button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- BILLING & INVOICE HISTORY TABLE (LIMIT 5 WITH SCROLL RETENTION #invoicesList) -->
+<!-- ========================================================= -->
+<div id="invoicesList" style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Top Bar with 4 Filter Tabs (Apple Pill Design with zero blue links) -->
+  <div style="padding: 16px 20px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <!-- All -->
+      <a href="?tab=all{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#invoicesList" 
+         class="enq-filter-tab {% if tab == 'all' %}active{% endif %}"
+         style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if tab == 'all' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+        <span>All Invoices</span>
+        <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if tab == 'all' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_all }}</span>
+      </a>
+
+      <!-- Paid -->
+      <a href="?tab=paid{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#invoicesList" 
+         class="enq-filter-tab {% if tab == 'paid' %}active{% endif %}"
+         style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if tab == 'paid' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+        <span>Paid</span>
+        <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if tab == 'paid' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_paid }}</span>
+      </a>
+
+      <!-- Pending -->
+      <a href="?tab=pending{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#invoicesList" 
+         class="enq-filter-tab {% if tab == 'pending' %}active{% endif %}"
+         style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if tab == 'pending' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+        <span>Pending Payment</span>
+        <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if tab == 'pending' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_pending }}</span>
+      </a>
+
+      <!-- Refunded -->
+      <a href="?tab=refunded{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#invoicesList" 
+         class="enq-filter-tab {% if tab == 'refunded' %}active{% endif %}"
+         style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 12.5px; font-weight: 600; text-decoration: none; transition: all 0.15s ease; {% if tab == 'refunded' %}background: var(--color-yale-blue); color: #FFFFFF; box-shadow: 0 2px 6px rgba(0, 53, 107, 0.2);{% else %}background: transparent; color: var(--color-text-muted);{% endif %}">
+        <span>Refunded</span>
+        <span style="font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: var(--radius-pill); {% if tab == 'refunded' %}background: rgba(255,255,255,0.25); color: #FFFFFF;{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">{{ count_refunded }}</span>
+      </a>
+    </div>
+
+    <!-- Search & Sort Controls -->
+    <form method="GET" action="{% url 'owner_portal:subscription' %}" style="margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      {% if tab != 'all' %}
+        <input type="hidden" name="tab" value="{{ tab }}">
+      {% endif %}
+
+      <div style="position: relative; width: 200px;">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search invoice #..." style="width: 100%; box-sizing: border-box; padding: 7px 10px 7px 28px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12.5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 9px; top: 9px; color: var(--color-text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+
+      <select name="sort" onchange="this.form.submit()" style="padding: 7px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 12px; background: #fff;">
+        <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Newest First</option>
+        <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Oldest First</option>
+        <option value="amount_high" {% if sort_by == 'amount_high' %}selected{% endif %}>Amount: High to Low</option>
+        <option value="amount_low" {% if sort_by == 'amount_low' %}selected{% endif %}>Amount: Low to High</option>
+      </select>
+    </form>
+  </div>
+
+  <!-- Invoices Table -->
+  <table class="enquiries-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+    <thead>
+      <tr style="background: var(--color-bg); border-bottom: 1px solid var(--color-border);">
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">INVOICE ID</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">PLAN / SERVICE</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">BILLING DATE</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">AMOUNT (₹)</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">STATUS</th>
+        <th style="padding: 12px 18px; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; text-align: right;">RECEIPT &amp; ACTIONS</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inv in invoices %}
+        <tr id="invoice-row-{{ inv.id }}" style="border-bottom: 1px solid var(--color-border); transition: background 0.15s ease;">
+          <!-- Invoice ID -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <span style="font-weight: 700; font-size: 13.5px; color: var(--color-yale-blue); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+              {{ inv.invoice_number }}
+            </span>
+          </td>
+
+          <!-- Service Description -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <div style="font-weight: 600; font-size: 13.5px; color: var(--color-text-main);">{{ inv.plan_name }}</div>
+            <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">GSTIN 29AABCU9603R1ZM &middot; Tax Invoice</div>
+          </td>
+
+          <!-- Date -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <span style="font-size: 13px; font-weight: 500; color: var(--color-text-main);">
+              {{ inv.billing_date|date:"d M Y" }}
+            </span>
+          </td>
+
+          <!-- Amount -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            <div style="font-weight: 700; font-size: 14px; color: var(--color-text-main); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+              ₹{{ inv.amount|floatformat:2 }}
+            </div>
+            {% if inv.amount > 0 %}
+              <div style="font-size: 10.5px; color: var(--color-text-muted);">Incl. ₹{{ inv.gst_amount|floatformat:2 }} GST</div>
+            {% else %}
+              <div style="font-size: 10.5px; color: #059669; font-weight: 600;">Complimentary</div>
+            {% endif %}
+          </td>
+
+          <!-- Status Badge -->
+          <td style="padding: 14px 18px; vertical-align: middle;">
+            {% if inv.status == 'PAID' %}
+              <span style="font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-pill); background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0;">
+                &check; Paid
+              </span>
+            {% elif inv.status == 'PENDING' %}
+              <span style="font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-pill); background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;">
+                Pending
+              </span>
+            {% else %}
+              <span style="font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-pill); background: #EDE9FE; color: #5B21B6; border: 1px solid #DDD6FE;">
+                Refunded
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- Actions -->
+          <td style="padding: 14px 18px; text-align: right; vertical-align: middle;">
+            <div style="display: inline-flex; align-items: center; gap: 6px;">
+              {% if inv.status == 'PENDING' %}
+                <button type="button" class="btn-primary-yale" style="padding: 5px 10px; font-size: 11.5px; background: #059669; border-color: #059669;" onclick="payInvoice({{ inv.id }})">
+                  Pay Now
+                </button>
+              {% endif %}
+
+              <a href="{% url 'owner_portal:view_invoice_receipt' inv.id %}" target="_blank" class="btn-secondary-light" style="padding: 5px 10px; font-size: 11.5px; text-decoration: none;" title="Open Tax Receipt">
+                Receipt &nearr;
+              </a>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 48px; color: var(--color-text-muted);">
+            <div style="font-size: 15px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">No invoices match this filter</div>
+            <p style="font-size: 13px; margin: 0;">Try selecting a different filter tab or clear your search terms.</p>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGINATION CONTROLS (LIMIT 5 WITH SCROLL RETENTION #invoicesList) -->
+<!-- ========================================================= -->
+{% if paginator.num_pages > 1 %}
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-top: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+  <!-- Showing indicator -->
+  <div style="font-size: 13px; color: var(--color-text-muted);">
+    Showing <strong style="color: var(--color-text-main);">{{ page_obj.start_index }}</strong> to <strong style="color: var(--color-text-main);">{{ page_obj.end_index }}</strong> of <strong style="color: var(--color-text-main);">{{ paginator.count }}</strong> invoices
+  </div>
+
+  <!-- Page Navigation Controls -->
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <!-- Previous Page -->
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if tab != 'all' %}&tab={{ tab }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#invoicesList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        &larr; Previous
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        &larr; Previous
+      </span>
+    {% endif %}
+
+    <!-- Page Number Pills -->
+    {% for num in paginator.page_range %}
+      {% if num == page_obj.number %}
+        <span style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; background: var(--color-yale-blue); color: #FFFFFF;">
+          {{ num }}
+        </span>
+      {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+        <a href="?page={{ num }}{% if tab != 'all' %}&tab={{ tab }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#invoicesList" 
+           style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; color: var(--color-text-main); text-decoration: none; border: 1px solid var(--color-border); background: #FFFFFF;">
+          {{ num }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Next Page -->
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if tab != 'all' %}&tab={{ tab }}{% endif %}{% if q %}&q={{ q }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}#invoicesList" 
+         class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+        Next &rarr;
+      </a>
+    {% else %}
+      <span class="btn-secondary-light" style="padding: 6px 12px; font-size: 12px; opacity: 0.4; cursor: not-allowed;">
+        Next &rarr;
+      </span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ========================================================= -->
+<!-- MODAL 1: UPGRADE SUBSCRIPTION PLAN -->
+<!-- ========================================================= -->
+<div id="upgradeModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 92%; max-width: 480px; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="font-size: 17px; font-weight: 700; color: var(--color-text-main); margin: 0;">Select Subscription Plan</h3>
+      <button type="button" onclick="closeUpgradeModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+
+    <form id="upgradePlanForm" onsubmit="submitUpgradePlan(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="upgrade_plan">
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+        <!-- Option 1: KiraayaGrid Plus -->
+        <label style="border: 2px solid var(--color-yale-blue); border-radius: var(--radius-md); padding: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #F8FAFC;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="plan_type" value="PLUS" checked style="accent-color: var(--color-yale-blue);">
+            <div>
+              <div style="font-weight: 700; font-size: 14px; color: var(--color-text-main);">KiraayaGrid Plus (Recommended)</div>
+              <div style="font-size: 11.5px; color: var(--color-text-muted);">Top 3 search rank &middot; 3 Featured boosts</div>
+            </div>
+          </div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--color-yale-blue);">₹1,999/mo</div>
+        </label>
+
+        <!-- Option 2: KiraayaGrid Growth Pro -->
+        <label style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="plan_type" value="PRO" style="accent-color: var(--color-yale-blue);">
+            <div>
+              <div style="font-weight: 700; font-size: 14px; color: var(--color-text-main);">KiraayaGrid Growth Pro</div>
+              <div style="font-size: 11.5px; color: var(--color-text-muted);">8 Featured boosts &middot; Dedicated Manager</div>
+            </div>
+          </div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--color-text-main);">₹4,999/mo</div>
+        </label>
+
+        <!-- Option 3: Standard Free -->
+        <label style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="radio" name="plan_type" value="FREE" style="accent-color: var(--color-yale-blue);">
+            <div>
+              <div style="font-weight: 700; font-size: 14px; color: var(--color-text-main);">Standard Free Plan</div>
+              <div style="font-size: 11.5px; color: var(--color-text-muted);">Unlimited basic listings &middot; 0% Brokerage</div>
+            </div>
+          </div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--color-text-muted);">₹0</div>
+        </label>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary-light" onclick="closeUpgradeModal()" style="padding: 8px 14px; font-size: 12.5px;">Cancel</button>
+        <button type="submit" id="btnSubmitUpgrade" class="btn-primary-yale" style="padding: 8px 18px; font-size: 12.5px; font-weight: 600;">Confirm &amp; Activate Plan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MODAL 2: BUY DISCOVERY BOOST -->
+<!-- ========================================================= -->
+<div id="boostModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); width: 92%; max-width: 460px; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.2s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="font-size: 16.5px; font-weight: 700; color: var(--color-text-main); margin: 0;">
+        Activate Featured Discovery Boost
+      </h3>
+      <button type="button" onclick="closeBoostModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+
+    <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0 0 16px 0;">
+      Featured listings appear at the very top of search discovery in your city, delivering up to 3x more direct enquiries.
+    </p>
+
+    <form id="boostForm" onsubmit="submitBoost(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="purchase_boost">
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 6px;">SELECT PROPERTY TO BOOST</label>
+        <select name="property_id" style="width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+          {% for p in owner_properties %}
+            <option value="{{ p.id }}">{{ p.title }} ({{ p.locality.name }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="background: var(--color-bg); padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); font-size: 13px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong style="color: var(--color-text-main);">30-Day Boost Duration</strong>
+          <div style="font-size: 11px; color: var(--color-text-muted);">Incl. 18% GST invoice receipt</div>
+        </div>
+        <div style="font-size: 18px; font-weight: 800; color: var(--color-yale-blue); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+          ₹1,499
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary-light" onclick="closeBoostModal()" style="padding: 8px 14px; font-size: 12.5px;">Cancel</button>
+        <button type="submit" id="btnSubmitBoost" class="btn-primary-yale" style="padding: 8px 18px; font-size: 12.5px; font-weight: 600;">Activate Boost</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function showToast(msg) {
+  const t = document.getElementById('ajaxToast');
+  const txt = document.getElementById('ajaxToastMsg');
+  txt.innerText = msg;
+  t.style.display = 'flex';
+  setTimeout(() => { t.style.display = 'none'; }, 4000);
+}
+
+// 1. Upgrade Modal
+function openUpgradeModal(preselect) {
+  const rad = document.querySelector(`input[name="plan_type"][value="${preselect}"]`);
+  if (rad) rad.checked = true;
+  document.getElementById('upgradeModal').style.display = 'flex';
+}
+
+function closeUpgradeModal() {
+  document.getElementById('upgradeModal').style.display = 'none';
+}
+
+function submitUpgradePlan(e) {
+  e.preventDefault();
+  const form = document.getElementById('upgradePlanForm');
+  const btn = document.getElementById('btnSubmitUpgrade');
+  btn.disabled = true;
+  btn.innerText = 'Activating Plan...';
+
+  const formData = new FormData(form);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerText = 'Confirm & Activate Plan';
+    closeUpgradeModal();
+    if (data.status === 'success') {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 900);
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    form.submit();
+  });
+}
+
+// 2. Renew Subscription
+function renewSubscription() {
+  const btn = document.getElementById('btnRenewSub');
+  btn.disabled = true;
+  btn.innerText = 'Renewing...';
+
+  const formData = new FormData();
+  formData.append('action', 'renew_subscription');
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerText = 'Renew 1-Year Subscription';
+    if (data.status === 'success') {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 900);
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    window.location.reload();
+  });
+}
+
+// 3. Boost Modal
+function openBoostModal() {
+  document.getElementById('boostModal').style.display = 'flex';
+}
+
+function closeBoostModal() {
+  document.getElementById('boostModal').style.display = 'none';
+}
+
+function submitBoost(e) {
+  e.preventDefault();
+  const form = document.getElementById('boostForm');
+  const btn = document.getElementById('btnSubmitBoost');
+  btn.disabled = true;
+  btn.innerText = 'Activating Boost...';
+
+  const formData = new FormData(form);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerText = 'Activate Boost';
+    closeBoostModal();
+    if (data.status === 'success') {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 900);
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    form.submit();
+  });
+}
+
+// 4. Pay Pending Invoice
+function payInvoice(invId) {
+  const formData = new FormData();
+  formData.append('action', 'pay_invoice');
+  formData.append('invoice_id', invId);
+  formData.append('is_ajax', '1');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      showToast(data.message);
+      setTimeout(() => { window.location.reload(); }, 900);
+    }
+  })
+  .catch(err => {
+    window.location.reload();
+  });
+}
+</script>
+{% endblock %}

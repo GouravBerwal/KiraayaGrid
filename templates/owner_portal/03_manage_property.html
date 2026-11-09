@@ -1,0 +1,1274 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Manage {{ property.title }} — KiraayaGrid Owner Portal{% endblock %}
+{% block page_title %}Manage Property{% endblock %}
+{% block page_subtitle %}{{ property.title }} · {{ property.locality.name|default:"Locality" }}, {{ property.city.name|default:"Bengaluru" }}{% endblock %}
+
+{% block content %}
+<!-- TOAST MESSAGES -->
+{% if messages %}
+  <div style="margin-bottom: 20px;">
+    {% for message in messages %}
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 12px 18px; border-radius: var(--radius-md); font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08); margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #065F46; line-height: 1;">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- HEADER ROW -->
+<div class="owner-header-row" style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+      <a href="{% url 'owner_portal:my_properties' %}" style="color: var(--color-text-muted); text-decoration: none; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: color 0.15s ease;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>Back to My Properties</span>
+      </a>
+      <span style="color: var(--color-border);">|</span>
+      {% if property.status == 'APPROVED' %}
+        <span class="badge-verified-sage">✓ Live &amp; Verified</span>
+      {% elif property.status == 'PAUSED' %}
+        <span style="background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 3px 9px; border-radius: 9999px; font-size: 11px; font-weight: 600;">⏸ Paused</span>
+      {% elif property.status == 'PENDING' %}
+        <span class="badge-pending-powder">◔ Awaiting Verification</span>
+      {% elif property.status == 'CHANGES_REQUESTED' %}
+        <span style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; padding: 3px 9px; border-radius: 9999px; font-size: 11px; font-weight: 600;">⚠ Changes Requested</span>
+      {% elif property.status == 'REJECTED' %}
+        <span style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; padding: 3px 9px; border-radius: 9999px; font-size: 11px; font-weight: 600;">✕ Listing Rejected</span>
+      {% else %}
+        <span style="background: #F3F4F6; color: #4B5563; padding: 3px 9px; border-radius: 9999px; font-size: 11px; font-weight: 600;">{{ property.status }}</span>
+      {% endif %}
+
+      <span style="background: rgba(30, 77, 107, 0.08); color: var(--color-yale-blue); padding: 3px 9px; border-radius: 9999px; font-size: 11px; font-weight: 600;">
+        {{ property.property_type }}
+      </span>
+      <span style="background: #F3F4F6; color: var(--color-text-muted); padding: 3px 9px; border-radius: 9999px; font-size: 11px; font-weight: 500;">
+        ID: #{{ property.id }}
+      </span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <h1 class="welcome-heading" style="font-size: 24px; font-weight: 700; margin: 0; color: var(--color-text-main);">
+        {{ property.title }}
+      </h1>
+
+      {% if all_owner_properties|length > 1 %}
+        <!-- Quick Switch Property Dropdown -->
+        <div style="position: relative; display: inline-block;">
+          <select onchange="window.location.href='/owner/properties/' + this.value + '/'" style="padding: 4px 10px; font-size: 12px; font-weight: 600; color: var(--color-text-muted); background: #FFFFFF; border: 1px solid var(--color-border); border-radius: 6px; cursor: pointer;">
+            {% for op in all_owner_properties %}
+              <option value="{{ op.id }}" {% if op.id == property.id %}selected{% endif %}>
+                Switch: {{ op.title }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+    </div>
+
+    <p class="welcome-subheading" style="margin-top: 4px; font-size: 13px; color: var(--color-text-muted);">
+      {{ property.address_line }}, {{ property.locality.name }}, {{ property.city.name }} — {{ property.pincode }}
+    </p>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <!-- Manage Rooms Shortcut -->
+    <a href="{% url 'owner_portal:room_bed_management' property.id %}" class="btn-secondary-light" style="padding: 9px 14px; text-decoration: none;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+      <span>Manage Rooms &amp; Beds</span>
+    </a>
+
+    <!-- Pause / Resume Toggle Form -->
+    <form method="POST" style="margin: 0; display: inline-block;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="toggle_pause">
+      {% if property.status == 'APPROVED' %}
+        <button type="submit" class="btn-secondary-light" style="color: #64748B; padding: 9px 14px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          <span>Pause Listing</span>
+        </button>
+      {% elif property.status == 'PAUSED' %}
+        <button type="submit" class="btn-primary-yale" style="padding: 9px 14px; background: #059669;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>Resume Listing</span>
+        </button>
+      {% else %}
+        <button type="button" class="btn-secondary-light" style="padding: 9px 14px; opacity: 0.6; cursor: not-allowed;" title="Listing is in verification review">
+          <span>In Review</span>
+        </button>
+      {% endif %}
+    </form>
+
+    <a href="{% url 'owner_portal:enquiries' %}?property={{ property.id }}" class="btn-secondary-light" style="padding: 9px 12px;" title="View Enquiries for this property">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </a>
+  </div>
+</div>
+
+<!-- 12 TABS SCROLLABLE BAR -->
+<div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 5px; margin-bottom: 24px; overflow-x: auto; display: flex; gap: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);" id="propertyTabs">
+  <button class="prop-tab-btn active" data-tab="tab-overview" onclick="switchPropTab(event, 'tab-overview')">Overview</button>
+  <button class="prop-tab-btn" data-tab="tab-info" onclick="switchPropTab(event, 'tab-info')">Property Info</button>
+  <button class="prop-tab-btn" data-tab="tab-location" onclick="switchPropTab(event, 'tab-location')">Location</button>
+  <button class="prop-tab-btn" data-tab="tab-specs" onclick="switchPropTab(event, 'tab-specs')">Specifications</button>
+  <button class="prop-tab-btn" data-tab="tab-amenities" onclick="switchPropTab(event, 'tab-amenities')">Amenities <span class="tab-pill">{{ meta_amenities_list|length }}</span></button>
+  <button class="prop-tab-btn" data-tab="tab-rooms" onclick="switchPropTab(event, 'tab-rooms')">Rooms <span class="tab-pill">{{ rooms|length }}</span></button>
+  <button class="prop-tab-btn" data-tab="tab-pricing" onclick="switchPropTab(event, 'tab-pricing')">Pricing</button>
+  <button class="prop-tab-btn" data-tab="tab-photos" onclick="switchPropTab(event, 'tab-photos')">Photos <span class="tab-pill">{{ photos|length }}</span></button>
+  <button class="prop-tab-btn" data-tab="tab-rules" onclick="switchPropTab(event, 'tab-rules')">Rules &amp; Preferences</button>
+  <button class="prop-tab-btn" data-tab="tab-availability" onclick="switchPropTab(event, 'tab-availability')">Availability</button>
+  <button class="prop-tab-btn" data-tab="tab-documents" onclick="switchPropTab(event, 'tab-documents')">Documents</button>
+  <button class="prop-tab-btn" data-tab="tab-history" onclick="switchPropTab(event, 'tab-history')">Verification History <span class="tab-pill">{{ audit_logs|length }}</span></button>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 1: OVERVIEW -->
+<!-- ========================================================= -->
+<div id="tab-overview" class="prop-tab-content active">
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <!-- Left Column -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <!-- Quick Summary Metric Cards -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px;">
+        <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+          <span>Live Occupancy &amp; Inventory</span>
+          <span style="font-size: 12px; font-weight: 500; color: var(--color-text-muted);">Real-time Database</span>
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+          <div style="background: var(--color-bg); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">OCCUPANCY</div>
+            <div style="font-size: 26px; font-weight: 700; color: var(--color-text-main); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+              {{ occupancy_pct }}%
+            </div>
+            <div style="font-size: 12px; color: var(--color-dry-sage-dark); font-weight: 600; margin-top: 2px;">
+              {{ occupied_beds }} / {{ total_beds }} beds occupied
+            </div>
+          </div>
+          <div style="background: var(--color-bg); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">ROOM INVENTORY</div>
+            <div style="font-size: 26px; font-weight: 700; color: var(--color-text-main); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+              {{ rooms|length }}
+            </div>
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+              {{ available_beds }} beds currently vacant
+            </div>
+          </div>
+          <div style="background: var(--color-bg); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">STARTING RENT</div>
+            <div style="font-size: 26px; font-weight: 700; color: var(--color-text-main); margin-top: 4px; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+              ₹{{ min_rent|floatformat:0 }}
+            </div>
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+              Avg: ₹{{ avg_rent|floatformat:0 }} / bed / mo
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Property Details Card -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <h3 style="font-size: 15px; font-weight: 700; color: var(--color-text-main);">About This Listing</h3>
+          <button type="button" class="btn-secondary-light" onclick="switchPropTab(null, 'tab-info')" style="font-size: 12px; padding: 5px 10px;">Edit Info</button>
+        </div>
+
+        <p style="font-size: 13.5px; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 18px;">
+          {{ meta.description|default:"No description provided yet. Click 'Edit Information' to describe your property, facilities, and target occupants." }}
+        </p>
+
+        <!-- Key Parameter Tags -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 14px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+          <div>
+            <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">PROPERTY TYPE</div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--color-text-main); margin-top: 2px;">{{ property.property_type }}</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">GENDER SUITABILITY</div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--color-text-main); margin-top: 2px;">
+              {% if property.gender_category == 'MALE' %}Male / Boys Only
+              {% elif property.gender_category == 'FEMALE' %}Female / Girls Only
+              {% else %}Co-ed / Anyone{% endif %}
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">FURNISHING &amp; CONDITION</div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--color-text-main); margin-top: 2px;">{{ meta.furnishing }} · {{ meta.property_condition }}</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">FLOORS &amp; POWER BACKUP</div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--color-text-main); margin-top: 2px;">{{ meta.total_floors }} Floors · {{ meta.power_backup }}</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 18px;">
+          <button type="button" class="btn-secondary-light" onclick="switchPropTab(null, 'tab-photos')" style="font-size: 12.5px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            <span>Manage Gallery ({{ photos|length }})</span>
+          </button>
+          <button type="button" class="btn-secondary-light" onclick="switchPropTab(null, 'tab-rooms')" style="font-size: 12.5px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+            <span>View Rooms ({{ rooms|length }})</span>
+          </button>
+          <button type="button" class="btn-secondary-light" onclick="switchPropTab(null, 'tab-pricing')" style="font-size: 12.5px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Manage Pricing</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column Sidebar -->
+    <div style="display: flex; flex-direction: column; gap: 18px;">
+      <!-- Cover Photo Card -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden;">
+        <div style="height: 180px; position: relative; background: #E2E8F0;">
+          {% if cover_photo %}
+            <img src="{{ cover_photo.photo_url }}" alt="{{ property.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+          {% else %}
+            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); font-size: 13px;">
+              No cover photo uploaded
+            </div>
+          {% endif %}
+          <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 4px; backdrop-filter: blur(4px);">
+            Cover Photograph
+          </div>
+        </div>
+        <div style="padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; color: var(--color-text-muted); font-weight: 500;">{{ photos|length }} Photos in Gallery</span>
+          <button type="button" class="btn-secondary-light" onclick="switchPropTab(null, 'tab-photos')" style="font-size: 11.5px; padding: 4px 8px;">Upload</button>
+        </div>
+      </div>
+
+      <!-- Listing Status Controls -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px;">
+        <h4 style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 12px;">Marketplace Visibility</h4>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 10px 12px; background: var(--color-bg); border-radius: var(--radius-md);">
+          <span style="font-size: 12.5px; font-weight: 600;">Status</span>
+          {% if property.status == 'APPROVED' %}
+            <span class="badge-verified-sage">Public &amp; Live</span>
+          {% elif property.status == 'PAUSED' %}
+            <span style="background: #F1F5F9; color: #475569; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">Paused</span>
+          {% else %}
+            <span class="badge-pending-powder">{{ property.status }}</span>
+          {% endif %}
+        </div>
+
+        <form method="POST" style="margin: 0;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="toggle_pause">
+          {% if property.status == 'APPROVED' %}
+            <button type="submit" class="btn-secondary-light" style="width: 100%; justify-content: center; font-size: 12.5px;">
+              Pause Listing
+            </button>
+          {% elif property.status == 'PAUSED' %}
+            <button type="submit" class="btn-primary-yale" style="width: 100%; justify-content: center; font-size: 12.5px; background: #059669;">
+              Resume Listing
+            </button>
+          {% endif %}
+        </form>
+      </div>
+
+      <!-- Verification Seal -->
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px;">
+        <h4 style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">Trust &amp; Verification</h4>
+        <p style="font-size: 12px; color: var(--color-text-muted); line-height: 1.5; margin-bottom: 12px;">
+          Ownership deed and utility invoices are verified against municipal registries.
+        </p>
+        <div style="font-size: 12px; font-weight: 600; color: var(--color-dry-sage-dark); display: flex; align-items: center; gap: 6px;">
+          <span>✓</span>
+          <span>Verified by {{ verifier_name }}</span>
+        </div>
+        <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px; margin-left: 18px;">
+          Audit Date: {{ property.verified_at|date:"d M Y"|default:"Verified & Live" }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 2: PROPERTY INFO -->
+<!-- ========================================================= -->
+<div id="tab-info" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Basic Property Information</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Update public listing details, type, and description visible to prospective seekers.</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="info">
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Property Name / Listing Title</label>
+          <input type="text" name="title" value="{{ property.title }}" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Property Type</label>
+            <select name="property_type" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              <option value="Co-living Space" {% if property.property_type == 'Co-living Space' %}selected{% endif %}>Co-living Space</option>
+              <option value="Paying Guest (PG)" {% if property.property_type == 'Paying Guest (PG)' or property.property_type == 'PG' %}selected{% endif %}>Paying Guest (PG)</option>
+              <option value="Hostel" {% if property.property_type == 'Hostel' %}selected{% endif %}>Hostel</option>
+              <option value="Flat / Apartment" {% if property.property_type == 'Flat / Apartment' or property.property_type == 'Flat' %}selected{% endif %}>Flat / Apartment</option>
+              <option value="Independent House" {% if property.property_type == 'Independent House' %}selected{% endif %}>Independent House</option>
+              <option value="Shared Accommodation" {% if property.property_type == 'Shared Accommodation' %}selected{% endif %}>Shared Accommodation</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Gender Category</label>
+            <select name="gender_category" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              <option value="ALL" {% if property.gender_category == 'ALL' or property.gender_category == 'Co-ed' %}selected{% endif %}>Co-ed / Anyone</option>
+              <option value="MALE" {% if property.gender_category == 'MALE' %}selected{% endif %}>Boys / Male Only</option>
+              <option value="FEMALE" {% if property.gender_category == 'FEMALE' %}selected{% endif %}>Girls / Female Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Furnishing Level</label>
+            <select name="furnishing" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              <option value="Fully Furnished" {% if meta.furnishing == 'Fully Furnished' %}selected{% endif %}>Fully Furnished</option>
+              <option value="Semi-Furnished" {% if meta.furnishing == 'Semi-Furnished' %}selected{% endif %}>Semi-Furnished</option>
+              <option value="Unfurnished" {% if meta.furnishing == 'Unfurnished' %}selected{% endif %}>Unfurnished</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Property Condition</label>
+            <select name="property_condition" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              <option value="Brand New / Excellent" {% if meta.property_condition == 'Brand New / Excellent' %}selected{% endif %}>Brand New / Excellent</option>
+              <option value="Newly Renovated" {% if meta.property_condition == 'Newly Renovated' %}selected{% endif %}>Newly Renovated</option>
+              <option value="Good / Well Maintained" {% if meta.property_condition == 'Good / Well Maintained' %}selected{% endif %}>Good / Well Maintained</option>
+              <option value="Standard" {% if meta.property_condition == 'Standard' %}selected{% endif %}>Standard</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Detailed Property Description</label>
+          <textarea name="description" rows="5" style="width: 100%; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; line-height: 1.6; outline: none;">{{ meta.description }}</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
+          <button type="submit" class="btn-primary-yale" style="padding: 10px 20px;">
+            Save Information
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 3: LOCATION -->
+<!-- ========================================================= -->
+<div id="tab-location" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Location &amp; Address</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Physical address and GPS coordinates used for seeker map searches and directions.</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="location">
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Address Line (Street, Building, Landmark)</label>
+          <input type="text" name="address_line" value="{{ property.address_line }}" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; outline: none;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">City</label>
+            <select name="city" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              {% for c in all_cities %}
+                <option value="{{ c.id }}" {% if property.city and property.city.id == c.id %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Locality / Neighborhood</label>
+            <select name="locality" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              {% for loc in localities %}
+                <option value="{{ loc.id }}" {% if property.locality and property.locality.id == loc.id %}selected{% endif %}>{{ loc.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">PIN Code</label>
+            <input type="text" name="pincode" value="{{ property.pincode }}" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Latitude (GPS)</label>
+            <input type="text" name="latitude" value="{{ property.latitude|default:'12.9352' }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Longitude (GPS)</label>
+            <input type="text" name="longitude" value="{{ property.longitude|default:'77.6245' }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+        </div>
+
+        <div style="background: var(--color-bg); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-yale-blue)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span style="font-size: 13px; color: var(--color-text-main); font-weight: 500;">
+              Preview Coordinates: {{ property.latitude|default:'12.9352' }}, {{ property.longitude|default:'77.6245' }}
+            </span>
+          </div>
+          <a href="https://www.google.com/maps?q={{ property.latitude|default:'12.9352' }},{{ property.longitude|default:'77.6245' }}" target="_blank" style="font-size: 12px; font-weight: 600; color: var(--color-yale-blue); text-decoration: none;">
+            Open in Google Maps &nearr;
+          </a>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="submit" class="btn-primary-yale" style="padding: 10px 20px;">
+            Save Location &amp; Coordinates
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 4: SPECIFICATIONS -->
+<!-- ========================================================= -->
+<div id="tab-specs" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Property Specifications</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Building structure, total floors, elevator, power and water supply parameters.</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="specs">
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Total Building Floors</label>
+            <input type="number" name="total_floors" value="{{ meta.total_floors|default:4 }}" min="1" max="50" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Built-up Area (Sq. Ft.)</label>
+            <input type="text" name="built_up_area" value="{{ meta.built_up_area|default:'5,800 sq.ft.' }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Lift / Elevator Facility</label>
+            <select name="has_lift" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              <option value="1" {% if meta.has_lift %}selected{% endif %}>Available (Automated Passenger Lift)</option>
+              <option value="0" {% if not meta.has_lift %}selected{% endif %}>Not Available (Stairs Only)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Power Backup</label>
+            <select name="power_backup" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+              <option value="24/7 Full DG Backup" {% if meta.power_backup == '24/7 Full DG Backup' %}selected{% endif %}>24/7 Full DG Backup (Runs AC &amp; Geysers)</option>
+              <option value="Inverter Backup for Lights &amp; Fans" {% if meta.power_backup == 'Inverter Backup for Lights &amp; Fans' %}selected{% endif %}>Inverter Backup (Lights, Fans &amp; Wi-Fi only)</option>
+              <option value="None" {% if meta.power_backup == 'None' %}selected{% endif %}>None</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Water Supply &amp; Storage</label>
+          <select name="water_supply" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #FFFFFF;">
+            <option value="Corporation &amp; Borewell (24/7)" {% if meta.water_supply == 'Corporation & Borewell (24/7)' %}selected{% endif %}>Corporation &amp; Borewell 24/7 Dual Supply</option>
+            <option value="Corporation Water Supply" {% if meta.water_supply == 'Corporation Water Supply' %}selected{% endif %}>Municipal Corporation Water Only</option>
+            <option value="Borewell Water Supply" {% if meta.water_supply == 'Borewell Water Supply' %}selected{% endif %}>Borewell Water with Dedicated Softener</option>
+            <option value="Tanker Water Backup" {% if meta.water_supply == 'Tanker Water Backup' %}selected{% endif %}>Private Tanker Water Storage</option>
+          </select>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
+          <button type="submit" class="btn-primary-yale" style="padding: 10px 20px;">
+            Save Specifications
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 5: AMENITIES -->
+<!-- ========================================================= -->
+<div id="tab-amenities" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">Included Amenities &amp; Facilities</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted);">
+          Select all services and amenities offered at {{ property.title }}. Currently active: 
+          <strong style="color: var(--color-yale-blue);">{{ meta_amenities_list|length }} facilities</strong>.
+        </p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn-secondary-light" onclick="toggleAllAmenities(true)" style="font-size: 12px; padding: 6px 12px;">Select All</button>
+        <button type="button" class="btn-secondary-light" onclick="toggleAllAmenities(false)" style="font-size: 12px; padding: 6px 12px;">Clear All</button>
+      </div>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="amenities">
+
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        {% for cat in amenities_by_category %}
+          <div style="border-top: 1px solid var(--color-border); padding-top: 16px;">
+            <h4 style="font-size: 12px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-yale-blue);">
+              {{ cat.title }}
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              {% for item in cat.items %}
+                <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 10px 12px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s ease;">
+                  <input type="checkbox" name="amenities" value="{{ item.name }}" class="amenity-checkbox" {% if item.name in meta_amenities_list %}checked{% endif %} style="width: 16px; height: 16px; accent-color: var(--color-yale-blue);">
+                  <span style="font-weight: 500; color: var(--color-text-main);">{{ item.name }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--color-border); padding-top: 20px;">
+          <button type="submit" class="btn-primary-yale" style="padding: 10px 24px;">
+            Save Amenities ({{ meta_amenities_list|length }} Active)
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 6: ROOMS -->
+<!-- ========================================================= -->
+<div id="tab-rooms" class="prop-tab-content">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main);">Room Configurations &amp; Bed Allocations</h3>
+      <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 2px;">
+        {{ rooms|length }} active rooms · {{ total_beds }} total beds · {{ available_beds }} beds currently vacant
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <a href="{% url 'owner_portal:room_bed_management' property.id %}" class="btn-secondary-light" style="font-size: 12.5px; padding: 8px 14px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path></svg>
+        <span>Manage Bed Status</span>
+      </a>
+      <button type="button" class="btn-primary-yale" onclick="toggleAddRoomCard()" style="font-size: 12.5px; padding: 8px 14px;">
+        + Add New Room
+      </button>
+    </div>
+  </div>
+
+  <!-- ADD NEW ROOM COLLAPSIBLE FORM CARD -->
+  <div id="addRoomCard" style="display: none; background: #FFFFFF; border: 2px solid var(--color-yale-blue); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(30,77,107,0.08);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h4 style="font-size: 15px; font-weight: 700; color: var(--color-yale-blue);">+ Add New Room Configuration</h4>
+      <button type="button" onclick="toggleAddRoomCard()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="rooms">
+      <input type="hidden" name="action" value="add_room">
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Room Number</label>
+          <input type="text" name="room_number" placeholder="e.g. Room 301" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Room Type</label>
+          <select name="room_type" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+            <option value="SINGLE">Private / Single Room</option>
+            <option value="DOUBLE" selected>Double Sharing</option>
+            <option value="TRIPLE">Triple Sharing</option>
+            <option value="FOUR_SHARING">Four Sharing</option>
+            <option value="DORM">Dormitory</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Total Beds</label>
+          <input type="number" name="total_beds" value="2" min="1" max="10" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Monthly Rent (₹ / bed)</label>
+          <input type="number" name="monthly_rent" value="14000" min="1000" step="500" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Security Deposit (₹)</label>
+          <input type="number" name="security_deposit" value="28000" min="0" step="500" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Bathroom Type</label>
+          <select name="bathroom_type" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+            <option value="ATTACHED" selected>Attached Ensuite Bathroom</option>
+            <option value="SHARED">Shared Bathroom on Floor</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Air Conditioning</label>
+          <select name="ac_type" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+            <option value="AC" selected>Air Conditioned (AC)</option>
+            <option value="NON_AC">Non-AC</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button type="button" class="btn-secondary-light" onclick="toggleAddRoomCard()">Cancel</button>
+        <button type="submit" class="btn-primary-yale">+ Create Room Configuration</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ROOMS GRID -->
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+    {% for r in rooms %}
+      <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div>
+            <h4 style="font-size: 15px; font-weight: 700; color: var(--color-text-main);">
+              Room {{ r.room_number }} · {{ r.get_room_type_display }}
+            </h4>
+            <span style="font-size: 12px; color: var(--color-text-muted);">
+              {{ r.get_bathroom_type_display }} · {{ r.get_ac_type_display }} · {{ r.furnishing }}
+            </span>
+          </div>
+          {% if r.available_beds == 0 %}
+            <span class="badge-verified-sage">Fully Occupied</span>
+          {% else %}
+            <span class="badge-pending-powder">{{ r.available_beds }} Vacant</span>
+          {% endif %}
+        </div>
+
+        <div style="display: flex; align-items: baseline; gap: 6px; margin: 10px 0 12px 0;">
+          <span style="font-size: 20px; font-weight: 700; color: var(--color-text-main); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display';">
+            ₹{{ r.monthly_rent|floatformat:0 }}
+          </span>
+          <span style="font-size: 12px; color: var(--color-text-muted);">/ bed / mo</span>
+          <span style="font-size: 11.5px; color: var(--color-text-muted); margin-left: 10px;">
+            Deposit: ₹{{ r.security_deposit|floatformat:0 }}
+          </span>
+        </div>
+
+        <!-- Bed status badges -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; padding: 8px; background: var(--color-bg); border-radius: 6px;">
+          {% for b in r.beds.all %}
+            <span style="font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; {% if b.status == 'OCCUPIED' %}background: #E2E8F0; color: #475569;{% else %}background: #D1FAE5; color: #065F46;{% endif %}">
+              {{ b.bed_number }}: {{ b.status }}
+            </span>
+          {% empty %}
+            <span style="font-size: 11.5px; color: var(--color-text-muted);">{{ r.occupied_beds }} / {{ r.total_beds }} beds occupied</span>
+          {% endfor %}
+        </div>
+
+        <!-- Action Row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 10px;">
+          <a href="{% url 'owner_portal:room_bed_management' property.id %}" style="font-size: 12px; font-weight: 600; color: var(--color-yale-blue); text-decoration: none;">
+            Manage Beds &rarr;
+          </a>
+
+          <form method="POST" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete Room {{ r.room_number }}?');">
+            {% csrf_token %}
+            <input type="hidden" name="form_tab" value="rooms">
+            <input type="hidden" name="action" value="delete_room">
+            <input type="hidden" name="room_id" value="{{ r.id }}">
+            <button type="submit" style="background: none; border: none; color: #EF4444; font-size: 12px; cursor: pointer; padding: 2px 6px;">
+              Delete Room
+            </button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <div style="grid-column: span 2; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 36px; text-align: center;">
+        <p style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 12px;">No room configurations added yet.</p>
+        <button type="button" class="btn-primary-yale" onclick="toggleAddRoomCard()">+ Add First Room Configuration</button>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 7: PRICING -->
+<!-- ========================================================= -->
+<div id="tab-pricing" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Pricing &amp; Charge Policies</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Configure base rent, security deposits, utility inclusions, and food subscriptions.</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="pricing">
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Starting Rent (per bed / month)</label>
+            <input type="text" name="starting_rent" value="₹{{ min_rent|floatformat:0 }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+            <label style="font-size: 11.5px; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; margin-top: 6px; cursor: pointer;">
+              <input type="checkbox" name="apply_to_all_rooms" value="1">
+              Apply this rent to all room configurations
+            </label>
+          </div>
+
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Electricity Charges Policy</label>
+            <input type="text" name="electricity_charges" value="{{ meta.electricity_charges }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Maintenance Charges</label>
+            <input type="text" name="maintenance_charges" value="{{ meta.maintenance_charges }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Food / Meal Charges</label>
+            <input type="text" name="food_charges" value="{{ meta.food_charges }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+        </div>
+
+        <!-- Room Type Pricing Summary Table -->
+        <div style="border-top: 1px solid var(--color-border); padding-top: 18px; margin-top: 6px;">
+          <h4 style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 12px;">Active Room Type Pricing Breakdown</h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="background: var(--color-bg); text-align: left; border-bottom: 1px solid var(--color-border);">
+                <th style="padding: 8px 12px; font-weight: 600;">Room</th>
+                <th style="padding: 8px 12px; font-weight: 600;">Type</th>
+                <th style="padding: 8px 12px; font-weight: 600;">Rent / Bed</th>
+                <th style="padding: 8px 12px; font-weight: 600;">Deposit</th>
+                <th style="padding: 8px 12px; font-weight: 600;">Vacancy</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rm in rooms %}
+                <tr style="border-bottom: 1px solid var(--color-border);">
+                  <td style="padding: 8px 12px; font-weight: 600;">Room {{ rm.room_number }}</td>
+                  <td style="padding: 8px 12px; color: var(--color-text-muted);">{{ rm.get_room_type_display }}</td>
+                  <td style="padding: 8px 12px; font-weight: 700;">₹{{ rm.monthly_rent|floatformat:0 }}</td>
+                  <td style="padding: 8px 12px; color: var(--color-text-muted);">₹{{ rm.security_deposit|floatformat:0 }}</td>
+                  <td style="padding: 8px 12px;">
+                    {% if rm.available_beds == 0 %}
+                      <span class="badge-verified-sage">Full</span>
+                    {% else %}
+                      <span class="badge-pending-powder">{{ rm.available_beds }} Vacant</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+          <button type="submit" class="btn-primary-yale" style="padding: 10px 20px;">
+            Update Pricing &amp; Charges
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 8: PHOTOS -->
+<!-- ========================================================= -->
+<div id="tab-photos" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main);">Property Photographs &amp; Gallery</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 2px;">
+          High-resolution photos increase seeker inquiries by over 3.8x. Add exterior, bedrooms, bathrooms and common lounge areas.
+        </p>
+      </div>
+      <button type="button" class="btn-primary-yale" onclick="toggleAddPhotoCard()" style="font-size: 12.5px;">
+        + Add Photograph
+      </button>
+    </div>
+
+    <!-- ADD PHOTO FORM CARD -->
+    <div id="addPhotoCard" style="display: none; background: var(--color-bg); border: 2px solid var(--color-yale-blue); border-radius: var(--radius-md); padding: 20px; margin-bottom: 22px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h4 style="font-size: 14.5px; font-weight: 700; color: var(--color-yale-blue);">Add Photograph to Gallery</h4>
+        <button type="button" onclick="toggleAddPhotoCard()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--color-text-muted);">&times;</button>
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="form_tab" value="photos">
+        <input type="hidden" name="action" value="add_photo">
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Photo Image URL</label>
+            <input type="url" id="photoUrlInput" name="photo_url" placeholder="https://images.unsplash.com/..." required style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+
+          <!-- Quick Samples -->
+          <div>
+            <span style="font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase;">Quick Fill Verified Sample:</span>
+            <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+              <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 3px 8px;" onclick="fillSamplePhoto('https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800&auto=format&fit=crop&q=80', 'BEDROOM', 'Modern Single Bedroom with Study Desk')">Sample Bedroom</button>
+              <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 3px 8px;" onclick="fillSamplePhoto('https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80', 'COMMON', 'Community Co-working Lounge')">Sample Lounge</button>
+              <button type="button" class="btn-secondary-light" style="font-size: 11px; padding: 3px 8px;" onclick="fillSamplePhoto('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80', 'KITCHEN', 'Shared Kitchen & Dining Area')">Sample Kitchen</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Category / Area</label>
+              <select id="photoTypeSelect" name="photo_type" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #fff;">
+                <option value="BEDROOM">Bedroom</option>
+                <option value="COMMON">Common Lounge &amp; Co-working</option>
+                <option value="EXTERIOR">Exterior Building</option>
+                <option value="BATHROOM">Bathroom</option>
+                <option value="KITCHEN">Kitchen &amp; Dining</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Caption</label>
+              <input type="text" id="photoCaptionInput" name="caption" placeholder="e.g. Spacious Double Sharing Bedroom" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+            </div>
+          </div>
+
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer;">
+            <input type="checkbox" name="is_cover" value="1">
+            <span>Set as Cover Photograph for listing cards</span>
+          </label>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn-secondary-light" onclick="toggleAddPhotoCard()">Cancel</button>
+            <button type="submit" class="btn-primary-yale">+ Save Photograph</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- GALLERY GRID -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+      {% for ph in photos %}
+        <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column;">
+          <div style="height: 150px; position: relative; background: #E2E8F0;">
+            <img src="{{ ph.photo_url }}" alt="{{ ph.caption|default:ph.photo_type }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% if ph.is_cover %}
+              <span style="position: absolute; top: 6px; left: 6px; background: #059669; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                ★ COVER PHOTO
+              </span>
+            {% endif %}
+            <span style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.65); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px;">
+              {{ ph.get_photo_type_display }}
+            </span>
+          </div>
+
+          <div style="padding: 10px; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--color-text-main); margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ ph.caption|default:ph.get_photo_type_display }}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 6px;">
+              {% if not ph.is_cover %}
+                <form method="POST" style="margin: 0;">
+                  {% csrf_token %}
+                  <input type="hidden" name="form_tab" value="photos">
+                  <input type="hidden" name="action" value="set_cover">
+                  <input type="hidden" name="photo_id" value="{{ ph.id }}">
+                  <button type="submit" style="background: none; border: none; color: var(--color-yale-blue); font-size: 11px; font-weight: 600; cursor: pointer; padding: 0;">
+                    Set Cover
+                  </button>
+                </form>
+              {% else %}
+                <span style="font-size: 11px; color: #059669; font-weight: 600;">Cover Set</span>
+              {% endif %}
+
+              <form method="POST" style="margin: 0;" onsubmit="return confirm('Delete this photograph?');">
+                {% csrf_token %}
+                <input type="hidden" name="form_tab" value="photos">
+                <input type="hidden" name="action" value="delete_photo">
+                <input type="hidden" name="photo_id" value="{{ ph.id }}">
+                <button type="submit" style="background: none; border: none; color: #EF4444; font-size: 11px; cursor: pointer; padding: 0;">
+                  Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <!-- Add Photo Tile -->
+      <div onclick="toggleAddPhotoCard()" style="height: 200px; border-radius: var(--radius-md); border: 2px dashed var(--color-border); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--color-text-muted); cursor: pointer; background: var(--color-bg); transition: border-color 0.15s ease;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span style="font-size: 12px; font-weight: 600; margin-top: 6px;">+ Add Photograph</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 9: RULES & PREFERENCES -->
+<!-- ========================================================= -->
+<div id="tab-rules" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">House Rules &amp; Tenant Preferences</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Define community guidelines, guest restrictions, quiet hours, and agreement tenures.</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="rules">
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Visitor &amp; Guest Policy</label>
+          <input type="text" name="rules_visitors" value="{{ meta.rules_visitors }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Quiet Hours Schedule</label>
+            <input type="text" name="rules_quiet_hours" value="{{ meta.rules_quiet_hours }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Notice Period for Vacating</label>
+            <select name="rules_notice_period" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #fff;">
+              <option value="15 Days" {% if meta.rules_notice_period == '15 Days' %}selected{% endif %}>15 Days</option>
+              <option value="30 Days" {% if meta.rules_notice_period == '30 Days' %}selected{% endif %}>30 Days (Standard)</option>
+              <option value="45 Days" {% if meta.rules_notice_period == '45 Days' %}selected{% endif %}>45 Days</option>
+              <option value="60 Days" {% if meta.rules_notice_period == '60 Days' %}selected{% endif %}>60 Days</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Minimum Stay Lock-in Period</label>
+          <select name="rules_minimum_stay" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; background: #fff;">
+            <option value="1 Month" {% if meta.rules_minimum_stay == '1 Month' %}selected{% endif %}>1 Month</option>
+            <option value="3 Months" {% if meta.rules_minimum_stay == '3 Months' %}selected{% endif %}>3 Months</option>
+            <option value="6 Months" {% if meta.rules_minimum_stay == '6 Months' %}selected{% endif %}>6 Months</option>
+            <option value="11 Months" {% if meta.rules_minimum_stay == '11 Months' %}selected{% endif %}>11 Months (Standard Agreement)</option>
+          </select>
+        </div>
+
+        <div style="background: var(--color-bg); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 10px;">
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" name="rules_smoking" value="1" {% if meta.rules_smoking %}checked{% endif %} style="width: 16px; height: 16px; accent-color: var(--color-yale-blue);">
+            <span style="font-weight: 500;">Smoking Allowed Inside Property</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer;">
+            <input type="checkbox" name="rules_pets" value="1" {% if meta.rules_pets %}checked{% endif %} style="width: 16px; height: 16px; accent-color: var(--color-yale-blue);">
+            <span style="font-weight: 500;">Pets Permitted (with prior consent)</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="submit" class="btn-primary-yale" style="padding: 10px 20px;">
+            Save House Rules
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 10: AVAILABILITY -->
+<!-- ========================================================= -->
+<div id="tab-availability" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Move-in Availability &amp; Visiting Slots</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Control immediate move-in readiness and visiting slots for prospective tenants.</p>
+
+    <!-- Vacancy Summary Box -->
+    <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <div style="font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase;">CURRENT VACANT CAPACITY</div>
+        <div style="font-size: 22px; font-weight: 700; color: var(--color-text-main); margin-top: 2px;">
+          {{ available_beds }} beds currently vacant
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-muted);">
+          Across {{ rooms|length }} active room configurations
+        </div>
+      </div>
+      <a href="{% url 'owner_portal:room_bed_management' property.id %}" class="btn-secondary-light" style="font-size: 12px;">
+        Update Bed Vacancy &rarr;
+      </a>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="form_tab" value="availability">
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; padding: 12px; background: var(--color-bg); border-radius: var(--radius-sm); border: 1px solid var(--color-border); cursor: pointer;">
+          <input type="checkbox" name="move_in_immediate" value="1" {% if meta.move_in_immediate %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--color-yale-blue);">
+          <div>
+            <span style="font-weight: 600; color: var(--color-text-main); display: block;">Available for Immediate Move-in</span>
+            <span style="font-size: 12px; color: var(--color-text-muted);">Seekers searching for instant move-in can contact and book immediately.</span>
+          </div>
+        </label>
+
+        <div>
+          <label style="font-size: 12.5px; font-weight: 600; color: var(--color-text-main); display: block; margin-bottom: 6px;">Seeker Physical Visiting Hours</label>
+          <input type="text" name="visiting_hours" value="{{ meta.visiting_hours }}" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="submit" class="btn-primary-yale" style="padding: 10px 20px;">
+            Save Availability Settings
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 11: DOCUMENTS -->
+<!-- ========================================================= -->
+<div id="tab-documents" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Submitted Verification Documents</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Official legal proof submitted during listing onboarding for platform verification.</p>
+
+    <!-- Verified Document Cards -->
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(30,77,107,0.1); display: flex; align-items: center; justify-content: center; color: var(--color-yale-blue);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--color-text-main);">Electricity Bill / Utility Proof</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); word-break: break-all;">
+              URL: {{ property.electricity_bill_url|default:"Not uploaded" }}
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="badge-verified-sage">✓ Verified</span>
+          {% if property.electricity_bill_url %}
+            <a href="{{ property.electricity_bill_url }}" target="_blank" class="btn-secondary-light" style="font-size: 11.5px; padding: 4px 10px; text-decoration: none;">View Document &nearr;</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(30,77,107,0.1); display: flex; align-items: center; justify-content: center; color: var(--color-yale-blue);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--color-text-main);">Property Ownership Deed / Khata Certificate</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); word-break: break-all;">
+              URL: {{ property.property_tax_url|default:"Not uploaded" }}
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="badge-verified-sage">✓ Verified</span>
+          {% if property.property_tax_url %}
+            <a href="{{ property.property_tax_url }}" target="_blank" class="btn-secondary-light" style="font-size: 11.5px; padding: 4px 10px; text-decoration: none;">View Document &nearr;</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Update URLs Form -->
+    <div style="border-top: 1px solid var(--color-border); padding-top: 18px;">
+      <h4 style="font-size: 14px; font-weight: 700; color: var(--color-text-main); margin-bottom: 12px;">Update Verification Document URLs</h4>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="form_tab" value="documents">
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Electricity Bill URL</label>
+            <input type="url" name="electricity_bill_url" value="{{ property.electricity_bill_url }}" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Property Deed / Khata URL</label>
+            <input type="url" name="property_tax_url" value="{{ property.property_tax_url }}" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn-primary-yale" style="padding: 9px 18px;">Update Documents</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- TAB 12: VERIFICATION HISTORY -->
+<!-- ========================================================= -->
+<div id="tab-history" class="prop-tab-content">
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 26px; max-width: 820px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Audit &amp; Verification Timeline</h3>
+    <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 22px;">Audit trail of approvals, modifications, and legal compliance events recorded by platform operations.</p>
+
+    <div style="border-left: 2px solid var(--color-border); padding-left: 20px; display: flex; flex-direction: column; gap: 20px;">
+      {% for log in audit_logs %}
+        <div style="position: relative;">
+          <div style="position: absolute; left: -26px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-yale-blue);"></div>
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);">
+            {{ log.action_type }} · {{ log.module }}
+          </div>
+          <p style="font-size: 13px; color: var(--color-text-muted); margin-top: 3px; line-height: 1.5;">
+            {{ log.details }}
+          </p>
+          <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 4px;">
+            {{ log.created_at|date:"d M Y, h:i A" }} · by <strong>{{ log.actor.get_full_name|default:log.actor.username }}</strong> ({{ log.actor.role }})
+          </div>
+        </div>
+      {% empty %}
+        <div>
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--color-dry-sage-dark);">✓ Listing Approved &amp; Live</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+            {{ property.verified_at|date:"d M Y, h:i A"|default:"Verified" }} · Verified by Operations Lead {{ verifier_name }}
+          </div>
+        </div>
+      {% endfor %}
+
+      <div style="position: relative;">
+        <div style="position: absolute; left: -26px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: #94A3B8;"></div>
+        <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main);">
+          Initial Listing Registration
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 2px;">
+          {{ property.created_at|date:"d M Y, h:i A" }} · Registered by Owner {{ owner_user.get_full_name|default:owner_user.username }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.tab-pill {
+  background: rgba(0,0,0,0.06);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  margin-left: 4px;
+}
+.prop-tab-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+}
+.prop-tab-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-text-main);
+}
+.prop-tab-btn.active {
+  background: var(--color-yale-blue);
+  color: #FFFFFF;
+}
+.prop-tab-btn.active .tab-pill {
+  background: rgba(255,255,255,0.25);
+  color: #FFFFFF;
+}
+.prop-tab-content {
+  display: none;
+  animation: fadeIn 0.15s ease;
+}
+.prop-tab-content.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+function switchPropTab(event, tabId) {
+  if (event) event.preventDefault();
+  
+  document.querySelectorAll('.prop-tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.prop-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+  const targetTab = document.getElementById(tabId);
+  if (targetTab) {
+    targetTab.classList.add('active');
+  }
+
+  const buttons = document.querySelectorAll('.prop-tab-btn');
+  buttons.forEach(btn => {
+    if (btn.getAttribute('data-tab') === tabId) {
+      btn.classList.add('active');
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  });
+
+  // Keep URL hash synchronized without jumping
+  if (history.replaceState) {
+    history.replaceState(null, null, '#' + tabId);
+  } else {
+    window.location.hash = tabId;
+  }
+}
+
+// Auto open tab from hash on page load
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash ? window.location.hash.substring(1) : '';
+  if (hash && document.getElementById(hash)) {
+    switchPropTab(null, hash);
+  }
+});
+
+function toggleAddRoomCard() {
+  const card = document.getElementById('addRoomCard');
+  if (card) {
+    card.style.display = card.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function toggleAddPhotoCard() {
+  const card = document.getElementById('addPhotoCard');
+  if (card) {
+    card.style.display = card.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function fillSamplePhoto(url, type, caption) {
+  document.getElementById('photoUrlInput').value = url;
+  document.getElementById('photoTypeSelect').value = type;
+  document.getElementById('photoCaptionInput').value = caption;
+}
+
+function toggleAllAmenities(check) {
+  document.querySelectorAll('.amenity-checkbox').forEach(cb => cb.checked = check);
+}
+</script>
+{% endblock %}

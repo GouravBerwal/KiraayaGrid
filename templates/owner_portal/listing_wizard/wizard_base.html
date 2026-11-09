@@ -1,0 +1,553 @@
+{% extends 'owner_portal/base.html' %}
+{% load static %}
+
+{% block title %}Add New Property (Step {{ step }} of 15) — KiraayaGrid{% endblock %}
+{% block page_title %}Add New Property{% endblock %}
+{% block page_subtitle %}Step {{ step }} of 15: {{ step_title|default:"Listing Creation Wizard" }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 960px; margin: 0 auto;">
+
+  <!-- STEPPER PROGRESS HEADER -->
+  <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px 24px; margin-bottom: 24px; box-shadow: var(--shadow-card);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div>
+        <span style="font-size: 11.5px; font-weight: 700; color: var(--color-yale-blue); text-transform: uppercase; letter-spacing: 0.05em;">LISTING CREATION WIZARD</span>
+        <h2 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-top: 2px;">
+          Step {{ step }} of 15: <span id="currentStepTitle">{{ step_title }}</span>
+        </h2>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 11.5px; color: var(--color-dry-sage-dark); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+          <span>✓</span> Auto-saved to draft
+        </span>
+        <a href="{% url 'owner_portal:my_properties' %}" style="font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-decoration: none; padding: 4px 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+          Save & Exit
+        </a>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div style="width: 100%; height: 6px; background: #E2E8F0; border-radius: 9999px; overflow: hidden; margin-bottom: 14px;">
+      <div style="width: {{ progress_pct }}%; height: 100%; background: var(--color-yale-blue); border-radius: 9999px; transition: width 0.3s ease;"></div>
+    </div>
+
+    <!-- Step Pills Navigator -->
+    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
+      {% for i in step_numbers %}
+        <a href="{% url 'owner_portal:add_property_step' i %}" style="width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; text-decoration: none; flex-shrink: 0; {% if i == step %}background: var(--color-yale-blue); color: #FFFFFF;{% elif i < step %}background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark);{% else %}background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border);{% endif %}">
+          {{ i }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- DYNAMIC STEP CONTAINER -->
+  <form id="wizardForm" method="POST" action="">
+    {% csrf_token %}
+
+    <div style="background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 32px; box-shadow: var(--shadow-card); margin-bottom: 24px;">
+      
+      <!-- ==========================================
+           STEP 1: LISTING INTRODUCTION
+           ========================================== -->
+      {% if step == 1 %}
+      <div style="text-align: center; max-width: 640px; margin: 0 auto; padding: 20px 0;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-powder-blue-light); color: var(--color-yale-blue); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        </div>
+        <h1 style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">List your property on KiraayaGrid</h1>
+        <p style="font-size: 14px; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 28px;">
+          Join thousands of verified owners connecting directly with students and professionals. Zero brokerage, instant verification, and direct tenant communication.
+        </p>
+
+        <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; text-align: left; margin-bottom: 28px;">
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 12px;">Preparation Checklist for quick completion (takes ~5 mins):</div>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--color-text-main);">
+            <li style="display: flex; gap: 8px;">✓ <span><strong>Property Address & Landmark</strong></span></li>
+            <li style="display: flex; gap: 8px;">✓ <span><strong>Clear Photographs</strong> (Exterior, bedroom, bathroom)</span></li>
+            <li style="display: flex; gap: 8px;">✓ <span><strong>Room configurations & rent details</strong></span></li>
+            <li style="display: flex; gap: 8px;">✓ <span><strong>Electricity bill or ownership deed copy</strong> for verification</span></li>
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 2: SELECT PROPERTY TYPE
+           ========================================== -->
+      {% if step == 2 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Select Property Type</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Choose the category that best describes your residential accommodation.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          {% for ptype, title, desc in property_type_options %}
+          <label style="border: 2px solid {% if forloop.first %}var(--color-yale-blue){% else %}var(--color-border){% endif %}; border-radius: var(--radius-lg); padding: 20px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; background: {% if forloop.first %}var(--color-porcelain-light){% else %}#FFFFFF{% endif %};">
+            <input type="radio" name="property_type" value="{{ ptype }}" {% if forloop.first %}checked{% endif %} style="align-self: flex-end;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--color-text-main);">{{ title }}</div>
+            <div style="font-size: 12px; color: var(--color-text-muted); line-height: 1.4;">{{ desc }}</div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 3: BASIC PROPERTY INFORMATION
+           ========================================== -->
+      {% if step == 3 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Basic Property Information</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Enter the listing title and describe the space to seekers.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+          <div>
+            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Property Name / Title *</label>
+            <input type="text" name="property_title" placeholder="e.g. The Courtyard House or Sunshine Executive PG" value="The Courtyard House" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px;">
+          </div>
+
+          <div>
+            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Full Description *</label>
+            <textarea name="description" rows="4" placeholder="Highlight what makes your space special, proximity to tech parks/colleges..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;">A premium co-living property nestled in the vibrant heart of Koramangala 5th Block. High-speed 300 Mbps commercial fiber, 3 chef-cooked meals, daily housekeeping, and 24/7 power backup.</textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Ownership Type</label>
+              <select name="ownership_type" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #FFF;">
+                <option selected>Sole Owner / Landlord</option>
+                <option>Power of Attorney Holder</option>
+                <option>Master Lease / Co-Living Operator</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px;">Furnishing Level</label>
+              <select name="furnishing" style="width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #FFF;">
+                <option selected>Fully Furnished</option>
+                <option>Semi-Furnished</option>
+                <option>Unfurnished</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 4: PROPERTY LOCATION
+           ========================================== -->
+      {% if step == 4 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Property Location</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Accurate addresses help verified seekers discover your property on maps.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">City *</label>
+              <input type="text" value="Bengaluru" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+            </div>
+            <div>
+              <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Locality / Neighborhood *</label>
+              <input type="text" value="Koramangala 5th Block" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Street Address & Building Name *</label>
+            <input type="text" value="No. 42, 4th Cross, 5th Block, Near Jyoti Nivas College" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">PIN Code *</label>
+              <input type="text" value="560034" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+            </div>
+            <div>
+              <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Prominent Landmark</label>
+              <input type="text" value="Opposite Sony World Signal" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+            </div>
+          </div>
+
+          <!-- Map Simulation Preview -->
+          <div style="height: 140px; border-radius: var(--radius-md); background: #E2E8F0; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); font-size: 12.5px; border: 1px solid var(--color-border);">
+            📍 Google Maps Coordinate Pin Verified: 12.9352° N, 77.6245° E (Koramangala 5th Block)
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 5: PROPERTY SPECIFICATIONS
+           ========================================== -->
+      {% if step == 5 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Property Specifications</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Detail structural dimensions and infrastructure.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Total Floors</label>
+            <input type="number" value="4" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Total Rooms</label>
+            <input type="number" value="12" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Built-up Area (Sq.Ft.)</label>
+            <input type="text" value="6,500" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Elevator / Lift</label>
+            <select style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #FFF;">
+              <option selected>Available</option>
+              <option>Not Available</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Power Backup</label>
+            <select style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #FFF;">
+              <option selected>24/7 Full DG Backup</option>
+              <option>Inverter for Lights & Fans</option>
+              <option>None</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">Vehicle Parking</label>
+            <select style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #FFF;">
+              <option selected>2-Wheeler & 4-Wheeler</option>
+              <option>2-Wheeler Only</option>
+              <option>Street Parking</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 6: PROPERTY AMENITIES
+           ========================================== -->
+      {% if step == 6 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Select Amenities & Services</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Check off all facilities included for residents.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> High-Speed WiFi (300 Mbps)</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> 3 Times Daily Meals</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> Daily Room Cleaning</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> Automatic Washing Machines</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> Hot Water Geysers</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> 24/7 CCTV & Security Guard</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> Biometric / Smart Door Lock</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> Ergonomic Workstation & Desks</label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px;"><input type="checkbox" checked> RO Alkaline Water Purifier</label>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 7: ROOM CONFIGURATION
+           ========================================== -->
+      {% if step == 7 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Room Configurations</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Define room types, occupancies, and attached amenities.</p>
+
+        <div style="background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <strong style="font-size: 14px;">Configuration 1: Double Sharing Room</strong>
+            <span class="badge-verified-sage">Active Config</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; font-size: 12.5px;">
+            <div>Total Rooms: <strong>8</strong></div>
+            <div>Beds per room: <strong>2</strong></div>
+            <div>Bathroom: <strong>Attached</strong></div>
+            <div>Air Conditioning: <strong>Yes (AC)</strong></div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-secondary-light" onclick="alert('Added new room configuration row.')">+ Add Another Room Type</button>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 8: PRICING & CHARGES
+           ========================================== -->
+      {% if step == 8 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Pricing & Mandatory Charges</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Zero hidden charges policy ensures maximum conversions.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Monthly Rent (per bed) *</label>
+            <input type="text" value="₹14,500" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Security Deposit (Refundable) *</label>
+            <input type="text" value="₹29,000" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 600;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Maintenance Charges</label>
+            <input type="text" value="₹0 (Included in Rent)" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Electricity Charges</label>
+            <input type="text" value="Included up to ₹1,000 per room" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 9: PROPERTY PHOTOGRAPHS
+           ========================================== -->
+      {% if step == 9 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Property Photographs</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Upload bright, clear photos. Listings with 4+ photos get 5x more visits.</p>
+
+        <div style="border: 2px dashed var(--color-border); border-radius: var(--radius-lg); padding: 36px 20px; text-align: center; margin-bottom: 20px; background: var(--color-bg); cursor: pointer;" onclick="alert('File upload browser opened.')">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-yale-blue); margin-bottom: 8px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <div style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">Click or drag photos here to upload</div>
+          <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">Supports JPG, PNG, WEBP (Max 10 MB per file)</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+          <div style="height: 120px; border-radius: var(--radius-md); overflow: hidden; position: relative;">
+            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.7); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px;">Cover Photo</span>
+          </div>
+          <div style="height: 120px; border-radius: var(--radius-md); overflow: hidden;">
+            <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div style="height: 120px; border-radius: var(--radius-md); overflow: hidden;">
+            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div style="height: 120px; border-radius: var(--radius-md); overflow: hidden;">
+            <img src="https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=600" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 10: RULES & PREFERENCES
+           ========================================== -->
+      {% if step == 10 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Property Rules & Preferences</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Set expectations clearly to attract the right tenants.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Suitable Occupants</label>
+            <select style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px; background: #FFF;">
+              <option selected>Working Professionals & Students</option>
+              <option>Working Professionals Only</option>
+              <option>Students Only</option>
+            </select>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Gate Curfew / Timings</label>
+              <input type="text" value="No curfew (Biometric Access 24/7)" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+            </div>
+            <div>
+              <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Notice Period</label>
+              <input type="text" value="30 Days" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 11: AVAILABILITY & MOVE-IN
+           ========================================== -->
+      {% if step == 11 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Availability & Move-in Dates</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">When can seekers schedule walkthroughs and move in?</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Available From Date</label>
+            <input type="date" value="2026-11-06" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; font-weight: 600; display: block; margin-bottom: 4px;">Currently Vacant Beds</label>
+            <input type="number" value="4" style="width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 13px;">
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 12: OWNER VERIFICATION & DOCUMENTS
+           ========================================== -->
+      {% if step == 12 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Verification Documents</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Upload ownership proof to receive the Verified Listing badge.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; background: var(--color-bg);">
+            <div style="font-size: 13.5px; font-weight: 700; margin-bottom: 4px;">Electricity Bill / Utility Proof</div>
+            <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px;">Recent 3 months utility bill showing property address.</p>
+            <button type="button" class="btn-secondary-light" style="font-size: 11.5px;" onclick="alert('Document upload simulated.')">Upload Bill (PDF/JPG)</button>
+          </div>
+          <div style="border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; background: var(--color-bg);">
+            <div style="font-size: 13.5px; font-weight: 700; margin-bottom: 4px;">Ownership Title / Khata Extract</div>
+            <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px;">Property tax receipt, sale deed or master lease.</p>
+            <button type="button" class="btn-secondary-light" style="font-size: 11.5px;" onclick="alert('Document upload simulated.')">Upload Ownership Proof</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 13: LISTING PREVIEW
+           ========================================== -->
+      {% if step == 13 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Public Listing Preview</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 20px;">This is how your space appears to verified seekers on KiraayaGrid.</p>
+
+        <div style="border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; background: #FFF; box-shadow: var(--shadow-hover);">
+          <div style="height: 220px; overflow: hidden; position: relative;">
+            <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000" style="width: 100%; height: 100%; object-fit: cover;">
+            <span class="badge-verified-sage" style="position: absolute; top: 14px; left: 14px;">✓ Verified Listing</span>
+          </div>
+          <div style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <div>
+                <h2 style="font-size: 20px; font-weight: 700; color: var(--color-text-main);">The Courtyard House</h2>
+                <div style="font-size: 13px; color: var(--color-text-muted); margin-top: 2px;">Koramangala 5th Block, Bengaluru · Co-Living Accommodation</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 20px; font-weight: 700; color: var(--color-text-main);">₹14,500 <span style="font-size: 12px; font-weight: 500; color: var(--color-text-muted);">/ bed / mo</span></div>
+                <div style="font-size: 11px; color: var(--color-dry-sage-dark); font-weight: 600;">Zero Brokerage</div>
+              </div>
+            </div>
+            <p style="font-size: 13px; color: var(--color-text-muted); line-height: 1.5;">
+              A premium co-living property nestled in the vibrant heart of Koramangala 5th Block. High-speed 300 Mbps commercial fiber, 3 chef-cooked meals, daily housekeeping, and 24/7 power backup.
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 14: FINAL CONFIRMATION
+           ========================================== -->
+      {% if step == 14 %}
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Final Review & Confirmation</h3>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px;">Please review your listing details before submitting to the verification queue.</p>
+
+        <div style="background: var(--color-porcelain); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px;">
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--color-text-main); margin-bottom: 10px;">Pre-submission Checklist:</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+            <div>✓ Property Title & Category complete</div>
+            <div>✓ Address & PIN Code verified against Google Maps</div>
+            <div>✓ Room tariffs & security deposits clearly specified</div>
+            <div>✓ Ownership proof attached for admin review</div>
+          </div>
+        </div>
+
+        <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; cursor: pointer;">
+          <input type="checkbox" checked required>
+          <span>I confirm that all property details, pricing, and documents submitted are accurate and comply with platform guidelines.</span>
+        </label>
+      </div>
+      {% endif %}
+
+      <!-- ==========================================
+           STEP 15: SUBMISSION SUCCESS
+           ========================================== -->
+      {% if step == 15 %}
+      <div style="text-align: center; max-width: 580px; margin: 0 auto; padding: 24px 0;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-dry-sage-light); color: var(--color-dry-sage-dark); font-size: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          ✓
+        </div>
+        <h1 style="font-size: 24px; font-weight: 700; color: var(--color-text-main); margin-bottom: 6px;">Listing Submitted Successfully!</h1>
+        <div style="font-size: 13px; font-weight: 700; color: var(--color-yale-blue); margin-bottom: 12px;">Reference ID: {{ reference_id|default:"REF-2026-IND-0108" }}</div>
+        <span class="badge-pending-powder" style="margin-bottom: 20px;">◔ Status: Pending Verification</span>
+
+        <p style="font-size: 13.5px; color: var(--color-text-muted); line-height: 1.6; margin-top: 14px; margin-bottom: 28px;">
+          Our verification team will review your utility bill and ownership documents within <strong>24 business hours</strong>. Once approved, your property will immediately go live and become discoverable to verified seekers.
+        </p>
+
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <a href="{% url 'owner_portal:my_properties' %}" class="btn-primary-yale">View My Properties</a>
+          <a href="{% url 'owner_portal:dashboard' %}" class="btn-secondary-light">Go to Dashboard</a>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- WIZARD STEP NAVIGATION FOOTER -->
+    {% if step < 15 %}
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      {% if prev_step %}
+        <a href="{% url 'owner_portal:add_property_step' prev_step %}" class="btn-secondary-light" style="padding: 10px 20px;">
+          &larr; Previous Step
+        </a>
+      {% else %}
+        <div></div>
+      {% endif %}
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" id="saveDraftBtn" class="btn-secondary-light" style="padding: 10px 18px;" onclick="saveDraftAsync()">
+          Save Draft
+        </button>
+
+        {% if step == 14 %}
+          <button type="submit" formaction="{% url 'owner_portal:add_property_step' 15 %}" class="btn-primary-yale" style="padding: 10px 24px; font-size: 14px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+            Submit for Verification &rarr;
+          </button>
+        {% else %}
+          <a href="{% url 'owner_portal:add_property_step' next_step %}" class="btn-primary-yale" style="padding: 10px 24px; font-size: 14px;">
+            Continue to Step {{ next_step }} &rarr;
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </form>
+</div>
+
+<script>
+function saveDraftAsync() {
+  const form = document.getElementById('wizardForm');
+  const fd = new FormData(form);
+  fd.append('step', '{{ step }}');
+  const btn = document.getElementById('saveDraftBtn');
+  if (btn) btn.innerText = 'Saving...';
+  
+  fetch("{% url 'owner_portal:save_draft_api' %}", {
+    method: 'POST',
+    body: fd,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (btn) btn.innerText = '✓ Saved to Draft';
+    setTimeout(() => { if (btn) btn.innerText = 'Save Draft'; }, 2500);
+  })
+  .catch(err => {
+    if (btn) btn.innerText = 'Save Draft';
+    alert('Draft progress saved.');
+  });
+}
+</script>
+{% endblock %}

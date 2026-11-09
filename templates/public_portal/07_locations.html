@@ -1,0 +1,727 @@
+{% extends 'public_portal/base.html' %}
+{% load static %}
+
+{% block title %}Explore Locations & Neighborhoods · Verified Stays Across India · KiraayaGrid{% endblock %}
+
+{% block meta_description %}Discover verified PGs, rooms, and co-living spaces across Bengaluru, Mumbai, Pune, Hyderabad, Delhi NCR, and Indore with KiraayaGrid. Zero brokerage guaranteed.{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ==========================================================================
+     APPLE OFFICIAL WEBSITE DESIGN LANGUAGE — LOCATIONS & NEIGHBORHOODS
+     ========================================================================== */
+
+  :root {
+    --apple-bg: #F5F5F7;
+    --apple-card-bg: #FFFFFF;
+    --apple-text-dark: #1D1D1F;
+    --apple-text-secondary: #86868B;
+    --apple-text-tertiary: #6E6E73;
+    --apple-border: rgba(0, 0, 0, 0.08);
+    --apple-border-light: rgba(0, 0, 0, 0.04);
+    --apple-emerald: #10B981;
+    --apple-deep-forest: #183B3B;
+  }
+
+  body {
+    background-color: var(--apple-bg);
+  }
+
+  /* Apple Hero */
+  .apple-locations-hero {
+    position: relative;
+    padding: 130px 24px 48px;
+    max-width: 1320px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .apple-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    background: rgba(24, 59, 59, 0.06);
+    border: 1px solid rgba(24, 59, 59, 0.12);
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-deep-forest);
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .apple-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    animation: applePulse 2s infinite;
+  }
+
+  @keyframes applePulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .apple-locations-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-size: clamp(28px, 3.5vw, 38px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--apple-text-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .apple-locations-subtitle {
+    font-size: 16px;
+    color: var(--apple-text-tertiary);
+    line-height: 1.55;
+    max-width: 700px;
+    margin: 0 auto 30px;
+  }
+
+  /* Quick Search Pill */
+  .apple-search-strip {
+    display: flex;
+    max-width: 580px;
+    margin: 0 auto 32px;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 9999px;
+    padding: 6px 6px 6px 20px;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+  }
+
+  .apple-search-strip:focus-within {
+    border-color: var(--color-deep-forest);
+    box-shadow: 0 0 0 4px rgba(24, 59, 59, 0.12);
+  }
+
+  .apple-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--apple-text-dark);
+    background: transparent;
+  }
+
+  /* City Jump Ribbon */
+  .apple-city-jump-ribbon {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 48px;
+  }
+
+  .apple-city-chip {
+    padding: 9px 18px;
+    border-radius: 9999px;
+    background: #FFFFFF;
+    border: 1px solid var(--apple-border);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .apple-city-chip:hover {
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    border-color: var(--color-deep-forest);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(24, 59, 59, 0.2);
+  }
+
+  /* ==========================================================================
+     APPLE-GRADE CITIES GRID (MATCHING LANDING PAGE VISUAL LAYOUT)
+     ========================================================================== */
+
+  .locations-grid-section {
+    max-width: 1320px;
+    margin: 0 auto 96px;
+    padding: 0 24px;
+  }
+
+  .locations-grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+  }
+
+  .locations-grid-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: clamp(24px, 2.8vw, 32px);
+    font-weight: 700;
+    color: var(--apple-text-dark);
+    letter-spacing: -0.02em;
+  }
+
+  .locations-grid-sub {
+    font-size: 15px;
+    color: var(--apple-text-tertiary);
+    margin-top: 6px;
+  }
+
+  .locations-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+
+  .location-card {
+    position: relative;
+    border-radius: 28px;
+    overflow: hidden;
+    background: #183B3B;
+    border: 1px solid rgba(24, 59, 59, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 520px;
+    scroll-margin-top: 100px;
+  }
+
+  .location-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 50px rgba(24, 59, 59, 0.22);
+    border-color: rgba(221, 237, 170, 0.6);
+  }
+
+  .location-bg-wrapper {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .location-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .location-card:hover .location-bg {
+    transform: scale(1.06);
+  }
+
+  .location-overlay {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 520px;
+    padding: 24px;
+    background: linear-gradient(
+      180deg, 
+      rgba(15, 37, 37, 0.45) 0%, 
+      rgba(15, 37, 37, 0.1) 25%, 
+      rgba(15, 37, 37, 0.65) 55%, 
+      rgba(15, 37, 37, 0.96) 100%
+    );
+    box-sizing: border-box;
+  }
+
+  .location-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .location-count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(24, 59, 59, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(221, 237, 170, 0.45);
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #DDEDAA;
+  }
+
+  .location-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10B981;
+    display: inline-block;
+  }
+
+  .location-rent-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+
+  .location-rent-sub {
+    font-size: 11px;
+    font-weight: 400;
+    color: #CBD5E1;
+    margin-left: 2px;
+  }
+
+  .location-bottom-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .location-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .location-city-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  .location-state-badge {
+    font-size: 12px;
+    color: #CBD5E1;
+    font-weight: 500;
+    margin-top: 3px;
+  }
+
+  .location-arrow-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #DDEDAA;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .location-card:hover .location-arrow-btn {
+    background: var(--color-deep-forest);
+    color: #FFFFFF;
+    transform: translate(2px, -2px);
+    border-color: rgba(221, 237, 170, 0.8);
+  }
+
+  .location-tagline {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.45;
+  }
+
+  .location-localities-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .location-locality-tag {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #FFFFFF;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .location-locality-tag:hover {
+    background: #FFFFFF;
+    color: #0F172A;
+    border-color: #FFFFFF;
+  }
+
+  .location-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: 4px;
+  }
+
+  .btn-location-explore {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 18px;
+    background: #FFFFFF;
+    color: #0F172A;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .btn-location-explore:hover {
+    background: #DDEDAA;
+    color: #183B3B;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
+
+  .location-zero-badge {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #DDEDAA;
+    white-space: nowrap;
+    opacity: 0.9;
+  }
+
+  /* Comparison Matrix */
+  .apple-matrix-card {
+    background: #FFFFFF;
+    border-radius: 28px;
+    border: 1px solid var(--apple-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  .matrix-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .matrix-table th {
+    padding: 18px 24px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--apple-text-tertiary);
+    background: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  .matrix-table td {
+    padding: 18px 24px;
+    font-size: 14px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+
+  /* =========================================================================
+     RESPONSIVE BREAKPOINTS (4K, Laptop L, Laptop, Tablet, Mobile L/M/S)
+     ========================================================================= */
+  @media (min-width: 1920px) {
+    .apple-locations-hero, .locations-grid-section, .apple-matrix-wrap {
+      max-width: 1440px !important;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  @media (max-width: 1080px) {
+    .locations-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .apple-locations-hero { padding: 105px 20px 28px; }
+    .locations-grid-section, .apple-matrix-wrap { padding: 0 16px; margin-bottom: 64px; }
+    .locations-grid { grid-template-columns: 1fr; gap: 20px; }
+    .location-overlay { padding: 20px; min-height: 480px; }
+    .location-card { min-height: 480px; }
+    .apple-locations-title { font-size: clamp(26px, 5.5vw, 34px); }
+  }
+
+  @media (max-width: 425px) {
+    .apple-locations-hero { padding: 95px 14px 20px; }
+    .locations-grid-section, .apple-matrix-wrap { padding: 0 12px; margin-bottom: 48px; }
+    .apple-locations-title { font-size: 24px; }
+    .apple-locations-sub { font-size: 14px; }
+    .location-city-title { font-size: 22px; }
+    .location-overlay { padding: 18px; min-height: 460px; }
+    .location-card { min-height: 460px; }
+  }
+
+  @media (max-width: 340px) {
+    .apple-locations-hero { padding: 85px 10px 16px; }
+    .locations-grid-section, .apple-matrix-wrap { padding: 0 10px; }
+    .location-city-title { font-size: 20px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<main style="overflow-x: hidden;">
+
+  <!-- Apple Locations Hero -->
+  <section class="apple-locations-hero">
+    <!-- Aurora ambient glow -->
+    <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 850px; height: 380px; background: radial-gradient(circle, rgba(147, 181, 198, 0.22) 0%, rgba(221, 237, 170, 0.16) 40%, transparent 70%); pointer-events: none; z-index: 0;"></div>
+
+    <div style="position: relative; z-index: 1;">
+      <!-- Pill Badge -->
+      <div class="apple-badge-pill">
+        <span class="apple-pulse-dot"></span>
+        {{ total_cities }} Vibrant Metro Corridors · 100% Zero Brokerage
+      </div>
+
+      <!-- Main Headline with Apple Gradient -->
+      <h1 class="apple-locations-title">
+        Explore by city. <span class="apple-gradient-warm">Curated by neighborhood.</span>
+      </h1>
+
+      <p class="apple-locations-subtitle">
+        Physically verified accommodations situated minutes from India's premier tech parks, coworking spaces, and academic corridors.
+      </p>
+
+      <!-- Sleek Apple Quick Search Bar -->
+      <form action="{% url 'public_portal:explore_stays' %}" method="GET" class="apple-search-strip">
+        <input type="text" name="q" placeholder="Search any city, locality or tech park (e.g. Koramangala, Bandra, Hinjawadi)..." class="apple-search-input">
+        <button type="submit" class="btn-get-started" style="padding: 11px 26px; font-size: 14px; border-radius: 9999px;">
+          Explore Stays ↗
+        </button>
+      </form>
+
+      <!-- City Jump Chips -->
+      <div class="apple-city-jump-ribbon">
+        {% for c in cities %}
+        <a href="#{{ c.name|lower|slugify }}" class="apple-city-chip">
+          <span>📍</span>
+          <span>{{ c.name }}</span>
+          <span style="font-size: 12px; color: #64748B; background: #F1F5F9; padding: 2px 6px; border-radius: 9999px;">{{ c.stay_count }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Cities Grid Showcase (Matching Landing Page Layout & Apple Design) -->
+  <section class="locations-grid-section">
+    <div class="locations-grid-header">
+      <div>
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-burnt-peach); margin-bottom: 6px;">
+          Prime Metro Network
+        </div>
+        <h2 class="locations-grid-title">Where will life <span class="apple-gradient-warm">take you next?</span></h2>
+        <p class="locations-grid-sub">Every city verified in-person. 100% Zero brokerage. Direct owner pricing.</p>
+      </div>
+      <div style="font-size: 13px; font-weight: 600; color: #64748B;">
+        Showing {{ total_cities }} Verified Cities
+      </div>
+    </div>
+
+    <div class="locations-grid">
+      {% for city in cities %}
+      <article id="{{ city.name|lower|slugify }}" class="location-card">
+        <div class="location-bg-wrapper">
+          <img src="{{ city.photo }}?v=3" alt="{{ city.name }}" class="location-bg" loading="lazy">
+        </div>
+
+        <div class="location-overlay">
+          <!-- Top Row Badges -->
+          <div class="location-top-row">
+            <div class="location-count-pill">
+              <span class="location-pulse-dot"></span>
+              {{ city.stay_count }}
+            </div>
+            <div class="location-rent-pill">
+              Avg. {{ city.avg_rent }}<span class="location-rent-sub">/mo</span>
+            </div>
+          </div>
+
+          <!-- Bottom Content -->
+          <div class="location-bottom-content">
+            <div class="location-name-row">
+              <div>
+                <h3 class="location-city-title">{{ city.name }}</h3>
+                <div class="location-state-badge">{{ city.state }}</div>
+              </div>
+              <a href="{% url 'public_portal:explore_stays' %}?city={{ city.name }}" class="location-arrow-btn" title="Explore {{ city.name }} Stays">↗</a>
+            </div>
+
+            <div class="location-tagline">{{ city.tagline }}</div>
+
+            <!-- Popular Localities -->
+            <div class="location-localities-strip">
+              {% for loc in city.popular_localities|slice:":4" %}
+              <a href="{% url 'public_portal:explore_stays' %}?city={{ city.name }}&q={{ loc }}" class="location-locality-tag" title="Search {{ loc }}">
+                📍 {{ loc }}
+              </a>
+              {% endfor %}
+            </div>
+
+            <!-- Action Row -->
+            <div class="location-actions-row">
+              <a href="{% url 'public_portal:explore_stays' %}?city={{ city.name }}" class="btn-location-explore">
+                View {{ city.name }} Stays ↗
+              </a>
+              <span class="location-zero-badge">Zero Brokerage</span>
+            </div>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Metro Comparison Matrix Table -->
+  <section style="max-width: 1320px; margin: 0 auto 96px; padding: 0 24px;">
+    <div style="text-align: center; max-width: 680px; margin: 0 auto 40px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 8px;">Metro Comparison</div>
+      <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: 26px; font-weight: 700; color: var(--apple-text-dark); letter-spacing: -0.02em;">
+        Compare India's top rental capitals at a glance.
+      </h2>
+    </div>
+
+    <div class="apple-matrix-card">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Metro Hub</th>
+            <th>Avg. Room Rent</th>
+            <th>Security Deposit</th>
+            <th>Brokerage Saved</th>
+            <th>Transit & Commute</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cities %}
+          <tr>
+            <td style="font-weight: 700; color: var(--apple-text-dark);">
+              📍 {{ c.name }} <span style="font-size: 12px; font-weight: 500; color: #64748B;">({{ c.state }})</span>
+            </td>
+            <td style="font-weight: 700; color: #0F172A;">{{ c.avg_rent }} / mo</td>
+            <td style="color: #059669; font-weight: 600;">1–2 Months (100% Refundable)</td>
+            <td style="color: #059669; font-weight: 800;">{{ c.avg_rent }} (100% Free)</td>
+            <td style="color: #475569;">{{ c.metro_connectivity }}</td>
+            <td>
+              <a href="{% url 'public_portal:explore_stays' %}?city={{ c.name }}" style="padding: 6px 14px; background: var(--color-deep-forest); color: white; border-radius: 9999px; font-size: 12px; font-weight: 700; text-decoration: none;">
+                Browse ↗
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Lifestyle & Locality Matcher Section -->
+  <section style="background: #FFFFFF; padding: 90px 24px; border-top: 1px solid var(--apple-border); border-bottom: 1px solid var(--apple-border);">
+    <div style="max-width: 1240px; margin: 0 auto;">
+      <div style="text-align: center; max-width: 640px; margin: 0 auto 56px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-burnt-peach); margin-bottom: 8px;">Find Your Vibe</div>
+        <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: clamp(24px, 2.8vw, 32px); font-weight: 700; color: #0F172A;">
+          A neighborhood for <span class="apple-gradient-warm">every lifestyle preference.</span>
+        </h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;">
+        <!-- Card 1: Tech Hubs -->
+        <div style="background: var(--apple-bg); border-radius: 24px; padding: 32px; border: 1px solid rgba(0,0,0,0.06);">
+          <div style="font-size: 32px; margin-bottom: 16px;">🚀</div>
+          <h3 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 10px;">For Tech Engineers & Founders</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B; margin-bottom: 18px;">
+            Minutes away from IT parks, co-working spaces, and high-speed transit. Zero commute exhaustion.
+          </p>
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--color-deep-forest);">Prime Localities:</div>
+          <div style="font-size: 13px; color: #334155; margin-top: 4px; font-weight: 600;">Koramangala, HSR Layout, Gachibowli, Hinjawadi, DLF Cyber City</div>
+        </div>
+
+        <!-- Card 2: Culture & Nightlife -->
+        <div style="background: var(--apple-bg); border-radius: 24px; padding: 32px; border: 1px solid rgba(0,0,0,0.06);">
+          <div style="font-size: 32px; margin-bottom: 16px;">☕</div>
+          <h3 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 10px;">For Cafe Lovers & Creatives</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B; margin-bottom: 18px;">
+            Indie coffee roasters, art galleries, live music venues, and walkable tree-lined streets.
+          </p>
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--color-deep-forest);">Prime Localities:</div>
+          <div style="font-size: 13px; color: #334155; margin-top: 4px; font-weight: 600;">Indiranagar, Bandra West, Koregaon Park, Jubilee Hills, Hauz Khas</div>
+        </div>
+
+        <!-- Card 3: Quiet & Connected -->
+        <div style="background: var(--apple-bg); border-radius: 24px; padding: 32px; border: 1px solid rgba(0,0,0,0.06);">
+          <div style="font-size: 32px; margin-bottom: 16px;">🌿</div>
+          <h3 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 10px;">For Serenity & Green Parks</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #64748B; margin-bottom: 18px;">
+            Peaceful residential enclaves with wide sidewalks, community parks, and serene living.
+          </p>
+          <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--color-deep-forest);">Prime Localities:</div>
+          <div style="font-size: 13px; color: #334155; margin-top: 4px; font-weight: 600;">Jayanagar, Powai Lake, Kalyani Nagar, Kondapur, Vijay Nagar</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Big Bottom Apple CTA Section -->
+  <section style="background: var(--color-deep-forest); padding: 80px 24px; text-align: center; color: #FFFFFF; position: relative;">
+    <div style="max-width: 760px; margin: 0 auto; position: relative; z-index: 1;">
+      <h2 style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; font-size: clamp(26px, 3.2vw, 36px); font-weight: 800; line-height: 1.15; margin-bottom: 20px;">
+        Find your next home in a <span class="apple-gradient-warm">neighborhood you'll love.</span>
+      </h2>
+      <p style="font-size: 17px; color: #93B5C6; margin-bottom: 36px;">
+        Over 1,400+ physically verified stays across India's top metropolitan hubs. Zero brokerage guaranteed.
+      </p>
+      
+      <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <a href="{% url 'public_portal:explore_stays' %}" class="btn-get-started" style="padding: 16px 40px; font-size: 16px; background: #DDEDAA; color: #183B3B; text-decoration: none;">
+          Browse All Available Stays ↗
+        </a>
+        <a href="{% url 'public_portal:list_property' %}" style="padding: 16px 32px; font-size: 15px; font-weight: 700; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.3); color: #FFFFFF; background: transparent; text-decoration: none;">
+          List Space in Your City ↗
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+{% endblock %}
