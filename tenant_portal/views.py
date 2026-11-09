@@ -48,15 +48,17 @@ def tenant_overview(request):
     # Recently Viewed
     viewed_items = RecentlyViewedProperty.objects.filter(tenant=tenant).select_related('property', 'property__locality', 'property__city').order_by('-viewed_at')[:4] if tenant else []
 
-    # Recommended Properties (Matching Figma 3 stays: 34 The Palm House, 35 Olive Co-living, 33 Aster Residences)
-    rec_pids = [34, 35, 33]
-    recommended_props = list(Property.objects.filter(id__in=rec_pids).select_related('locality', 'city').prefetch_related('gallery_photos', 'rooms'))
-    # Preserve order [34, 35, 33]
-    rec_dict = {p.id: p for p in recommended_props}
-    ordered_recs = [rec_dict[pid] for pid in rec_pids if pid in rec_dict]
+    # Recommended Properties (Authentic DB approved stays)
+    rec_qs = Property.objects.filter(status='APPROVED').select_related('locality', 'city').prefetch_related('gallery_photos', 'rooms')
+    if current_city:
+        ordered_recs = list(rec_qs.filter(city=current_city)[:3])
+    else:
+        ordered_recs = list(rec_qs.filter(city__name='Indore')[:3])
+    
     if len(ordered_recs) < 3:
-        extra_props = Property.objects.filter(city=current_city).exclude(id__in=[p.id for p in ordered_recs])[:(3 - len(ordered_recs))]
-        ordered_recs.extend(list(extra_props))
+        existing_ids = [p.id for p in ordered_recs]
+        extras = list(rec_qs.exclude(id__in=existing_ids)[:(3 - len(ordered_recs))])
+        ordered_recs.extend(extras)
 
     # Enhance recommended property objects with dynamic display data
     for prop in ordered_recs:
@@ -224,7 +226,7 @@ def tenant_overview(request):
 
 # API: Property Details for Quick View Modal
 def api_property_details(request, property_id):
-    prop = get_object_or_404(Property, id=property_id)
+    prop = get_object_or_404(Property, id=property_id, status='APPROVED')
     tenant = get_active_tenant(request)
 
     photos = [ph.photo_url for ph in prop.gallery_photos.all()]
@@ -293,7 +295,7 @@ def api_quick_enquiry(request):
             pass
 
     property_id = req_data.get('property_id')
-    prop = get_object_or_404(Property, id=property_id)
+    prop = get_object_or_404(Property, id=property_id, status='APPROVED')
 
     room_type = req_data.get('room_type', 'Private room · PG')
     budget_raw = req_data.get('budget', '15000')
@@ -397,7 +399,7 @@ def api_quick_visit(request):
             pass
 
     property_id = req_data.get('property_id')
-    prop = get_object_or_404(Property, id=property_id)
+    prop = get_object_or_404(Property, id=property_id, status='APPROVED')
 
     default_sched = (timezone.now().date() + timedelta(days=2)).strftime('%Y-%m-%d')
     scheduled_date_str = req_data.get('scheduled_date', default_sched)
@@ -826,7 +828,7 @@ def toggle_saved_property(request, property_id):
     if not tenant:
         return JsonResponse({'status': 'error', 'message': 'Not logged in'}, status=403)
     
-    prop = get_object_or_404(Property, id=property_id)
+    prop = get_object_or_404(Property, id=property_id, status='APPROVED')
     saved_obj = SavedProperty.objects.filter(tenant=tenant, property=prop).first()
     if saved_obj:
         saved_obj.delete()
@@ -1866,7 +1868,7 @@ def api_create_booking(request):
     sharing_type = request.POST.get('sharing_type', 'Private Room')
     notes = request.POST.get('notes', '')
 
-    prop = get_object_or_404(Property, id=property_id)
+    prop = get_object_or_404(Property, id=property_id, status='APPROVED')
     room = prop.rooms.first()
 
     # Move in date parse

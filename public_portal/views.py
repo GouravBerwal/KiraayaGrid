@@ -5,7 +5,7 @@ import time
 import os
 import threading
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.db.models import Min, Count, Q, Case, When, Value, IntegerField
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -302,6 +302,9 @@ def explore_stays(request):
 # 4. Public Property Details View
 def stay_details(request, property_id):
     prop = get_object_or_404(Property.objects.select_related('city', 'locality', 'owner').prefetch_related('gallery_photos', 'rooms', 'reviews'), id=property_id)
+    if prop.status != 'APPROVED':
+        if not (request.user.is_authenticated and (request.user == prop.owner or request.user.is_superuser)):
+            raise Http404("This property listing is not currently available for public viewing.")
     
     rooms = list(prop.rooms.filter(is_active=True))
     min_rent = int(min([r.monthly_rent for r in rooms])) if rooms else 0
