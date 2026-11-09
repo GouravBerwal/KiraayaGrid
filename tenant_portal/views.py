@@ -502,16 +502,23 @@ def find_accommodation(request):
     tenant = get_active_tenant(request)
     profile = getattr(tenant, 'tenant_profile', None) if tenant else None
 
-    # 1. City handling
+    # 1. City handling (Indore is #1 per user mandate)
     city_param = request.GET.get('city', '').strip()
     if not city_param:
         if profile and profile.preferred_city:
             city_param = profile.preferred_city.name
         else:
-            city_param = 'Bengaluru'
+            city_param = 'Indore'
 
-    current_city = City.objects.filter(name__icontains=city_param).first()
-    all_cities = City.objects.annotate(prop_count=Count('properties')).filter(prop_count__gt=0).order_by('-prop_count')
+    current_city = City.objects.filter(name__icontains=city_param).first() or City.objects.filter(name='Indore').first()
+    all_cities = City.objects.filter(is_active=True).order_by(
+        Case(
+            When(name__iexact='Indore', then=Value(0)),
+            default=Value(1),
+            output_field=IntegerField()
+        ),
+        'name'
+    )
     localities = Locality.objects.filter(city=current_city).order_by('name') if current_city else Locality.objects.none()
 
     # 2. Base Query: Approved properties
@@ -984,7 +991,8 @@ def enquiry_details(request, enquiry_id):
         Enquiry.objects.select_related(
             'property', 'property__locality', 'property__city', 'property__owner', 'room'
         ).prefetch_related('property__gallery_photos', 'messages'),
-        id=enquiry_id
+        id=enquiry_id,
+        seeker=tenant
     )
 
     # Mark unread messages sent by OWNER as read for this tenant
@@ -1098,7 +1106,7 @@ def api_send_enquiry_message(request, enquiry_id):
     if not tenant:
         return JsonResponse({'status': 'error', 'message': 'Authentication required'}, status=403)
 
-    enquiry = get_object_or_404(Enquiry, id=enquiry_id)
+    enquiry = get_object_or_404(Enquiry, id=enquiry_id, seeker=tenant)
     message_text = request.POST.get('message_text', '').strip() or request.POST.get('message', '').strip()
     if not message_text and request.content_type == 'application/json':
         try:
@@ -1461,7 +1469,8 @@ def visit_details(request, request_id):
         VisitRequest.objects.select_related(
             'property', 'property__locality', 'property__city', 'property__owner', 'room'
         ).prefetch_related('property__gallery_photos'),
-        request_id=request_id
+        request_id=request_id,
+        seeker=tenant
     )
 
     # Status meta styling & instructions

@@ -312,102 +312,24 @@ def stay_details(request, property_id):
                 'vacant': getattr(r, 'available_beds', 1) or 1,
                 'badge': 'Vacant · Instant Move-in'
             })
-    else:
-        display_rooms = [
-            {
-                'id': 101,
-                'name': 'Master Deluxe Suite (Private Balcony)',
-                'type': 'Private Room',
-                'rent': min_rent,
-                'rent_formatted': f"{min_rent:,}",
-                'deposit': min_rent,
-                'deposit_formatted': f"{min_rent:,}",
-                'furnishing': 'Fully Furnished with Work Desk',
-                'ac': 'Split Inverter AC',
-                'vacant': 1,
-                'badge': '1 Room Left'
-            },
-            {
-                'id': 102,
-                'name': 'Executive Studio with Attached Bath',
-                'type': 'Private Studio',
-                'rent': int(min_rent * 1.2),
-                'rent_formatted': f"{int(min_rent * 1.2):,}",
-                'deposit': int(min_rent * 1.2),
-                'deposit_formatted': f"{int(min_rent * 1.2):,}",
-                'furnishing': 'King Bed · Wardrobe · Study',
-                'ac': 'Split AC · Geyser',
-                'vacant': 2,
-                'badge': 'Instant Move-in'
-            },
-            {
-                'id': 103,
-                'name': 'Twin Sharing Smart Suite',
-                'type': 'Twin Sharing',
-                'rent': int(min_rent * 0.75),
-                'rent_formatted': f"{int(min_rent * 0.75):,}",
-                'deposit': int(min_rent * 0.75),
-                'deposit_formatted': f"{int(min_rent * 0.75):,}",
-                'furnishing': 'Ergonomic Bed · High-Speed LAN',
-                'ac': 'Centralized Cooling',
-                'vacant': 2,
-                'badge': 'Popular Choice'
-            }
-        ]
-    
+    # Clean Real-world Data (No mock fallback)
     photos = list(prop.gallery_photos.all())
-    default_photos = [
-        '/static/public/images/stay_olive_house.png',
-        '/static/public/images/stay_nest_lane7.png',
-        '/static/public/images/stay_grove_collective.png',
-        'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1000&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1000&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1000&auto=format&fit=crop&q=80',
-    ]
-    gallery_urls = [p.photo_url for p in photos if p.photo_url] or default_photos
-    while len(gallery_urls) < 4:
-        gallery_urls.append(default_photos[len(gallery_urls) % len(default_photos)])
+    default_photo = '/static/public/images/stay_olive_house.png'
+    gallery_urls = [p.photo_url for p in photos if p.photo_url] or [default_photo]
 
     reviews = list(prop.reviews.filter(status='APPROVED').select_related('user'))
-    if not reviews:
-        sample_reviews = [
-            {
-                'author': 'Priya Sundaram',
-                'role': 'Product Designer · Swiggy',
-                'rating': 5,
-                'date': '2 weeks ago',
-                'comment': 'Moved in 3 months ago. The photos on KiraayaGrid matched 100% with the real space. High speed Wi-Fi has zero drops during my design critiques!',
-                'avatar': 'PS'
-            },
-            {
-                'author': 'Aditya Verma',
-                'role': 'Software Engineer · Microsoft',
-                'rating': 5,
-                'date': '1 month ago',
-                'comment': 'Zero brokerage saved me over ₹20,000 upfront. The owner is very respectful and maintenance requests get resolved on the same day.',
-                'avatar': 'AV'
-            },
-            {
-                'author': 'Sneha Mukherjee',
-                'role': 'Research Fellow · IISc',
-                'rating': 5,
-                'date': 'Last month',
-                'comment': 'Quiet neighborhood, healthy hygienic meals, and biometric security gate. Truly the gold standard for urban stays in India.',
-                'avatar': 'SM'
-            }
-        ]
-    else:
-        sample_reviews = [
-            {
-                'author': r.user.get_full_name() or r.user.username,
-                'role': 'Verified Resident',
-                'rating': r.rating,
-                'date': r.created_at.strftime('%b %d, %Y'),
-                'comment': r.comment,
-                'avatar': (r.user.first_name[:1] or r.user.username[:1]).upper()
-            }
-            for r in reviews
-        ]
+    sample_reviews = [
+        {
+            'author': r.user.get_full_name() or r.user.username,
+            'role': 'Verified Resident',
+            'rating': r.rating,
+            'date': r.created_at.strftime('%b %d, %Y'),
+            'comment': r.comment,
+            'avatar': (r.user.first_name[:1] or r.user.username[:1]).upper()
+        }
+        for r in reviews
+    ]
+    avg_rating = f"{sum(r.rating for r in reviews) / len(reviews):.1f}" if reviews else "New"
 
     # Similar Recommended Stays (Max 3)
     similar_qs = Property.objects.filter(status='APPROVED').exclude(id=prop.id)
@@ -416,9 +338,9 @@ def stay_details(request, property_id):
         if similar_city.exists():
             similar_qs = similar_city
     similar_stays = list(similar_qs.select_related('city', 'locality')[:3])
-    for s_idx, s in enumerate(similar_stays):
+    for s in similar_stays:
         cov = s.gallery_photos.filter(is_cover=True).first() or s.gallery_photos.first()
-        s.display_photo = cov.photo_url if (cov and cov.photo_url) else default_photos[(s_idx + 1) % len(default_photos)]
+        s.display_photo = cov.photo_url if (cov and cov.photo_url) else default_photo
         s.display_price = 15000 + (s.id * 1200) % 10000
 
     context = {
@@ -434,7 +356,7 @@ def stay_details(request, property_id):
         'sub_photos': gallery_urls[1:5],
         'sample_reviews': sample_reviews,
         'reviews_count': len(sample_reviews),
-        'avg_rating': '4.94',
+        'avg_rating': avg_rating,
         'owner': prop.owner,
         'similar_stays': similar_stays,
         'locality_name': prop.locality.name if prop.locality else (prop.city.name if prop.city else 'Bengaluru'),

@@ -737,6 +737,10 @@
               <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Deposit: ₹{{ r.deposit_formatted }} (Refundable)</div>
             </div>
           </div>
+          {% empty %}
+          <div style="padding: 24px; text-align: center; background: #F8FAFC; border-radius: 12px; border: 1px dashed #CBD5E1; color: #64748B; font-size: 13.5px;">
+            Standard accommodation unit. Contact host directly for room configuration details.
+          </div>
           {% endfor %}
         </div>
       </section>
@@ -812,6 +816,10 @@
             <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0;">
               "{{ rev.comment }}"
             </p>
+          </div>
+          {% empty %}
+          <div style="padding: 24px; text-align: center; background: #F8FAFC; border-radius: 12px; border: 1px dashed #CBD5E1; color: #64748B; font-size: 13.5px;">
+            No reviews yet. Be the first verified resident to share your living experience!
           </div>
           {% endfor %}
         </div>
