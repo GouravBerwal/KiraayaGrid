@@ -71,6 +71,7 @@ def send_email_async(to_email, recipient_name, subject, message_text, cta_url=No
             'KYC': ('🛡️ Verification Status', '#F0FDF4', '#15803D', '#BBF7D0'),
         }
         badge_text, bg_col, text_col, border_col = category_badges.get(category.upper(), ('🔔 KiraayaGrid Alert', '#F1F5F9', '#334155', '#CBD5E1'))
+        formatted_message = message_text.replace('\n', '<br>')
 
         html_content = f"""<!DOCTYPE html>
 <html>
@@ -98,7 +99,7 @@ def send_email_async(to_email, recipient_name, subject, message_text, cta_url=No
       </div>
       <h2 style="font-size: 19px; font-weight: 700; color: #0F172A; margin: 0 0 10px 0;">Hello {recipient_name},</h2>
       <div style="font-size: 14.5px; line-height: 1.6; color: #334155; margin: 0 0 16px 0;">
-        {message_text.replace('\n', '<br>')}
+        {formatted_message}
       </div>
 
       {details_html}
