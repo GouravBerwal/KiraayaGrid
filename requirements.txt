@@ -17,6 +17,7 @@ google-resumable-media==2.11.0
 googleapis-common-protos==1.76.0
 grpcio==1.85.1
 grpcio-status==1.85.1
+gunicorn==27.0.1
 h11==0.16.0
 h2==4.4.1
 hpack==4.2.0
@@ -39,3 +40,4 @@ requests==2.34.2
 sqlparse==0.6.1
 typing_extensions==4.16.0
 urllib3==2.8.0
+whitenoise==6.12.0

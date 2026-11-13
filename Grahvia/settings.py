@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,14 +87,21 @@ WSGI_APPLICATION = 'Grahvia.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.mysql')
+DB_NAME = os.getenv('DB_NAME', 'grahvia')
+DB_USER = os.getenv('DB_USER', 'root')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'Gourav@55')
+DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
+DB_PORT = os.getenv('DB_PORT', '3306')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'grahvia',
-        'USER': 'root',
-        'PASSWORD': 'Gourav@55',  
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'ENGINE': DB_ENGINE,
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
         'OPTIONS': {
             'charset': 'utf8mb4',
         },
@@ -135,9 +143,29 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [ BASE_DIR / 'static']
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
+# CSRF Trusted Origins for Custom Domains and Vercel Deployments
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'https://*.name.com',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+_env_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _env_origins:
+    CSRF_TRUSTED_ORIGINS.extend([o.strip() for o in _env_origins.split(',') if o.strip()])
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
