@@ -5,9 +5,12 @@ echo "=========================================="
 echo "  KiraayaGrid Automated VM Deployment    "
 echo "=========================================="
 
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
+
 # 1. Update system & install dependencies
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y python3-pip python3-venv python3-dev libmysqlclient-dev default-libmysqlclient-dev build-essential pkg-config nginx mysql-server git certbot python3-certbot-nginx
+sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" python3-pip python3-venv python3-dev libmysqlclient-dev default-libmysqlclient-dev build-essential pkg-config nginx mysql-server git certbot python3-certbot-nginx
 
 # 2. Setup MySQL
 sudo systemctl start mysql
