@@ -4,7 +4,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}KiraayaGrid — Find a Place That Feels Like Home{% endblock %}</title>
+  <title>{% block title %}KiraayaGrid — Find a Place That Feels Like Home | Zero Brokerage Accommodations{% endblock %}</title>
+
+  <!-- Google Search & SEO Meta Tags -->
+  <meta name="description" content="KiraayaGrid (Kiraaya Grid) — India's premier 100% zero-brokerage accommodation marketplace. Discover verified PGs, hostels, flats, and co-living spaces in Indore, Bengaluru, Pune, Hyderabad, and Mumbai.">
+  <meta name="keywords" content="KiraayaGrid, Kiraaya Grid, KirayaGrid, PG in Indore, Hostels in Indore, Flat on rent Indore, PG in Bengaluru, Co-living spaces, Zero Brokerage Accommodation, Student housing Indore">
+  <meta name="author" content="KiraayaGrid Technologies">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="canonical" href="https://kiraayagrid.kirayasaathi.app{{ request.path }}">
+
+  <!-- OpenGraph / Social Sharing (WhatsApp, Facebook, LinkedIn) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="KiraayaGrid">
+  <meta property="og:url" content="https://kiraayagrid.kirayasaathi.app{{ request.path }}">
+  <meta property="og:title" content="KiraayaGrid — Zero Brokerage PGs, Hostels & Flat Rentals">
+  <meta property="og:description" content="Find verified PGs, flats, and co-living stays directly from property owners with 100% zero brokerage. Priority stays in Indore, Bengaluru, Pune, and beyond.">
+  <meta property="og:image" content="https://kiraayagrid.kirayasaathi.app/static/public/images/hero_garden_apartment.webp">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="KiraayaGrid — Zero Brokerage Accommodation Marketplace">
+  <meta name="twitter:description" content="Direct living, zero brokerage. Discover verified PGs, rooms, and flats across India.">
+  <meta name="twitter:image" content="https://kiraayagrid.kirayasaathi.app/static/public/images/hero_garden_apartment.webp">
+
+  <!-- Schema.org JSON-LD Structured Data for Google Brand Ranking -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://kiraayagrid.kirayasaathi.app/#organization",
+        "name": "KiraayaGrid",
+        "alternateName": ["Kiraaya Grid", "KirayaGrid"],
+        "url": "https://kiraayagrid.kirayasaathi.app/",
+        "logo": "https://kiraayagrid.kirayasaathi.app/static/public/images/hero_garden_apartment.webp",
+        "email": "support.kiraayagrid@gmail.com",
+        "description": "Zero-brokerage accommodation and rental discovery marketplace in India."
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://kiraayagrid.kirayasaathi.app/#website",
+        "url": "https://kiraayagrid.kirayasaathi.app/",
+        "name": "KiraayaGrid",
+        "alternateName": "Kiraaya Grid",
+        "publisher": {
+          "@id": "https://kiraayagrid.kirayasaathi.app/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://kiraayagrid.kirayasaathi.app/stays/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
 
   <!-- Google Fonts & SF Pro / System Font Pairing -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

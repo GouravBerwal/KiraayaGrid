@@ -11,6 +11,7 @@ from django.db.models import Min, Count, Q, Case, When, Value, IntegerField
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
 
 from admin_portal.models import Property, City, Locality, Amenity, Review, Notification
 from owner_portal.models import Room, Bed, PropertyPhoto, OwnerSubscription
@@ -1134,3 +1135,55 @@ def api_search_suggestions(request):
         'localities': localities,
         'properties': properties,
     })
+
+
+# 7. Google SEO Services (robots.txt & sitemap.xml)
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin/",
+        "Disallow: /owner/",
+        "Disallow: /tenant/",
+        "",
+        "Sitemap: https://kiraayagrid.kirayasaathi.app/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def sitemap_xml(request):
+    now_date = timezone.now().strftime("%Y-%m-%d")
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kiraayagrid.kirayasaathi.app/</loc>
+    <lastmod>{now_date}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://kiraayagrid.kirayasaathi.app/stays/</loc>
+    <lastmod>{now_date}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://kiraayagrid.kirayasaathi.app/locations/</loc>
+    <lastmod>{now_date}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiraayagrid.kirayasaathi.app/list-property/</loc>
+    <lastmod>{now_date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiraayagrid.kirayasaathi.app/about/</loc>
+    <lastmod>{now_date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>"""
+    return HttpResponse(xml, content_type="application/xml")
