@@ -1,5 +1,28 @@
+# Environments
 .env
+.venv
+env/
+venv/
+myvenv/
+
+# Python
 __pycache__/
-*.pyc
-.DS_Store
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Django & Logs
 *.log
+local_settings.py
+db.sqlite3-journal
+
+# OS & Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Media uploads
+/media/
