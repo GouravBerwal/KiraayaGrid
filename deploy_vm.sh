@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
 
+DOMAIN_NAME="${1:-}"
+
 echo "=========================================="
 echo "  KiraayaGrid Automated VM Deployment    "
+if [ -n "$DOMAIN_NAME" ]; then
+    echo "  Domain / Subdomain: $DOMAIN_NAME"
+fi
 echo "=========================================="
 
 export DEBIAN_FRONTEND=noninteractive
@@ -12,7 +17,7 @@ export NEEDRESTART_MODE=a
 sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" python3-pip python3-venv python3-dev libmysqlclient-dev default-libmysqlclient-dev build-essential pkg-config nginx mysql-server git certbot python3-certbot-nginx
 
-# 2. Setup MySQL
+# 2. Setup MySQL (Isolated database & user for KiraayaGrid)
 sudo systemctl start mysql
 sudo systemctl enable mysql
 sudo mysql -e "CREATE DATABASE IF NOT EXISTS grahvia CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
@@ -31,7 +36,7 @@ else
     git pull origin main
 fi
 
-# 4. Virtual environment & Packages
+# 4. Virtual environment & Packages (Isolated in /var/www/kiraayagrid/venv)
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
@@ -83,7 +88,7 @@ else:
     print('Superadmin already exists.')
 "
 
-# 7. Setup Gunicorn systemd service
+# 7. Setup Gunicorn systemd service (Isolated name: kiraayagrid.service)
 CURRENT_USER=$(whoami)
 sudo bash -c "cat << EOF > /etc/systemd/system/kiraayagrid.service
 [Unit]
@@ -104,12 +109,13 @@ sudo systemctl daemon-reload
 sudo systemctl restart kiraayagrid
 sudo systemctl enable kiraayagrid
 
-# 8. Setup Nginx Reverse Proxy
-sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/kiraayagrid
+# 8. Setup Nginx Reverse Proxy (DO NOT touch existing sites, strictly route by server_name)
+NGINX_SERVER_NAME="${DOMAIN_NAME:-kiraayagrid.local}"
+
+sudo bash -c "cat << EOF > /etc/nginx/sites-available/kiraayagrid
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name _;
+    listen 80;
+    server_name $NGINX_SERVER_NAME;
 
     client_max_body_size 50M;
 
@@ -126,14 +132,23 @@ server {
         proxy_pass http://unix:/var/www/kiraayagrid/kiraayagrid.sock;
     }
 }
-EOF'
+EOF"
 
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo ln -sf /etc/nginx/sites-available/kiraayagrid /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/kiraayagrid /etc/nginx/sites-enabled/kiraayagrid
 sudo nginx -t
 sudo systemctl restart nginx
 
+# 9. Free SSL with Certbot if real domain was passed
+if [ -n "$DOMAIN_NAME" ] && [ "$DOMAIN_NAME" != "kiraayagrid.local" ]; then
+    echo "Installing free SSL certificate for $DOMAIN_NAME..."
+    sudo certbot --nginx -d "$DOMAIN_NAME" --non-interactive --agree-tos -m "gouravberwal003@gmail.com" --redirect || true
+fi
+
 echo "=========================================="
 echo "  KiraayaGrid Deployment Completed 🚀     "
-echo "  Website is now LIVE on your VM IP!      "
+if [ -n "$DOMAIN_NAME" ]; then
+    echo "  Live at: https://$DOMAIN_NAME/          "
+else
+    echo "  Live with Nginx configured!             "
+fi
 echo "=========================================="
