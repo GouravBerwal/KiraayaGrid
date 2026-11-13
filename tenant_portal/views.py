@@ -176,10 +176,10 @@ def tenant_overview(request):
     target_city_names = ['Indore', 'Bengaluru', 'Pune', 'Hyderabad']
     city_cards = []
     city_fallback_images = {
-        'Indore': '/static/public/images/city_indore.png',
-        'Bengaluru': '/static/public/images/city_bengaluru.png',
-        'Pune': '/static/public/images/city_pune.png',
-        'Hyderabad': '/static/public/images/city_hyderabad.png',
+        'Indore': '/static/public/images/city_indore.webp',
+        'Bengaluru': '/static/public/images/city_bengaluru.webp',
+        'Pune': '/static/public/images/city_pune.webp',
+        'Hyderabad': '/static/public/images/city_hyderabad.webp',
     }
     for c_name in target_city_names:
         c_obj = City.objects.filter(name__icontains=c_name).first()

@@ -30,9 +30,9 @@ def get_curated_properties():
     
     # Defaults in case DB is lightly populated
     sample_photos = [
-        '/static/public/images/stay_olive_house.png',
-        '/static/public/images/stay_nest_lane7.png',
-        '/static/public/images/stay_grove_collective.png',
+        '/static/public/images/stay_olive_house.webp',
+        '/static/public/images/stay_nest_lane7.webp',
+        '/static/public/images/stay_grove_collective.webp',
         'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80',
@@ -89,11 +89,11 @@ def home_landing(request):
     )
     city_cards = []
     default_city_data = [
-        {'name': 'Indore', 'photo': '/static/public/images/city_indore.png', 'count': '5 verified stays', 'tagline': "India's Cleanest City · Tech & Startup Hub"},
-        {'name': 'Bengaluru', 'photo': '/static/public/images/city_bengaluru.png', 'count': '8 verified stays', 'tagline': 'The Silicon Valley of India'},
-        {'name': 'Mumbai', 'photo': '/static/public/images/city_mumbai.png', 'count': '6 verified stays', 'tagline': 'City of Dreams & Coastal Energy'},
-        {'name': 'Pune', 'photo': '/static/public/images/city_pune.png', 'count': '5 verified stays', 'tagline': 'Oxford of the East & IT Oasis'},
-        {'name': 'Hyderabad', 'photo': '/static/public/images/city_hyderabad.png', 'count': '3 verified stays', 'tagline': 'Cyberabad Heritage & Culinary Hub'},
+        {'name': 'Indore', 'photo': '/static/public/images/city_indore.webp', 'count': '5 verified stays', 'tagline': "India's Cleanest City · Tech & Startup Hub"},
+        {'name': 'Bengaluru', 'photo': '/static/public/images/city_bengaluru.webp', 'count': '8 verified stays', 'tagline': 'The Silicon Valley of India'},
+        {'name': 'Mumbai', 'photo': '/static/public/images/city_mumbai.webp', 'count': '6 verified stays', 'tagline': 'City of Dreams & Coastal Energy'},
+        {'name': 'Pune', 'photo': '/static/public/images/city_pune.webp', 'count': '5 verified stays', 'tagline': 'Oxford of the East & IT Oasis'},
+        {'name': 'Hyderabad', 'photo': '/static/public/images/city_hyderabad.webp', 'count': '3 verified stays', 'tagline': 'Cyberabad Heritage & Culinary Hub'},
     ]
 
     for item in default_city_data:
@@ -133,7 +133,7 @@ def about_founder(request):
         'name': 'Gourav Gurjar',
         'role': 'Founder & Chief Architect',
         'credentials': 'Ex-MAANG/FAANG Systems Engineer · Distributed Architect',
-        'photo': '/static/public/images/founder.png',
+        'photo': '/static/public/images/founder.webp',
         'mission_headline': 'Eliminating predatory rental brokerage with engineering rigor, radical transparency, and human empathy.',
         'short_bio': 'Crafted in Silicon Valley engineering disciplines, returned to solve India\'s most painful real-estate barrier: the lack of trust between seekers and property owners.',
         'full_story': """
@@ -213,9 +213,9 @@ def explore_stays(request):
 
     properties_list = list(qs)
     sample_photos = [
-        '/static/public/images/stay_olive_house.png',
-        '/static/public/images/stay_nest_lane7.png',
-        '/static/public/images/stay_grove_collective.png',
+        '/static/public/images/stay_olive_house.webp',
+        '/static/public/images/stay_nest_lane7.webp',
+        '/static/public/images/stay_grove_collective.webp',
         'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80',
         'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=80',
@@ -328,7 +328,7 @@ def stay_details(request, property_id):
             })
     # Clean Real-world Data (No mock fallback)
     photos = list(prop.gallery_photos.all())
-    default_photo = '/static/public/images/stay_olive_house.png'
+    default_photo = '/static/public/images/stay_olive_house.webp'
     gallery_urls = [p.photo_url for p in photos if p.photo_url] or [default_photo]
 
     reviews = list(prop.reviews.filter(status='APPROVED').select_related('user'))
@@ -452,7 +452,7 @@ def locations_overview(request):
             'description': "7-time national cleanliness champion, premier IIT & IIM educational corridors, booming Super Corridor IT hubs, renowned culinary legacy at Sarafa & 56 Dukan, and peaceful green living.",
             'avg_rent': '₹9,500',
             'stay_count': '5 verified stays',
-            'photo': '/static/public/images/city_indore.png',
+            'photo': '/static/public/images/city_indore.webp',
             'popular_localities': ['Vijay Nagar', 'Super Corridor', 'Bhawarkua', 'Palasia', 'Geeta Bhawan', 'Rau'],
             'tech_parks': 'TCS & Infosys Super Corridor · Crystal IT Park',
             'metro_connectivity': 'Indore Metro Yellow Line Priority Corridor',
@@ -465,7 +465,7 @@ def locations_overview(request):
             'description': 'Lush garden boulevards, global tech parks, and thriving indie cafe culture. India\'s premier startup capital.',
             'avg_rent': '₹14,500',
             'stay_count': '8 verified stays',
-            'photo': '/static/public/images/city_bengaluru.png',
+            'photo': '/static/public/images/city_bengaluru.webp',
             'popular_localities': ['Koramangala', 'Indiranagar', 'HSR Layout', 'Whitefield', 'Bellandur', 'Electronic City'],
             'tech_parks': 'Ecoworld · Manyata · Bagmane',
             'metro_connectivity': 'Purple & Green Lines',
@@ -478,7 +478,7 @@ def locations_overview(request):
             'description': 'Sea-breeze promenades, premier corporate headquarters, and high-energy urban nightlife.',
             'avg_rent': '₹22,000',
             'stay_count': '6 verified stays',
-            'photo': '/static/public/images/city_mumbai.png',
+            'photo': '/static/public/images/city_mumbai.webp',
             'popular_localities': ['Bandra West', 'Powai', 'Andheri East', 'Lower Parel', 'Juhu', 'Worli'],
             'tech_parks': 'BKC · Nesco · Mindspace',
             'metro_connectivity': 'Metro 1, 2A & 7',
@@ -491,7 +491,7 @@ def locations_overview(request):
             'description': 'Pleasant year-round weather, rich academic pedigree, and sprawling technology campuses.',
             'avg_rent': '₹12,000',
             'stay_count': '5 verified stays',
-            'photo': '/static/public/images/city_pune.png',
+            'photo': '/static/public/images/city_pune.webp',
             'popular_localities': ['Koregaon Park', 'Viman Nagar', 'Hinjawadi', 'Baner', 'Kalyani Nagar', 'Aundh'],
             'tech_parks': 'Rajiv Gandhi Infotech · EON IT',
             'metro_connectivity': 'Pune Metro Line 1 & 2',
@@ -504,7 +504,7 @@ def locations_overview(request):
             'description': 'Historic grandeur, world-class biotechnology and cloud infrastructure corridors, and authentic hospitality.',
             'avg_rent': '₹11,500',
             'stay_count': '3 verified stays',
-            'photo': '/static/public/images/city_hyderabad.png',
+            'photo': '/static/public/images/city_hyderabad.webp',
             'popular_localities': ['Gachibowli', 'Madhapur', 'Hitec City', 'Kondapur', 'Jubilee Hills', 'Banjara Hills'],
             'tech_parks': 'Cyber Towers · Mindspace · DLF',
             'metro_connectivity': 'Red & Blue Metro Lines',
@@ -517,7 +517,7 @@ def locations_overview(request):
             'description': 'Sprawling expressways, rapid metro access, premier MNC hubs in Cyber City, and vibrant student enclaves.',
             'avg_rent': '₹13,500',
             'stay_count': '2 verified stays',
-            'photo': '/static/public/images/city_delhi.png',
+            'photo': '/static/public/images/city_delhi.webp',
             'popular_localities': ['DLF Cyber City', 'Golf Course Road', 'Sector 62 Noida', 'South Campus', 'Hauz Khas'],
             'tech_parks': 'Cyber Hub · Candor TechSpace',
             'metro_connectivity': 'Delhi Metro & Rapid Metro',

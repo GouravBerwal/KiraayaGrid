@@ -119,12 +119,26 @@ server {
 
     client_max_body_size 50M;
 
+    # Gzip Compression for fast delivery
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/rss+xml application/atom+xml image/svg+xml image/webp;
+
+    # Aggressive 30-day browser caching for images & static assets
     location /static/ {
         alias /var/www/kiraayagrid/staticfiles/;
+        expires 30d;
+        add_header Cache-Control \"public, max-age=2592000, immutable\";
+        access_log off;
     }
 
     location /media/ {
         alias /var/www/kiraayagrid/media/;
+        expires 30d;
+        add_header Cache-Control \"public, max-age=2592000, immutable\";
+        access_log off;
     }
 
     location / {
