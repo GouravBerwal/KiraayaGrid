@@ -158,6 +158,9 @@ STORAGES = {
 
 # CSRF Trusted Origins for Custom Domains and Vercel Deployments
 CSRF_TRUSTED_ORIGINS = [
+    'https://*.kirayasaathi.app',
+    'https://kiraayagrid.kirayasaathi.app',
+    'http://kiraayagrid.kirayasaathi.app',
     'https://*.vercel.app',
     'https://*.name.com',
     'http://127.0.0.1:8000',

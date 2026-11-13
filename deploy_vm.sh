@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOMAIN_NAME="${1:-}"
+DOMAIN_NAME="${1:-kiraayagrid.kirayasaathi.app}"
 
 echo "=========================================="
 echo "  KiraayaGrid Automated VM Deployment    "
