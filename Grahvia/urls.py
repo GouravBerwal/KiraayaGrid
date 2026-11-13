@@ -20,6 +20,7 @@ from django.views.generic import RedirectView
 from public_portal import views as public_views
 
 urlpatterns = [
+    path('google10b808c53586a357.html', public_views.google_verification_file, name='google_verification_file'),
     path('robots.txt', public_views.robots_txt, name='robots_txt'),
     path('sitemap.xml', public_views.sitemap_xml, name='sitemap_xml'),
     path('django-admin/', admin.site.urls),

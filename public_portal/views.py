@@ -1138,6 +1138,10 @@ def api_search_suggestions(request):
 
 
 # 7. Google SEO Services (robots.txt & sitemap.xml)
+def google_verification_file(request):
+    return HttpResponse("google-site-verification: google10b808c53586a357.html", content_type="text/html")
+
+
 def robots_txt(request):
     lines = [
         "User-agent: *",
